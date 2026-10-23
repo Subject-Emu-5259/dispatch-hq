@@ -16,8 +16,8 @@ export default defineConfig({
     port: 3000,
     host: true,
     proxy: {
-      '/api': 'https://dispatch-hq-deandrewharris.zocomputer.io',
-      '/ws': { target: 'wss://dispatch-hq-deandrewharris.zocomputer.io', ws: true },
+      '/api': 'https://dispatch-hq.onrender.com',
+      '/ws': { target: 'wss://dispatch-hq.onrender.com', ws: true },
       // On-origin map data (dev mirrors prod: same-origin paths, upstream hosts
       // stripped the same way the server's /tiles + /routing proxy does).
       // On-origin map data (dev mirrors prod: same-origin paths, upstream hosts

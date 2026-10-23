@@ -7,7 +7,7 @@ const http = require('http');
 const tls = require('tls');
 const { Readable } = require('stream');
 
-const UPSTREAM = 'dispatch-hq-deandrewharris.zocomputer.io';
+const UPSTREAM = 'dispatch-hq.onrender.com';
 const PORT = 3000;
 
 const HOP_BY_HOP = new Set([

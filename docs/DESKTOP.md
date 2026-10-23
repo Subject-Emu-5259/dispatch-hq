@@ -7,7 +7,7 @@ shortcuts, notifications) while keeping the game itself entirely server-served.
 ## Why a shell (and what that means for updates)
 
 Dispatch HQ is a web game — the *entire game* ships from
-`https://dispatch-hq-deandrewharris.zocomputer.io` with cache-busted bundles and
+`https://dispatch-hq.onrender.com` with cache-busted bundles and
 a versioned service worker. The desktop app loads that same URL. The big
 consequence: **every launch of the DMG is already the latest game**, because
 the shell never bundles game code — it renders whatever the server currently

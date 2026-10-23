@@ -33,7 +33,7 @@ cd "$APP_DIR"
 TARGET="${1:-all}"
 VERSION="$(node -p "require('./package.json').version")"
 DIST="$REPO_ROOT/dist"
-APP_URL="${DHQ_APP_URL:-https://dispatch-hq-deandrewharris.zocomputer.io}"
+APP_URL="${DHQ_APP_URL:-https://dispatch-hq.onrender.com}"
 
 echo "=== Dispatch HQ desktop release build — v$VERSION ($TARGET) ==="
 

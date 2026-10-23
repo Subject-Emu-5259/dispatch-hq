@@ -12,7 +12,7 @@
 
 | Thing | Value |
 | --- | --- |
-| Public URL | `https://dispatch-hq-deandrewharris.zocomputer.io` |
+| Public URL | `https://dispatch-hq.onrender.com` |
 | Health check | `GET /health` → `{"status":"ok","version":"X.Y.Z"}` |
 | Zo project path (on instance) | `/home/workspace/Projects/dispatch-hq` |
 | Zo service id | `svc_Y_8aCyzZr5M` |
@@ -76,7 +76,7 @@ PGPASSWORD="$NEW_DB_PW" psql "postgresql://dispatch@localhost:5432/dispatch_hq" 
 tr '\0' '\n' < /proc/$(ss -ltnp 2>/dev/null | grep ':3001 ' | grep -oP 'pid=\K[0-9]+' | head -1)/environ \
   | grep -E '^(JWT_SECRET|DATABASE_URL|REDIS_URL)=' | sed 's/=.*/=<set>/'   # expect 3 lines
 PGPASSWORD="$NEW_DB_PW" psql "postgresql://dispatch@localhost:5432/dispatch_hq" -X -A -t -c "SELECT 'ok';"
-curl -s -m 15 https://dispatch-hq-deandrewharris.zocomputer.io/health
+curl -s -m 15 https://dispatch-hq.onrender.com/health
 ```
 
 The service now boots against the pinned URL even though the v0.22.19 boot guard is not in the running binary yet — so when the guard batch deploys, `deploy.sh`'s pre-flight (`check_service_env`) passes and the restart cannot refuse to boot. No `REDIS_URL` on the instance? Omit it — Redis degrades to in-memory fanout (warning-only), and the deploy pre-flight only *warns*.
@@ -96,7 +96,7 @@ Rotating the secret invalidates **every existing session in one go** (tokens min
    - verifies after restart: service RUNNING on port 3001, the process env carries `JWT_SECRET` (presence only), and `/health` answers.
 3. **Prove tokens mint/verify with the new secret** (auth round-trip against the public URL):
    ```bash
-   BASE=https://dispatch-hq-deandrewharris.zocomputer.io
+   BASE=https://dispatch-hq.onrender.com
    curl -s -c /tmp/jc -X POST $BASE/api/auth/register -H 'Content-Type: application/json' \
      -d '{"username":"JwtRotateProbe","email":"jwtrotate-<ts>@test.dev","password":"RotateTest2026!"}'
    curl -s -b /tmp/jc $BASE/api/player/me   # 200 JSON ⇒ token verified under the new secret
@@ -207,7 +207,7 @@ sha256sum -c /tmp/<VER>.hashes   # must print OK for every line
 ### 4. Schema changes (only when the release touches `servers/game-server/src/db/schema.ts`)
 
 1. **Run `drizzle-kit push` on the Zo instance before restarting** — `cd /home/workspace/Projects/dispatch-hq/servers/game-server && npx drizzle-kit push` (against the production `DATABASE_URL`). The deploy script does **not** run migrations; a schema column added in code but missing in the DB breaks queries at runtime (e.g. the promo redemption log's `level_at_redemption` column).
-2. **Re-seed when the seed changed** — `seedDatabase()` only runs via `POST /api/seed` (never on boot). If this release touched `servers/game-server/src/db/seed.ts` (e.g. the `DHQ-LAUNCH` welcome promo code), call it once after the build is live: `curl -s -X POST https://dispatch-hq-deandrewharris.zocomputer.io/api/seed`. Seeding is idempotent by code — it never duplicates codes or resets `usedCount`; on a fresh DB it also creates the Commander player + achievements. **Exception (v0.31.x): the shop catalog self-heals.** `GET /api/shop/catalog` and `POST /api/shop/checkout` call `ensureShopCatalog()` (mirroring `ensureAchievements`), so membership tiers + coin packs populate on first storefront fetch even on a fresh DB that has never seen `/api/seed`.
+2. **Re-seed when the seed changed** — `seedDatabase()` only runs via `POST /api/seed` (never on boot). If this release touched `servers/game-server/src/db/seed.ts` (e.g. the `DHQ-LAUNCH` welcome promo code), call it once after the build is live: `curl -s -X POST https://dispatch-hq.onrender.com/api/seed`. Seeding is idempotent by code — it never duplicates codes or resets `usedCount`; on a fresh DB it also creates the Commander player + achievements. **Exception (v0.31.x): the shop catalog self-heals.** `GET /api/shop/catalog` and `POST /api/shop/checkout` call `ensureShopCatalog()` (mirroring `ensureAchievements`), so membership tiers + coin packs populate on first storefront fetch even on a fresh DB that has never seen `/api/seed`.
 
 ### 5. Restart & verify
 
@@ -215,15 +215,15 @@ sha256sum -c /tmp/<VER>.hashes   # must print OK for every line
    > "Restart the user service svc_Y_8aCyzZr5M (Dispatch HQ, port 3001, entrypoint bun run /home/workspace/Projects/dispatch-hq/servers/game-server/dist/serve-combined.js) using the update_user_service tool with a fresh ZO_RESTART_TS so it picks up the <VER> build. Confirm the service is RUNNING on port 3001 and report /health."
 2. **Verify live:**
    ```bash
-   curl -s -m 15 https://dispatch-hq-deandrewharris.zocomputer.io/health   # must show the new version
-   curl -s https://dispatch-hq-deandrewharris.zocomputer.io/ | grep -o 'index-[A-Za-z0-9_-]*\.js' | head -1  # bundle hash changed
+   curl -s -m 15 https://dispatch-hq.onrender.com/health   # must show the new version
+   curl -s https://dispatch-hq.onrender.com/ | grep -o 'index-[A-Za-z0-9_-]*\.js' | head -1  # bundle hash changed
    curl -s <bundle-url> | grep -c '<feature-string>'   # spot-check a new feature string is in the served bundle
    ```
 3. **Postgres availability watchdog — never trust `/health` alone (v0.29.4 incident).** `/health` answers `status: ok` **without touching the database** — it is a process liveness probe, not a stack liveness probe. On 2026-08-15 the instance's Postgres was down (`connect ECONNREFUSED 127.0.0.1:5432`, stale socket lock from an unclean shutdown) while `/health` kept reporting `ok`, and every new-player/guest login 500'd until the postgresql watchdog (`svc_mS_FHfGmAYQ`) cleared the lock and recovered. After **every** deploy restart, prove the DB is actually reachable with at least one of:
    ```bash
    # (a) End-to-end write-through check against the public URL — the one that caught the incident.
    #     Guest creation inserts a row, so it 500s with ECONNREFUSED when Postgres is down:
-   curl -s -o /dev/null -w 'guest: HTTP %{http_code}\n' -X POST https://dispatch-hq-deandrewharris.zocomputer.io/api/auth/guest   # must be 201
+   curl -s -o /dev/null -w 'guest: HTTP %{http_code}\n' -X POST https://dispatch-hq.onrender.com/api/auth/guest   # must be 201
    # (b) On-instance read-only check (run via the Zo agent or SSH):
    pg_isready -h localhost -p 5432                                    # must print 'accepting connections'
    PGPASSWORD="$DB_PW" psql "postgresql://dispatch@localhost:5432/dispatch_hq" -X -A -t -c "SELECT 'ok';"   # must print ok
@@ -327,7 +327,7 @@ If a run reports accounts, cleanup is a manual transaction (delete child rows in
 **Release Date:** August 4, 2026
 **Status:** Beta / Public Test Build
 **Codename:** Training, Reports & Priority
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 
 ### Overview
 
@@ -648,7 +648,7 @@ During the initial build, the following issues were discovered and resolved:
 **Release Date:** August 1, 2026
 **Status:** Beta / Public Test Build
 **Codename:** Public Ready
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 
 ### Overview
 
@@ -716,7 +716,7 @@ Built with ❤️ by the Dispatch HQ team.
 **Release Date:** August 2, 2026
 **Status:** Beta / Public Test Build
 **Codename:** Speed & Pause
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 
 ### Overview
 
@@ -749,7 +749,7 @@ v0.6.2 addresses the remaining gameplay friction flagged in the v0.6.x public be
 **Release Date:** August 2, 2026
 **Status:** Beta / Public Test Build
 **Codename:** Route Dot & CAD Multi-Dispatch
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 
 ### Overview
 
@@ -784,7 +784,7 @@ v0.6.1 finishes the follow-up items from the v0.6.0 visual and CAD revamp: a pul
 **Release Date:** August 2, 2026
 **Status:** Beta / Public Test Build
 **Codename:** Unit Visuals & CAD Revamp
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 
 ### Overview
 
@@ -842,7 +842,7 @@ v0.6.0 polishes the in-field visual layer and tightens the CAD-to-mission flow s
 **Release Date:** August 2, 2026
 **Status:** Beta / Public Test Build
 **Codename:** Speed & Pause Patch
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 
 ### Overview
 
@@ -879,7 +879,7 @@ v0.6.2 fixes the remaining friction in the settings/pause flow: the simulation-s
 **Release Date:** August 2, 2026
 **Status:** Beta / Public Test Build
 **Codename:** AI Advisor & HUD Cleanup
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 
 ### Overview
 

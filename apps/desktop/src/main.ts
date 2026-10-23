@@ -17,7 +17,7 @@ import * as fs from 'fs';
 
 const APP_URL =
   process.env.DHQ_APP_URL?.trim() ||
-  'https://dispatch-hq-deandrewharris.zocomputer.io';
+  'https://dispatch-hq.onrender.com';
 
 // DHQ_SMOKE=1 runs the render gate used by scripts/build-release.sh: load the
 // game, wait for real content, print SMOKE_OK and exit 0 (or exit 1 on any

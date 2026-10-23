@@ -107,7 +107,7 @@ export const config = {
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean),
-      'https://dispatch-hq-deandrewharris.zocomputer.io',
+      'https://dispatch-hq.onrender.com',
       'http://localhost:3000',
     ])),
   },
@@ -124,7 +124,7 @@ export const config = {
     stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     // Public origin used in Stripe checkout success/cancel URLs.
-    baseUrl: process.env.PUBLIC_BASE_URL || 'https://dispatch-hq-deandrewharris.zocomputer.io',
+    baseUrl: process.env.PUBLIC_BASE_URL || 'https://dispatch-hq.onrender.com',
   },
 
   // Emails granted access to the admin dashboard. The founder email is ALWAYS

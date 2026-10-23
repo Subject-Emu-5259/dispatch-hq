@@ -185,7 +185,7 @@ For ad-hoc questions, quick answers, and tasks that don't match any trigger, res
 # Dispatch HQ — Workspace Guide
 
 ## Project Overview
-Dispatch HQ is a real-time emergency-dispatch simulation game. Players build fire/EMS/police stations, recruit units, and respond to dynamic missions on a real-road city map. It runs as a public browser game at https://dispatch-hq-deandrewharris.zocomputer.io.
+Dispatch HQ is a real-time emergency-dispatch simulation game. Players build fire/EMS/police stations, recruit units, and respond to dynamic missions on a real-road city map. It runs as a public browser game at https://dispatch-hq.onrender.com.
 
 ## Key Paths
 - `apps/web/` — React + Vite + TypeScript frontend
@@ -225,7 +225,7 @@ pnpm --filter @dispatch-hq/game-server build
 - Road routes via OSRM public demo server with a straight-line fallback
 
 ## Public URL
-https://dispatch-hq-deandrewharris.zocomputer.io
+https://dispatch-hq.onrender.com
 
 ## Last Updated
 2026-08-01

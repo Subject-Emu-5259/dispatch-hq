@@ -24,7 +24,7 @@ set -euo pipefail
 # matching. Lines starting with # are comments.
 ALLOWLIST="
 # The game's own origin (og:image / twitter:image meta tags in index.html).
-dispatch-hq-deandrewharris.zocomputer.io
+dispatch-hq.onrender.com
 # Main-menu social buttons (user-clicked href navigations, never page-loaded).
 www.facebook.com
 www.reddit.com

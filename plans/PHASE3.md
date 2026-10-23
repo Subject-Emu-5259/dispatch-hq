@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Started:** 2026-08-02  
-**Live URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**Live URL:** https://dispatch-hq.onrender.com
 
 ## Goal
 

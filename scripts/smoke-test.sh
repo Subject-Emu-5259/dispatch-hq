@@ -12,7 +12,7 @@
 # Usage:
 #   scripts/smoke-test.sh [BASE_URL] [--expect-version X.Y.Z] [--no-litter]
 #
-#   BASE_URL          default: https://dispatch-hq-deandrewharris.zocomputer.io
+#   BASE_URL          default: https://dispatch-hq.onrender.com
 #   --expect-version  fail if /health does not report this version
 #   --no-litter       self-cleanup guard: after the first successful auth it
 #                     records the smoke account's player id in a state file,
@@ -47,7 +47,7 @@
 # ============================================================
 set -uo pipefail
 
-BASE_URL="https://dispatch-hq-deandrewharris.zocomputer.io"
+BASE_URL="https://dispatch-hq.onrender.com"
 EXPECT_VERSION=""
 NO_LITTER=0
 while [[ $# -gt 0 ]]; do

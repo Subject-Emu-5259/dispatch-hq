@@ -43,7 +43,7 @@ pad — fade music under the voice to about −20 dB).
 | 0:24–0:32 | **Dispatch & Respond** | "Missions are everywhere — fires, crimes, medical calls. One tap dispatches the nearest units, and every call is a race against the clock. Answer Mutual Aid requests for bonus pay." |
 | 0:32–0:40 | **Seasons & Crisis** | "The city fights back. Tornadoes, floods, and wildfires roll in with recovery phases after. Holiday events like July 4th and Christmas bring live contests — your rank in the top bar, a day-by-day countdown, and winner badges for the top clearer." |
 | 0:40–0:48 | **Play Together** | "You're not alone. Form alliances, climb shared leaderboards, chat live, and watch other players' fleets patrol the same map — with a founder Admin Console for grants, promos, bug triage, and contests." |
-| 0:48–1:00 | **Outro** | "Dispatch HQ — free to play in your browser. Command the chaos, save the city. Play now at dispatch-hq-deandrewharris.zocomputer.io." |
+| 0:48–1:00 | **Outro** | "Dispatch HQ — free to play in your browser. Command the chaos, save the city. Play now at dispatch-hq.onrender.com." |
 
 ---
 

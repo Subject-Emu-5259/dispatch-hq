@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dispatch-hq-deandrewharris.zocomputer.io/sitemap.xml
+Sitemap: https://dispatch-hq.onrender.com/sitemap.xml

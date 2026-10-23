@@ -1,7 +1,7 @@
 # 🚒 Dispatch HQ — Full Game Audit v0.17.9
 
 **Audit Date:** 2026-08-06
-**URL:** https://dispatch-hq-deandrewharris.zocomputer.io
+**URL:** https://dispatch-hq.onrender.com
 **Version audited:** v0.17.9 (live, /health verified `{"status":"ok","version":"0.17.9"}`)
 **Stack:** React 19 / TypeScript / Vite, Zustand, MapLibre GL, framer-motion, Tailwind, Hono/Bun, PostgreSQL + Drizzle, Redis pub/sub, WebSocket, OSRM routing.
 
@@ -11,7 +11,7 @@
 
 | Item | Status | Notes |
 |---|---|---|
-| HTTPS hosting | ✅ | `https://dispatch-hq-deandrewharris.zocomputer.io` (Zo, port 3001) |
+| HTTPS hosting | ✅ | `https://dispatch-hq.onrender.com` (Zo, port 3001) |
 | `/health` | ✅ | Returns 0.17.9 with timestamp |
 | WebSocket | ✅ | `/ws` — presence, chat, alliance channels, unit-position relay via Redis |
 | PostgreSQL | ✅ | 19 tables (see §4) |

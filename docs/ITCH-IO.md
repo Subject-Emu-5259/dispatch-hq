@@ -17,7 +17,7 @@ If you are releasing a new version, the 5-minute checklist at the bottom is all 
 
 The web version is **FREE** — the page sells the desktop apps and (soon)
 membership/coins, so the page description should lead with: web is free at
-https://dispatch-hq-deandrewharris.zocomputer.io, desktop loads the live game
+https://dispatch-hq.onrender.com, desktop loads the live game
 and needs an internet connection.
 
 ## Channels & current builds
@@ -127,7 +127,7 @@ version, the upcoming membership + coins, and both codes.
 
 When codes change or a new one drops:
 1. Add it to `servers/game-server/src/db/seed.ts` (idempotent by code).
-2. After deploy, run `curl -s -X POST https://dispatch-hq-deandrewharris.zocomputer.io/api/seed`
+2. After deploy, run `curl -s -X POST https://dispatch-hq.onrender.com/api/seed`
    (per `plans/RELEASES.md` §4 — seeding never duplicates codes or resets `usedCount`).
 3. Announce via the admin broadcast or direct inbox rows (the v0.29.5 launch
    inserted one durable inbox row per player) and mention the codes in the itch
@@ -174,7 +174,7 @@ After the game release is built and deployed:
 3. **Push**: `scripts/publish-itch.sh agreatgame/dispatch-hq --push` (incremental, near-instant)
 4. **Page copy** (if the release is notable): `ITCH_API_KEY=<key> scripts/itch-manage.sh edit "short_text=..."` and update the description in the web UI if needed
 5. **Images**: upload new `docs/promo/*.jpg` in the web UI only when art changed
-6. **Codes**: if a new code shipped, `curl -s -X POST https://dispatch-hq-deandrewharris.zocomputer.io/api/seed` and announce via inbox
+6. **Codes**: if a new code shipped, `curl -s -X POST https://dispatch-hq.onrender.com/api/seed` and announce via inbox
 7. **Devlog** (if the release is notable): copy the launch / membership post from the templates below into the web UI — no API endpoint exists for devlogs
 8. **Verify**: open https://agreatgame.itch.io/dispatch-hq → the channel files show the new `--userversion`
 
@@ -200,7 +200,7 @@ time with actual road routing.
 
 Three ways to play:
 - 🌐 Web (FREE, playable now) — no download, no account required. Jump in as
-  a guest at https://dispatch-hq-deandrewharris.zocomputer.io and start your
+  a guest at https://dispatch-hq.onrender.com and start your
   campaign in minutes.
 - 🖥️ Desktop (macOS / Windows / Linux) — grab the installer right here on
   this page. The desktop app loads the live game, so every launch is the

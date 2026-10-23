@@ -2,7 +2,7 @@
 
 A real-time **emergency-dispatch simulation game**. Build fire / police / EMS stations, recruit units, and respond to a living city of dynamic missions on a real-road map — solo or alongside other commanders on the shared map.
 
-**Play it live:** https://dispatch-hq-deandrewharris.zocomputer.io
+**Play it live:** https://dispatch-hq.onrender.com
 
 ---
 

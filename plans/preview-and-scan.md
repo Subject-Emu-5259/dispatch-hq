@@ -76,5 +76,5 @@ city → department → Start Dispatching). Screenshots:
 
 - Combined server (`serve-combined.ts`) is the production entrypoint on Zo (port 3001)
 - Local dev runs Vite (3000) + game-server (3001) separately via turbo — using combined server is simpler for a scan
-- The public instance at `https://dispatch-hq-deandrewharris.zocomputer.io` is also available as fallback
+- The public instance at `https://dispatch-hq.onrender.com` is also available as fallback
 - Requires `pnpm build` first since neither `dist/` nor `lib/` output exists currently

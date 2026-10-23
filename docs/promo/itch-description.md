@@ -25,7 +25,7 @@
 <h2>Ways to play</h2>
 
 <ul>
-<li><strong>Play free in your browser</strong> — no download, no account required. Jump in as a guest and start your campaign in minutes: <a href="https://dispatch-hq-deandrewharris.zocomputer.io">dispatch-hq-deandrewharris.zocomputer.io</a></li>
+<li><strong>Play free in your browser</strong> — no download, no account required. Jump in as a guest and start your campaign in minutes: <a href="https://dispatch-hq.onrender.com">dispatch-hq.onrender.com</a></li>
 <li><strong>Desktop app (macOS / Windows / Linux)</strong> — grab the build here on this page. The app loads the live game, so you're always on the latest version.</li>
 </ul>
 
