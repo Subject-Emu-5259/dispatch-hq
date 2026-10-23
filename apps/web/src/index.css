@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --dispatch-red: #DC2626;
+    --dispatch-navy: #1E293B;
+  }
+
+  body {
+    @apply bg-gray-950 text-white font-sans;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  /* Touch chrome (v0.29.0): single-tap gestures only on interactive elements —
+     kills the iOS double-tap-zoom delay/relayout on the HUD's rapid taps while
+     leaving page pinch-zoom (and text zoom) fully intact. */
+  button,
+  [role='button'],
+  a,
+  input,
+  select,
+  textarea,
+  label {
+    touch-action: manipulation;
+  }
+
+  /* MapLibre overrides */
+  .maplibregl-popup-content {
+    @apply bg-gray-800 text-white rounded-lg shadow-xl border border-gray-700 p-3;
+    margin: 0;
+  }
+
+  .maplibregl-popup-tip {
+    border-top-color: #1f2937;
+  }
+
+  .maplibregl-ctrl-group {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .maplibregl-ctrl-group button {
+    @apply bg-gray-800 text-white;
+  }
+
+  .maplibregl-ctrl-group button:hover {
+    @apply bg-gray-700;
+  }
+
+  .maplibregl-ctrl-group button + button {
+    @apply border-t border-gray-700;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-lg;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:border-gray-600/50 hover:shadow-xl hover:scale-[1.02];
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-dispatch-red text-white font-semibold rounded-lg
+           transition-all duration-200 hover:bg-red-700 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-700 text-white font-medium rounded-lg
+           transition-all duration-200 hover:bg-gray-600 active:scale-95;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-fire {
+    @apply badge bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg
+           text-white placeholder-gray-400 focus:outline-none focus:ring-2
+           focus:ring-dispatch-red focus:border-transparent;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* Light theme toggle support.
+   `.light-theme` inverts the whole page to fake a light UI. `.map-no-invert`
+   exists ONLY to cancel that page-wide invert for the map subtree (double
+   invert = unchanged), so it must be scoped under `.light-theme`. Previously
+   it fired unconditionally: in dark mode (the default, no parent invert) it
+   inverted the entire map subtree once — washing the map tiles and flipping
+   the dark mission popup to white. */
+.light-theme {
+  filter: invert(1) hue-rotate(180deg);
+  color-scheme: light;
+}
+.light-theme .map-no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* ── Weather overlay effects ──────────────────────────────── */
+@keyframes dhq-rain-fall {
+  0%   { background-position: 0 0; }
+  100% { background-position: -120px 480px; }
+}
+
+@keyframes dhq-lightning {
+  0%, 88%, 100% { opacity: 0; }
+  89% { opacity: 0.35; }
+  92% { opacity: 0.05; }
+  94% { opacity: 0.28; }
+  96% { opacity: 0; }
+}
+
+@keyframes dhq-fog-drift {
+  0%   { transform: translateX(-4%); opacity: 0.5; }
+  50%  { transform: translateX(4%);  opacity: 0.85; }
+  100% { transform: translateX(-4%); opacity: 0.5; }
+}
+
+@keyframes dhq-heat-shimmer {
+  0%   { opacity: 0.12; }
+  50%  { opacity: 0.3; }
+  100% { opacity: 0.12; }
+}
+
+.weather-rain {
+  background-image:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0px,
+      transparent 4px,
+      rgba(200, 220, 255, 0.28) 5px,
+      rgba(200, 220, 255, 0.28) 6px
+    );
+  background-size: 120px 30px;
+  animation: dhq-rain-fall 0.7s linear infinite;
+}
+
+.weather-flash {
+  background: radial-gradient(ellipse at 30% 20%, rgba(220, 235, 255, 0.9), transparent 55%);
+  animation: dhq-lightning 7s ease-in-out infinite;
+}
+
+.weather-fog {
+  background: radial-gradient(ellipse at center, rgba(226, 232, 240, 0.5), transparent 70%);
+  filter: blur(28px);
+  animation: dhq-fog-drift 16s ease-in-out infinite;
+}
+
+.weather-fog-b {
+  animation-delay: -8s;
+}
+
+.weather-heat {
+  background:
+    radial-gradient(ellipse at 25% 30%, rgba(255, 160, 60, 0.35), transparent 45%),
+    radial-gradient(ellipse at 75% 65%, rgba(255, 120, 40, 0.28), transparent 50%);
+  animation: dhq-heat-shimmer 3.2s ease-in-out infinite;
+}
+
+/* ── Accessibility (v0.18.0) ───────────────────────────────────────────── */
+/* Visible focus rings for keyboard navigation — only when focus is not via mouse. */
+:focus-visible {
+  outline: 2px solid #F43F5E;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect the OS reduced-motion preference: collapse animations to a single frame
+   so pulsing/gliding UI never triggers vestibular discomfort. The urgent pulse
+   animations still fire once, preserving their informational value. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Webview dark-bg fallbacks (v0.22.0 UI audit) ─────────────────────────
+   Tailwind's opacity modifier emits 8-digit-hex backgrounds (e.g. #111827d9),
+   which some older webviews drop entirely — leaving dark panels fully
+   transparent, so they read as WHITE over light map tiles (the mission-popup
+   bug class). Re-assert every alpha panel class with a solid color first
+   (universal), then the rgba alpha where supported. Plain un-layered CSS so
+   it wins the cascade over Tailwind's layered utilities.
+   Modal backdrops (bg-black/NN) are deliberately excluded — a transparent
+   backdrop just loses its dim, while a solid fallback would black out the
+   whole screen. */
+.bg-gray-800\/20 { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.2); }
+.bg-gray-800\/30 { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.3); }
+.bg-gray-800\/40 { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.4); }
+.bg-gray-800\/50 { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.5); }
+.bg-gray-800\/60 { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.6); }
+.bg-gray-800\/70 { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.7); }
+.bg-gray-800\/80 { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.8); }
+.bg-gray-900\/40 { background-color: #111827; background-color: rgba(17, 24, 39, 0.4); }
+.bg-gray-900\/50 { background-color: #111827; background-color: rgba(17, 24, 39, 0.5); }
+.bg-gray-900\/60 { background-color: #111827; background-color: rgba(17, 24, 39, 0.6); }
+.bg-gray-900\/70 { background-color: #111827; background-color: rgba(17, 24, 39, 0.7); }
+.bg-gray-900\/80 { background-color: #111827; background-color: rgba(17, 24, 39, 0.8); }
+.bg-gray-900\/85 { background-color: #111827; background-color: rgba(17, 24, 39, 0.85); }
+.bg-gray-900\/90 { background-color: #111827; background-color: rgba(17, 24, 39, 0.9); }
+.bg-gray-900\/95 { background-color: #111827; background-color: rgba(17, 24, 39, 0.95); }
+.bg-gray-950\/40 { background-color: #030712; background-color: rgba(3, 7, 18, 0.4); }
+.bg-gray-950\/60 { background-color: #030712; background-color: rgba(3, 7, 18, 0.6); }
+.bg-gray-950\/70 { background-color: #030712; background-color: rgba(3, 7, 18, 0.7); }
+.bg-gray-950\/85 { background-color: #030712; background-color: rgba(3, 7, 18, 0.85); }
+.bg-gray-950\/90 { background-color: #030712; background-color: rgba(3, 7, 18, 0.9); }
+.bg-gray-950\/95 { background-color: #030712; background-color: rgba(3, 7, 18, 0.95); }
+/* Hover variants (row/chip hover states). */
+.hover\:bg-gray-800\/30:hover { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.3); }
+.hover\:bg-gray-800\/50:hover { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.5); }
+.hover\:bg-gray-800\/60:hover { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.6); }
+.hover\:bg-gray-800\/70:hover { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.7); }
+.hover\:bg-gray-800\/80:hover { background-color: #1f2937; background-color: rgba(31, 41, 55, 0.8); }
+/* The weather fog tint sits over the map — keep it translucent where possible. */
+.bg-gray-200\/15 { background-color: #e5e7eb; background-color: rgba(229, 231, 235, 0.15); }

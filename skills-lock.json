@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ai-image-generation": {
+      "source": "qu-skills/skills",
+      "sourceType": "github",
+      "skillPath": "tools/image/ai-image-generation/SKILL.md",
+      "computedHash": "82eca9e2eadda210d66433497ff9d31bc1c0ea2dfcd7f0be4710e9b4ef53addd"
+    }
+  }
+}

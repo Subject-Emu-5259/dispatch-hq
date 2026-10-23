@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dispatch HQ — Offline</title>
+    <meta name="theme-color" content="#0f172a" />
+    <style>
+      html, body { height: 100%; margin: 0; background: #0B1220; color: #fff; font-family: Inter, system-ui, sans-serif; }
+      body { display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+      .card { max-width: 360px; }
+      h1 { font-size: 24px; margin: 16px 0 8px; }
+      p { color: #94a3b8; margin: 0 0 24px; line-height: 1.5; }
+      button { background: #DC2626; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+      .icon { font-size: 48px; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="icon">📡</div>
+      <h1>Signal Lost</h1>
+      <p>Dispatch HQ needs a network connection to reach the command server. Check your connection and try again.</p>
+      <button onclick="window.location.reload()">Retry</button>
+    </div>
+  </body>
+</html>

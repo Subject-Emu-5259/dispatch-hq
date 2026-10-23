@@ -1,0 +1,79 @@
+# Dispatch HQ — electron-builder config
+# Build all platforms with: pnpm --filter @dispatch-hq/desktop publish:desktop
+# (or bash apps/desktop/scripts/build-release.sh from the repo root).
+appId: com.dispatchhq.desktop
+productName: Dispatch HQ
+copyright: Copyright © 2026 Dispatch HQ
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**
+  - package.json
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+# Universal binary (Apple Silicon + Intel) DMG for distribution, plus the zip
+# (the zip is what a native auto-updater would consume later — see
+# docs/DESKTOP.md "Option B"). `--universal` on the CLI is required for
+# electron-builder to honour the universal arch; build-release.sh passes it.
+#
+# Signing + notarization are env-driven and auto-detected:
+#   - CSC_NAME / CSC_LINK (+ CSC_KEY_PASSWORD): Developer ID cert to sign with.
+#   - APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID: notarize + staple.
+# build-release.sh passes -c.mac.identity=null when no identity exists (ad-hoc
+# build) and -c.notarize=true only when all three Apple creds are present, so
+# the pipeline never hard-fails on an unsigned machine.
+mac:
+  category: public.app-category.games
+  target:
+    - dmg
+    - zip
+  artifactName: DispatchHQ-${version}-${arch}.${ext}
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+
+dmg:
+  title: "Dispatch HQ ${version}"
+  window:
+    width: 540
+    height: 380
+
+# ── Windows ───────────────────────────────────────────────────────────────────
+# NSIS installer (x64). Building the Windows target from macOS works for
+# unsigned installers. Windows code-signing (Authenticode, SmartScreen)
+# is env-driven like macOS:
+#   - CSC_LINK (+ CSC_KEY_PASSWORD): code-signing cert to sign with
+#   - WIN_CSC_LINK (+ WIN_CSC_KEY_PASSWORD): same, Windows-specific override
+# electron-builder signs the installer automatically when a cert is present.
+# On macOS a Windows signing cert also needs wine/signtool; a Windows CI
+# runner is the friction-free path (see docs/DESKTOP.md "Signing").
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: DispatchHQ-${version}-${arch}-setup.${ext}
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  shortcutName: Dispatch HQ
+
+# ── Linux ─────────────────────────────────────────────────────────────────────
+# AppImage (x64) — a portable, no-install binary for most distros.
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  artifactName: DispatchHQ-${version}-${arch}.${ext}
+  category: Game
+  synopsis: Emergency dispatch simulation
+  maintainer: deandrewharris@gmail.com
+
+npmRebuild: false

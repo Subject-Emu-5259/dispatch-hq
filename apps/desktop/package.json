@@ -1,0 +1,24 @@
+{
+  "name": "@dispatch-hq/desktop",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Dispatch HQ — desktop shell (Electron) for macOS, Windows, and Linux. Loads the live game and tracks server-driven updates.",
+  "author": "De'Andrew Harris",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "electron .",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && electron-builder --mac",
+    "package:mac": "npm run build && electron-builder --mac --universal",
+    "package:win": "electron-builder --win",
+    "package:linux": "electron-builder --linux",
+    "publish:desktop": "bash scripts/build-release.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.8.3"
+  }
+}

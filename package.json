@@ -1,0 +1,41 @@
+{
+  "name": "dispatch-hq",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Dispatch HQ — Emergency Dispatch Simulation Game",
+  "scripts": {
+    "dev": "turbo dev --filter=@dispatch-hq/web --filter=@dispatch-hq/game-server --filter=@dispatch-hq/game-engine",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck && pnpm check:docs",
+    "check:docs": "node scripts/check-mermaid.mjs",
+    "test:deploy-gate": "bash scripts/test-deploy-gate.sh",
+    "e2e:smoke": "node apps/web/e2e/smoke.mjs",
+    "e2e:fire": "node apps/web/e2e/fire-service.mjs",
+    "e2e:la-city": "node apps/web/e2e/la-city.mjs",
+    "e2e:chicago-city": "node apps/web/e2e/chicago-city.mjs",
+    "e2e:houston-city": "node apps/web/e2e/houston-city.mjs",
+    "e2e:london-city": "node apps/web/e2e/london-city.mjs",
+    "e2e:paris-city": "node apps/web/e2e/paris-city.mjs",
+    "e2e:berlin-city": "node apps/web/e2e/berlin-city.mjs",
+    "e2e:toronto-city": "node apps/web/e2e/toronto-city.mjs",
+    "e2e:sydney-city": "node apps/web/e2e/sydney-city.mjs",
+    "e2e:tokyo-city": "node apps/web/e2e/tokyo-city.mjs",
+    "e2e:signup-gate": "node apps/web/e2e/signup-gate.mjs",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.md": "pnpm check:docs"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.4.2",
+    "@puppeteer/browsers": "^3.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "mermaid": "^11.4.1",
+    "puppeteer": "^25.5.0",
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

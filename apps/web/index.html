@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Dispatch HQ — Command the Chaos</title>
+    <meta name="description" content="Build stations, recruit units, and dispatch first responders across a living city in this real-time emergency strategy game." />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=13" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=13" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph / Social (v0.33.0: real 1200×630 gameplay card, not the logo) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dispatch HQ" />
+    <meta property="og:title" content="Dispatch HQ — Command the Chaos" />
+    <meta property="og:description" content="Build stations, recruit units, and dispatch first responders across a living city in this real-time emergency strategy game." />
+    <meta property="og:url" content="https://dispatch-hq-deandrewharris.zocomputer.io" />
+    <meta property="og:image" content="https://dispatch-hq-deandrewharris.zocomputer.io/og-1200x630.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Dispatch HQ — a fire engine, police car, and air ambulance race through a city street at night" />
+    <meta property="og:image" content="https://dispatch-hq-deandrewharris.zocomputer.io/logo-512.png?v=13" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dispatch HQ — Command the Chaos" />
+    <meta name="twitter:description" content="Build stations, recruit units, and dispatch first responders across a living city in this real-time emergency strategy game." />
+    <meta name="twitter:image" content="https://dispatch-hq-deandrewharris.zocomputer.io/og-1200x630.jpg" />
+
+    <!-- Fonts (self-hosted — zero third-party requests) -->
+    <link rel="stylesheet" href="/fonts/fonts.css" />
+  </head>
+  <body class="bg-gray-950 text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+        });
+        // Self-healing cache (v0.23.6): when a deploy ships a new service
+        // worker, it notifies the page (DHQ_UPDATE_READY) and we reload ONCE so
+        // the fresh bundle loads — a stale-cache map (black/blank after a bad
+        // deploy) fixes itself without a manual hard refresh. Guarded so the
+        // very first install (no prior controller) never triggers a spurious
+        // reload.
+        let refreshing = false;
+        const reloadOnce = () => {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        };
+        if (navigator.serviceWorker.controller) {
+          // A service worker already controls this page — a controllerchange
+          // means a newer one took over after an update.
+          navigator.serviceWorker.addEventListener('controllerchange', reloadOnce);
+        }
+        navigator.serviceWorker.addEventListener('message', (e) => {
+          if (e.data && e.data.type === 'DHQ_UPDATE_READY') reloadOnce();
+        });
+      }
+    </script>
+  </body>
+</html>
