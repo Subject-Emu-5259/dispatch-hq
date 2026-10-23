@@ -30,6 +30,12 @@ const PROMO_SEED = [
     maxUses: 500,
   },
   {
+    code: 'DHQ-E9P4-8RX7',
+    label: 'Limited Bonus',
+    rewards: { credits: 10000, xp: 500 },
+    maxUses: 25,
+  },
+  {
     code: 'WELCOME-50',
     label: 'Welcome Coins',
     rewards: { coins: 50 },
