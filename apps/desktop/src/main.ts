@@ -272,12 +272,27 @@ async function handleHttps(request: Request): Promise<Response> {
   return serveDistFile(path.join(bundledDistDir, 'index.html'));
 }
 
-// ── Server reachability + offline page ──────────────────────────────────────
-// The bundle renders locally, but play needs the production server. Probe
-// /health before the first load: unreachable → a bundled, styled offline
-// page with Retry / "open web version" instead of a dead window.
+// ── Server reachability + status page ───────────────────────────────────────
+// The bundle renders locally, but play needs the production server — which
+// sleeps when idle (free tier) and can take a minute to wake. So connecting
+// is a patient loop, not a single check: the app shows its status page in a
+// "waking" state and keeps probing until the server answers or the wake
+// window (~2 minutes) runs out; only then does it show the can't-reach
+// state with Retry. Nobody has to guess whether the app is doing anything,
+// and nobody has to tap Retry against a server that is still booting.
 
-async function probeServer(timeoutMs = 10_000): Promise<boolean> {
+type ConnectState = 'waking' | 'unreachable';
+let connectState: ConnectState = 'waking';
+let connectGeneration = 0;
+
+const WAKE_WINDOW_MS = 120_000;
+const PROBE_INTERVAL_MS = 2_500;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function probeServer(timeoutMs = 8_000): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -292,8 +307,17 @@ async function probeServer(timeoutMs = 10_000): Promise<boolean> {
   }
 }
 
-function loadOfflinePage(win: BrowserWindow): void {
-  if (showingOfflinePage) return;
+function sendConnectState(win: BrowserWindow): void {
+  if (!win.isDestroyed()) win.webContents.send('desktop:connect-state', connectState);
+}
+
+function setConnectState(win: BrowserWindow, state: ConnectState): void {
+  connectState = state;
+  if (showingOfflinePage) sendConnectState(win);
+}
+
+function loadStatusPage(win: BrowserWindow, state: ConnectState): void {
+  connectState = state;
   showingOfflinePage = true;
   void win.loadFile(offlinePagePath()).catch(() => {
     // Last resort: an inline page is uglier than a dead window is worse.
@@ -306,16 +330,31 @@ function loadOfflinePage(win: BrowserWindow): void {
   });
 }
 
-async function loadGame(win: BrowserWindow): Promise<void> {
-  showingOfflinePage = false;
-  if (BUNDLED && bundledDistDir) {
+async function connectLoop(win: BrowserWindow, generation: number): Promise<void> {
+  const deadline = Date.now() + WAKE_WINDOW_MS;
+  while (generation === connectGeneration && !win.isDestroyed()) {
     if (await probeServer()) {
+      if (generation !== connectGeneration || win.isDestroyed()) return;
+      showingOfflinePage = false;
       void win.loadURL(`${PROD_ORIGIN}/`);
-    } else {
-      loadOfflinePage(win);
+      return;
     }
+    if (Date.now() >= deadline) {
+      setConnectState(win, 'unreachable');
+      return;
+    }
+    await sleep(PROBE_INTERVAL_MS);
+  }
+}
+
+function loadGame(win: BrowserWindow): void {
+  if (BUNDLED && bundledDistDir) {
+    const generation = ++connectGeneration;
+    loadStatusPage(win, 'waking');
+    void connectLoop(win, generation);
     return;
   }
+  showingOfflinePage = false;
   void win.loadURL(APP_URL);
 }
 
@@ -360,13 +399,21 @@ function createWindow(): void {
   });
 
   // A failed main-frame load in bundled mode (e.g. a serving bug) lands on
-  // the offline page rather than Chromium's error interstitial. Aborted
-  // loads (-3) are navigation churn, not failures. The smoke gate installs
-  // its own did-fail-load listener and still fails the release on trouble.
+  // the status page's can't-reach state rather than Chromium's error
+  // interstitial. Aborted loads (-3) are navigation churn, not failures.
+  // The smoke gate installs its own did-fail-load listener and still fails
+  // the release on trouble.
   win.webContents.on('did-fail-load', (_e, errorCode, _desc, _url, isMainFrame) => {
     if (BUNDLED && isMainFrame && errorCode !== -3 && !showingOfflinePage) {
-      loadOfflinePage(win);
+      connectGeneration++; // cancel any in-flight wake loop
+      loadStatusPage(win, 'unreachable');
     }
+  });
+
+  // Keep the status page's state honest across its own load: the connect
+  // loop may have flipped state before the page finished rendering.
+  win.webContents.on('did-finish-load', () => {
+    if (showingOfflinePage) sendConnectState(win);
   });
 
   void loadGame(win);

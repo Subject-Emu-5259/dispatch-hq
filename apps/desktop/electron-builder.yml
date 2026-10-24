@@ -13,7 +13,7 @@ files:
   - dist/**
   - package.json
 
-# ── Bundled game (v0.4.0) ─────────────────────────────────────────────────────
+# ── Bundled game (v0.4.1) ─────────────────────────────────────────────────────
 # The desktop app ships the real game client, not a web wrapper: the
 # apps/web build (desktop mode — production API/WS endpoints baked in; see
 # scripts/stage-web.mjs) is staged into web-dist/ and carried as a resource,

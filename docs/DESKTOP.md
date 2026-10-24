@@ -35,9 +35,14 @@ intercepts that host's https traffic in the main process
 - page navigation stays pinned to the game origin; everything external
   opens in the system browser.
 
-If the server is unreachable at launch, the app shows a **bundled offline
-page** (`assets/offline.html`) with Retry and an "open web version" action
-instead of a dead window. Setting `DHQ_APP_URL` (e.g. to a local dev
+If the server doesn't answer at launch, the app shows a **bundled status
+page** (`assets/offline.html`) instead of a dead window. Because the
+production server sleeps when idle and can take a minute to wake, the
+page opens in a "waking" state and the app keeps probing `/health` for
+up to ~2 minutes, loading the game by itself the moment the server
+answers. Only if the wake window runs out does the page switch to a
+can't-reach state with Retry (which restarts the wake loop) and an "open
+web version" action. Setting `DHQ_APP_URL` (e.g. to a local dev
 server) restores the pre-0.4.0 behavior of simply loading that URL
 remotely, with no interception.
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dispatch HQ — Can't reach the server</title>
+<title>Dispatch HQ — Connecting</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -29,38 +29,110 @@
   .ghost { background: transparent; color: #e2e8f0; border: 1px solid #334155; }
   .ghost:hover { border-color: #64748b; }
   .note { margin-top: 1.4rem; font-size: 0.85rem; color: #64748b; }
+  .spinner {
+    width: 3rem; height: 3rem; margin: 1.6rem auto 0; border-radius: 50%;
+    border: 3px solid #334155; border-top-color: #f97316;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .elapsed { margin-top: 1rem; font-size: 0.85rem; color: #64748b; font-variant-numeric: tabular-nums; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
   <main class="card">
     <span class="badge">Dispatch HQ</span>
-    <h1>Can't reach the dispatch server</h1>
-    <p>
-      The game itself is installed and ready — but Dispatch HQ is a live,
-      multiplayer world, and the production server isn't answering right now.
-      It may be your connection, or the server may be waking up.
-    </p>
-    <div class="actions">
-      <button class="primary" id="retry" type="button">Retry</button>
-      <button class="ghost" id="web" type="button">Open web version</button>
-    </div>
-    <p class="note">Your account, saves, and alliance live on the server — nothing is lost.</p>
+
+    <!-- Waking state (default): the app is actively trying to reach the
+         server and will walk into the game by itself when it answers. -->
+    <section id="waking">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Waking the dispatch server…</h1>
+      <p>
+        The game is installed and ready. Dispatch HQ is a live, multiplayer
+        world, and its server naps when the city is quiet — waking it can
+        take up to a minute.
+      </p>
+      <p>
+        Stay right here: <strong>the game opens by itself</strong> the
+        moment the server answers.
+      </p>
+      <p class="elapsed" id="elapsed">Trying for 0:00</p>
+      <div class="actions">
+        <button class="ghost" id="web-waking" type="button">Open web version</button>
+      </div>
+      <p class="note">Your account, saves, and alliance live on the server — nothing is lost.</p>
+    </section>
+
+    <!-- Unreachable state: the wake window ran out without an answer. -->
+    <section id="unreachable" hidden>
+      <h1>Can't reach the dispatch server</h1>
+      <p>
+        The game itself is installed and ready — but the production server
+        still isn't answering. It may be your connection, or the server may
+        need another moment.
+      </p>
+      <div class="actions">
+        <button class="primary" id="retry" type="button">Retry</button>
+        <button class="ghost" id="web" type="button">Open web version</button>
+      </div>
+      <p class="note">Your account, saves, and alliance live on the server — nothing is lost.</p>
+    </section>
   </main>
   <script>
+    // State arrives from the main process over the preload bridge
+    // ('waking' | 'unreachable'). The page defaults to the waking state so
+    // a slow server never flashes a failure message at first paint; the
+    // main process flips it only after the full wake window has run out.
+    var startedAt = Date.now();
+    var ticker = null;
+
+    function fmt(ms) {
+      var s = Math.floor(ms / 1000);
+      return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+    }
+    function startTicker() {
+      stopTicker();
+      var el = document.getElementById('elapsed');
+      el.textContent = 'Trying for 0:00';
+      ticker = setInterval(function () {
+        el.textContent = 'Trying for ' + fmt(Date.now() - startedAt);
+      }, 1000);
+    }
+    function stopTicker() {
+      if (ticker) { clearInterval(ticker); ticker = null; }
+    }
+
+    function showState(state) {
+      var waking = state !== 'unreachable';
+      document.getElementById('waking').hidden = !waking;
+      document.getElementById('unreachable').hidden = waking;
+      document.title = waking ? 'Dispatch HQ — Connecting' : 'Dispatch HQ — Can\'t reach the server';
+      if (waking) { startedAt = Date.now(); startTicker(); } else { stopTicker(); }
+    }
+
+    if (window.dispatchDesktop && window.dispatchDesktop.onConnectState) {
+      window.dispatchDesktop.onConnectState(showState);
+    }
+    startTicker();
+
     // Buttons ride the preload bridge (window.dispatchDesktop). If the
     // bridge is somehow absent, Retry degrades to a plain reload attempt.
-    document.getElementById('retry').addEventListener('click', () => {
+    document.getElementById('retry').addEventListener('click', function () {
       if (window.dispatchDesktop && window.dispatchDesktop.retryLoad) {
+        showState('waking');
         window.dispatchDesktop.retryLoad();
       } else {
         location.reload();
       }
     });
-    document.getElementById('web').addEventListener('click', () => {
+    function openWeb() {
       if (window.dispatchDesktop && window.dispatchDesktop.openWebVersion) {
         window.dispatchDesktop.openWebVersion();
       }
-    });
+    }
+    document.getElementById('web').addEventListener('click', openWeb);
+    document.getElementById('web-waking').addEventListener('click', openWeb);
   </script>
 </body>
 </html>
