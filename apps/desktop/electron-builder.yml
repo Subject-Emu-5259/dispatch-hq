@@ -13,10 +13,35 @@ files:
   - dist/**
   - package.json
 
+# ── Bundled game (v0.4.0) ─────────────────────────────────────────────────────
+# The desktop app ships the real game client, not a web wrapper: the
+# apps/web build (desktop mode — production API/WS endpoints baked in; see
+# scripts/stage-web.mjs) is staged into web-dist/ and carried as a resource,
+# alongside the offline page the shell shows when the server is unreachable.
+extraResources:
+  - from: web-dist
+    to: web-dist
+  - from: assets/offline.html
+    to: offline.html
+
+# ── OTA updates (electron-updater) ────────────────────────────────────────────
+# GitHub Releases feed: electron-builder embeds this provider into the
+# packaged app's app-update.yml, and releases published with the artifacts
+# + latest*.yml files become the update channel (check/download/apply is
+# wired in src/main.ts). NOTE: this repo's VM checkout has no git remote
+# configured — owner/repo below follow the GitHub account that hosts the
+# project (Subject-Emu-5259) and the repo/package name (dispatch-hq).
+# Confirm before the first --publish run; a wrong value only breaks the
+# feed lookup, which the app treats as "no update" and logs.
+publish:
+  provider: github
+  owner: Subject-Emu-5259
+  repo: dispatch-hq
+
 # ── macOS ─────────────────────────────────────────────────────────────────────
 # Universal binary (Apple Silicon + Intel) DMG for distribution, plus the zip
-# (the zip is what a native auto-updater would consume later — see
-# docs/DESKTOP.md "Option B"). `--universal` on the CLI is required for
+# (the zip is what the native auto-updater consumes — see docs/DESKTOP.md
+# "Updates"). `--universal` on the CLI is required for
 # electron-builder to honour the universal arch; build-release.sh passes it.
 #
 # Signing + notarization are env-driven and auto-detected:

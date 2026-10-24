@@ -33,13 +33,14 @@ cd "$APP_DIR"
 TARGET="${1:-all}"
 VERSION="$(node -p "require('./package.json').version")"
 DIST="$REPO_ROOT/dist"
-APP_URL="${DHQ_APP_URL:-https://dispatch-hq.onrender.com}"
 
 echo "=== Dispatch HQ desktop release build — v$VERSION ($TARGET) ==="
 
-# --- 0. compile the shell ---
+# --- 0. compile the shell + stage the bundled game ---
 echo "--- tsc ---"
 npm run build
+echo "--- stage bundled game (apps/web, desktop mode) ---"
+node scripts/stage-web.mjs
 
 # --- 1. signing / notarization detection (macOS only) ---
 IDENTITY_ARGS=""
@@ -119,7 +120,9 @@ if [[ "$TARGET" == "all" || "$TARGET" == "mac" ]]; then
     echo "--- smoke gate: packaged universal app must render the game ---"
     APP_BIN="release/mac-universal/Dispatch HQ.app/Contents/MacOS/Dispatch HQ"
     set +e
-    SMOKE_OUT="$(DHQ_SMOKE=1 DHQ_APP_URL="$APP_URL" "$APP_BIN" 2>&1)"
+    # No DHQ_APP_URL: the gate must exercise the BUNDLED build (the thing
+    # that ships), not the legacy remote-load override.
+    SMOKE_OUT="$(DHQ_SMOKE=1 "$APP_BIN" 2>&1)"
     SMOKE_RC=$?
     set -e
     if [[ $SMOKE_RC -ne 0 ]] || ! grep -q 'SMOKE_OK' <<<"$SMOKE_OUT"; then
@@ -144,14 +147,19 @@ if [[ "$TARGET" == "all" || "$TARGET" == "mac" ]]; then
   for f in release/*.dmg.blockmap release/*.zip.blockmap release/mac-universal/*.dmg.blockmap release/mac-universal/*.zip.blockmap; do
     [ -e "$f" ] && cp "$f" "$DIST/mac/"
   done
+  # The electron-updater feed for macOS — uploaded to the GitHub Release
+  # alongside the artifacts so packaged apps can find updates.
+  for f in release/latest-mac.yml release/mac-universal/latest-mac.yml; do
+    [ -e "$f" ] && cp "$f" "$DIST/mac/"
+  done
 fi
 if [[ "$WIN_OK" -eq 1 ]]; then
-  for f in release/*.exe release/*.exe.blockmap; do
+  for f in release/*.exe release/*.exe.blockmap release/latest.yml; do
     [ -e "$f" ] && cp "$f" "$DIST/windows/"
   done
 fi
 if [[ "$LINUX_OK" -eq 1 ]]; then
-  for f in release/*.AppImage; do
+  for f in release/*.AppImage release/latest-linux.yml; do
     [ -e "$f" ] && cp "$f" "$DIST/linux/"
   done
 fi
@@ -170,11 +178,15 @@ cat > README.txt <<'EOF'
  Dispatch HQ — Release Artifacts
 ============================================================
 This folder holds every distributable build of the Dispatch HQ
-desktop app. The desktop app is a thin Electron shell: it loads
-the live game from the server, so EVERY launch is already the
-latest game version — you never need to re-download for a game
-update. (The shell itself is versioned independently; the game
-version is shown in the app's window title and the main menu.)
+desktop app. Since v0.4.0 the app BUNDLES the full game — the
+client is installed on your machine like any other PC game, and
+app updates arrive over the air (electron-updater, GitHub
+Releases feed) with a restart-to-apply prompt. The game is a
+live multiplayer world, so an internet connection is still
+required to play: accounts, saves, chat, and missions run on the
+production server. (The app version and the live game version
+are tracked independently; the game version is shown in the
+app's window title.)
 
 WHAT'S HERE
 ------------------------------------------------------------

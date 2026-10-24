@@ -17,14 +17,18 @@ If you are releasing a new version, the 5-minute checklist at the bottom is all 
 
 The web version is **FREE** — the page sells the desktop apps and (soon)
 membership/coins, so the page description should lead with: web is free at
-https://dispatch-hq.onrender.com, desktop loads the live game
-and needs an internet connection.
+https://dispatch-hq.onrender.com; the desktop app (v0.4.0+) bundles the full
+game and updates over the air, and needs an internet connection to play
+(accounts, saves, and multiplayer are server-side).
 
 ## Channels & current builds
 
-Three butler channels, one per platform. The desktop shell is a thin Electron
-wrapper that loads the live game on every launch — players always get the
-latest game version, so re-downloading the app is never needed.
+Three butler channels, one per platform. Since desktop v0.4.0 the app is a
+real bundled build — the full game client ships inside the installer (it is
+no longer a thin wrapper around the website). Game-client changes reach
+desktop players as app updates via the electron-updater feed (GitHub
+Releases), and the app also surfaces live game-version changes from the
+server's `/health` endpoint; see `docs/DESKTOP.md`.
 
 | Channel | Artifact (in `dist/`) | Built by |
 |---|---|---|
@@ -40,7 +44,7 @@ As of v0.29.6: all three channels live with build `--userversion 0.29.6`
 The shell artifacts are rebuilt and pushed with two commands:
 
 ```bash
-# 1. Rebuild all three platforms (bumps the shell version if you edit package.json first)
+# 1. Rebuild all three platforms (bumps the desktop version if you edit package.json first)
 bash apps/desktop/scripts/build-release.sh all      # outputs to dist/ + SHA256SUMS.txt
 
 # 2. Push to itch (game version read automatically from releaseNotes.ts)
@@ -169,7 +173,7 @@ free web version + upcoming membership/coins.
 
 After the game release is built and deployed:
 
-1. **Rebuild the shells** (only needed if the wrapper changed): `bash apps/desktop/scripts/build-release.sh all`
+1. **Rebuild the desktop apps** (needed whenever the game client or the app changed — the client is bundled since v0.4.0): `bash apps/desktop/scripts/build-release.sh all`. Also attach the artifacts + `latest*.yml` feeds to a GitHub Release so the OTA updater can find them.
 2. **Preview**: `scripts/publish-itch.sh agreatgame/dispatch-hq --preview`
 3. **Push**: `scripts/publish-itch.sh agreatgame/dispatch-hq --push` (incremental, near-instant)
 4. **Page copy** (if the release is notable): `ITCH_API_KEY=<key> scripts/itch-manage.sh edit "short_text=..."` and update the description in the web UI if needed
@@ -203,8 +207,9 @@ Three ways to play:
   a guest at https://dispatch-hq.onrender.com and start your
   campaign in minutes.
 - 🖥️ Desktop (macOS / Windows / Linux) — grab the installer right here on
-  this page. The desktop app loads the live game, so every launch is the
-  latest version — no re-downloading for updates. Needs an internet connection.
+  this page. The desktop app bundles the full game and updates itself over
+  the air. Needs an internet connection to play (multiplayer, accounts,
+  and saves are live).
 
 Launch promo codes — redeem in-game from your profile panel:
 - 🎁 DHQ-LAUNCH — Welcome Launch pack: 10,000 credits + 500 XP (500 uses)

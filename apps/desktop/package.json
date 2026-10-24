@@ -1,18 +1,19 @@
 {
   "name": "@dispatch-hq/desktop",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
-  "description": "Dispatch HQ — desktop shell (Electron) for macOS, Windows, and Linux. Loads the live game and tracks server-driven updates.",
+  "description": "Dispatch HQ \u2014 desktop app (Electron) for macOS, Windows, and Linux. Bundles the full game client; accounts, saves, and multiplayer run on the production server. Native (electron-updater) + server-version update channels.",
   "author": "De'Andrew Harris",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
+    "build:web": "node scripts/stage-web.mjs",
     "start": "electron .",
     "typecheck": "tsc --noEmit",
-    "package": "npm run build && electron-builder --mac",
-    "package:mac": "npm run build && electron-builder --mac --universal",
-    "package:win": "electron-builder --win",
-    "package:linux": "electron-builder --linux",
+    "package": "npm run build:web && npm run build && electron-builder --mac",
+    "package:mac": "npm run build:web && npm run build && electron-builder --mac --universal",
+    "package:win": "npm run build:web && npm run build && electron-builder --win",
+    "package:linux": "npm run build:web && npm run build && electron-builder --linux",
     "publish:desktop": "bash scripts/build-release.sh"
   },
   "devDependencies": {
@@ -20,5 +21,8 @@
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
   }
 }

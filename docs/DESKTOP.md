@@ -1,49 +1,95 @@
-# Dispatch HQ — macOS Desktop App (DMG) & Updates
+# Dispatch HQ — Desktop App (DMG) & Updates
 
-`apps/desktop` is a thin **Electron** shell around the Dispatch HQ web app. It
-gives the game a native macOS presence (dock icon, standalone window, keyboard
-shortcuts, notifications) while keeping the game itself entirely server-served.
+`apps/desktop` is the **Electron** desktop app for macOS, Windows, and Linux.
+Since **v0.4.0** it is a real bundled PC build, not a web wrapper: the full
+game client is compiled and shipped inside the app. Accounts, saves, chat,
+and multiplayer still run on the production server — Dispatch HQ is a live
+multiplayer game — but the client itself is installed on the player's
+machine like any other PC game.
 
-## Why a shell (and what that means for updates)
+## Architecture — how the bundled game is served
 
-Dispatch HQ is a web game — the *entire game* ships from
-`https://dispatch-hq.onrender.com` with cache-busted bundles and
-a versioned service worker. The desktop app loads that same URL. The big
-consequence: **every launch of the DMG is already the latest game**, because
-the shell never bundles game code — it renders whatever the server currently
-serves.
+The game client (`apps/web`) is built in a dedicated **desktop mode**
+(`apps/desktop/scripts/stage-web.mjs`) that bakes in the production
+endpoints — `VITE_API_URL=https://dispatch-hq.onrender.com/api` and
+`VITE_WS_URL=wss://dispatch-hq.onrender.com/ws` — and staged into
+`apps/desktop/web-dist/`, which electron-builder carries as a resource.
+(The normal web build is untouched: Render still builds it with the
+same-origin `/api` default and an origin-derived WebSocket URL.)
 
-So "the DMG receives updates" is implemented as **server-driven updates**:
+Serving the bundle has one non-obvious constraint: the production server
+issues **SameSite=Strict** auth cookies and CORS-allowlists credentialed
+calls to its own origin only. A page loaded from a custom `app://` scheme,
+`file://`, or a loopback port could never send those cookies, so login
+would be impossible without changing the server. The desktop app therefore
+keeps `https://dispatch-hq.onrender.com` as the **document origin** and
+intercepts that host's https traffic in the main process
+(`protocol.handle` in `src/main.ts`):
 
-1. On launch (and hourly while running), the app calls the server's `/health`
-   endpoint and reads the current game version (e.g. `0.19.5`).
-2. It compares that to the version the user last ran (persisted in the app's
-   `userData` directory).
-3. When the server version differs, the app:
-   - posts a native macOS notification ("Dispatch HQ updated to v0.20.0"),
-   - updates the window title to the new version, and
-   - marks the next launch as a fresh version (no repeat nagging).
+- document + static requests are answered from the bundled `web-dist`
+  (with SPA fallback to `index.html`),
+- the server's data paths (`/api`, `/health`, `/tiles`, `/routing`,
+  `/geocode`) pass through to the real server via `net.fetch` on the app
+  session, so session cookies flow exactly as in a browser,
+- traffic to any other host passes through untouched,
+- page navigation stays pinned to the game origin; everything external
+  opens in the system browser.
 
-No Apple signing, no native updater, no server-side artifact hosting — the
-existing deploy pipeline (`scripts/deploy.sh` + `/health` version bump) *is*
-the update pipeline. If a player is mid-session, the game's own service worker
-picks up the new bundle on their next reload.
+If the server is unreachable at launch, the app shows a **bundled offline
+page** (`assets/offline.html`) with Retry and an "open web version" action
+instead of a dead window. Setting `DHQ_APP_URL` (e.g. to a local dev
+server) restores the pre-0.4.0 behavior of simply loading that URL
+remotely, with no interception.
+
+One migration note: players upgrading from the 0.3.0 wrapper share this
+app's profile, and that wrapper registered the live site's service worker
+on the same origin. On first bundled launch the app clears the legacy
+service worker + cache storage (cookies, localStorage, and IndexedDB are
+left untouched) so a stale cache-first worker can't serve the old remote
+game over the bundled one.
+
+## Updates — two channels
+
+**1. Native OTA updates (electron-updater, new in v0.4.0).** The
+`publish` block in `electron-builder.yml` points at **GitHub Releases**
+and is embedded into packaged builds as `app-update.yml`. The app checks
+shortly after launch and every 4 hours, downloads updates in the
+background, and offers a restart to apply (updates also install on quit).
+If an announced update fails to download or apply — the classic case is
+an **unsigned macOS build, which cannot silently replace itself** — the
+player gets a single notification per version pointing at the itch page
+for a manual download; routine feed errors (e.g. no release published
+yet) are only logged (`desktop-updates.log` in `userData`), never nagged.
+
+**2. Server-version check (unchanged).** On launch (and hourly), the app
+calls the server's `/health` endpoint and reads the current *game*
+version. When it differs from the last-seen version (persisted in
+`userData`), the app posts a native notification ("Dispatch HQ updated
+to v…"), stamps the window title with the new version, and records it.
+This tracks the live multiplayer world the player is connected to —
+independent of the app's own version above.
 
 ### Layout
 
 ```
 apps/desktop/
   src/
-    main.ts       Electron main: window, navigation rules, update checker,
-                  smoke-test mode (DHQ_SMOKE=1)
+    main.ts       Electron main: window, bundled-content interception,
+                  navigation rules, both update channels, smoke-test
+                  mode (DHQ_SMOKE=1)
     preload.ts    Minimal contextBridge (safe, no node access in the page)
+  assets/
+    offline.html                Bundled "server unreachable" page
   build/
     icon.png                    App icon (electron-builder converts per-platform)
     entitlements.mac.plist      Hardened-runtime entitlements (macOS)
   scripts/
     build-release.sh            All-platform release pipeline -> dist/
+    stage-web.mjs               Builds apps/web in desktop mode -> web-dist/
+  web-dist/                     GENERATED (gitignored): the staged game build
   electron-builder.yml          macOS universal + Windows NSIS + Linux AppImage
-  package.json    electron / electron-builder dev deps, scripts
+                                + GitHub Releases publish feed for OTA
+  package.json    electron / electron-builder dev deps, electron-updater dep
   tsconfig.json
 ```
 
@@ -68,7 +114,8 @@ SKIP_SMOKE=1 bash apps/desktop/scripts/build-release.sh   # dev loop, no gate
 
 This is the release pipeline. It:
 
-1. Compiles the shell (`tsc`).
+1. Compiles the shell (`tsc`) and stages the bundled game
+   (`stage-web.mjs` builds `apps/web` in desktop mode into `web-dist/`).
 2. Builds the **macOS universal** DMG + zip (one binary for Apple Silicon
    and Intel; verified with `lipo -info` expecting `x86_64 arm64`).
 3. Builds the **Windows NSIS** installer (x64) and **Linux AppImage** (x64).
@@ -76,10 +123,17 @@ This is the release pipeline. It:
    for the installer step); a Windows runner is only needed for Windows
    code-signing.
 4. **Runs the release gate**: launches the packaged universal app with
-   `DHQ_SMOKE=1` and fails the release if the game page doesn't render
+   `DHQ_SMOKE=1` — in bundled mode, no `DHQ_APP_URL` — and fails the
+   release if the game page doesn't render
    (prints `SMOKE_OK title="Dispatch HQ — Command the Chaos"` on success).
-5. Publishes versioned artifacts into `dist/mac`, `dist/windows`,
-   `dist/linux` and regenerates `dist/SHA256SUMS.txt` + `dist/README.txt`.
+5. Publishes versioned artifacts (plus the `latest*.yml` updater feeds)
+   into `dist/mac`, `dist/windows`, `dist/linux` and regenerates
+   `dist/SHA256SUMS.txt` + `dist/README.txt`.
+
+For the OTA channel to actually reach players, also create a **GitHub
+Release** for the desktop version and attach the same artifacts **and**
+the `latest*.yml` / `latest-mac.yml` / `latest-linux.yml` feed files from
+`dist/` — electron-updater reads those feeds from the release assets.
 
 ## Publishing to itch.io (butler)
 
@@ -105,13 +159,14 @@ scripts/publish-itch.sh <user>/dispatch-hq --push
 Details:
 
 - `--userversion` is the **game** version (from `apps/web/src/data/releaseNotes.ts`,
-  e.g. `0.29.4`), not the desktop shell version — the itch build list reads
+  e.g. `0.29.4`), not the desktop app version — the itch build list reads
   like the game releases.
 - Channels: `mac` (universal DMG), `windows` (x64 NSIS installer), `linux`
   (x64 AppImage). Channel names pre-tag the platform on the itch page.
-- On the itch page set **Kind of game → Downloadable**. Because the shell
-  loads the live game, players need an internet connection — say so in the
-  description.
+- On the itch page set **Kind of game → Downloadable**. The app bundles
+  the full game client, but accounts, saves, and multiplayer run on the
+  production server, so players need an internet connection to play —
+  say so in the description.
 - Subsequent pushes are incremental (butler diffs and uploads only the
   delta), so releasing a new version is near-instant.
 - `butler push --dry-run` lists the files that would be sent without
@@ -233,42 +288,62 @@ workarounds; signing removes the need for them.
 To run from source during development:
 
 ```bash
-pnpm --filter @dispatch-hq/desktop start     # loads the live game in a window
+pnpm --filter @dispatch-hq/desktop build:web   # stage the bundled game once
+pnpm --filter @dispatch-hq/desktop start       # bundled game in a window
 ```
 
-Set `DHQ_APP_URL` to point at a local dev server instead:
+Without a staged `web-dist/`, `start` falls back to loading the live site
+(with a console warning) so the shell itself can still be hacked on. Set
+`DHQ_APP_URL` to point at a local dev server instead — this is the legacy
+remote-load mode, with no bundling or interception:
 
 ```bash
 DHQ_APP_URL=http://localhost:3000 pnpm --filter @dispatch-hq/desktop start
 ```
 
-## How the update check works (details)
+## How the update checks work (details)
 
-- `main.ts` fetches `${DHQ_APP_URL}/health` (defaults to the production URL)
-  with a short timeout. The health payload includes `version` (bumped on every
-  release in `serve-combined.ts` / `index.ts`).
+Server-version check (live game version):
+
+- `main.ts` fetches `${DHQ_APP_URL || production}/health` with a short
+  timeout. The health payload includes `version` (bumped on every release
+  in `serve-combined.ts` / `index.ts`).
 - The last-seen version is stored in `userData` (`lastSeenVersion`).
 - If `serverVersion !== lastSeenVersion` and the server version is non-empty:
   a `new Notification` fires, the title bar shows the version, and the stored
   value is updated. Logs are written to the same file (`desktop-updates.log`)
   for debugging.
 
-## Option B — native auto-update (only if you want silent binary updates)
+Native OTA check (app version, electron-updater):
 
-The server-driven model covers every game update because the game ships from
-the server. A *native* updater is only needed if you later want to push changes
-to the **shell itself** (Electron upgrades, window behavior) without a
-re-download. If that day comes:
+- Active only in packaged builds (and never in `DHQ_SMOKE=1` runs): first
+  check ~20s after launch, then every 4 hours.
+- Feed = the GitHub Release matching the `publish` provider embedded at
+  build time; `latest*.yml` files must be attached to that release.
+- Downloads are background + resumable (differential when blockmaps are
+  present); a downloaded update prompts **Restart now / Later** and also
+  installs on quit (`autoInstallOnAppQuit`).
+- Errors before any update is announced (no feed yet, offline) are logged
+  only. An error *after* an update was announced (e.g. an unsigned macOS
+  build that cannot replace itself) produces one notification per version
+  linking to the itch download page.
 
-1. Add `electron-updater` and wire `autoUpdater` in `main.ts` (guarded so it's
-   inert until configured).
-2. Configure `electron-builder.yml` with a `publish` provider pointed at a
-   static URL on the Zo server (or GitHub Releases) hosting `latest-mac.yml`
-   + the mac zip.
-3. **Sign the app** with an Apple Developer ID (unsigned macOS apps cannot
-   silently replace themselves — `codesign` is a hard requirement for native
-   auto-update).
-4. Publish artifacts as part of `scripts/deploy.sh`.
+## Option B — native auto-update → IMPLEMENTED in v0.4.0
 
-Until then, every DMG install is current-on-launch with zero extra
-infrastructure — that's the correct default for a server-served game.
+The pre-0.4.0 doc sketched this as a future option; v0.4.0 ships it:
+
+1. ✅ `electron-updater` added and `autoUpdater` wired in `main.ts`
+   (packaged-only guard, background download, restart prompt, itch
+   fallback notification).
+2. ✅ `electron-builder.yml` carries a `publish` provider — **GitHub
+   Releases** (`Subject-Emu-5259/dispatch-hq`; this repo's VM checkout
+   has no git remote configured, so confirm owner/repo before the first
+   published release — a wrong value only makes the feed lookup miss,
+   which the app logs as "no update").
+3. ⚠️ **Signing is still the open item**: unsigned macOS apps cannot
+   silently replace themselves — `codesign` is a hard requirement for
+   native auto-update *application* on macOS. Until a Developer ID exists
+   (see "Signing" above), Mac players get the notify + itch-download
+   fallback; signed Windows/Linux builds apply updates in place.
+4. Release step: attach the artifacts **and** `latest*.yml` feeds to a
+   GitHub Release per desktop version (see the release pipeline section).

@@ -3,3 +3,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Desktop app: staged web bundle (built by apps/desktop/scripts/stage-web.mjs)
+apps/desktop/web-dist/

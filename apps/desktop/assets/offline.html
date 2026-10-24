@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dispatch HQ — Can't reach the server</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 2rem;
+  }
+  .card { max-width: 34rem; text-align: center; }
+  .badge {
+    display: inline-block; padding: 0.3rem 0.8rem; border: 1px solid #334155; border-radius: 999px;
+    color: #94a3b8; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  h1 { font-size: 1.9rem; margin: 1.2rem 0 0.6rem; }
+  p { color: #94a3b8; line-height: 1.55; margin: 0.5rem 0; }
+  .actions { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.6rem; flex-wrap: wrap; }
+  button {
+    appearance: none; border: 0; border-radius: 0.6rem; padding: 0.75rem 1.5rem;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+  }
+  .primary { background: #f97316; color: #fff; }
+  .primary:hover { background: #ea580c; }
+  .ghost { background: transparent; color: #e2e8f0; border: 1px solid #334155; }
+  .ghost:hover { border-color: #64748b; }
+  .note { margin-top: 1.4rem; font-size: 0.85rem; color: #64748b; }
+</style>
+</head>
+<body>
+  <main class="card">
+    <span class="badge">Dispatch HQ</span>
+    <h1>Can't reach the dispatch server</h1>
+    <p>
+      The game itself is installed and ready — but Dispatch HQ is a live,
+      multiplayer world, and the production server isn't answering right now.
+      It may be your connection, or the server may be waking up.
+    </p>
+    <div class="actions">
+      <button class="primary" id="retry" type="button">Retry</button>
+      <button class="ghost" id="web" type="button">Open web version</button>
+    </div>
+    <p class="note">Your account, saves, and alliance live on the server — nothing is lost.</p>
+  </main>
+  <script>
+    // Buttons ride the preload bridge (window.dispatchDesktop). If the
+    // bridge is somehow absent, Retry degrades to a plain reload attempt.
+    document.getElementById('retry').addEventListener('click', () => {
+      if (window.dispatchDesktop && window.dispatchDesktop.retryLoad) {
+        window.dispatchDesktop.retryLoad();
+      } else {
+        location.reload();
+      }
+    });
+    document.getElementById('web').addEventListener('click', () => {
+      if (window.dispatchDesktop && window.dispatchDesktop.openWebVersion) {
+        window.dispatchDesktop.openWebVersion();
+      }
+    });
+  </script>
+</body>
+</html>
