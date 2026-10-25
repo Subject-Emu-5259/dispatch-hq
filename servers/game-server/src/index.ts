@@ -5,9 +5,6 @@ import { serve } from '@hono/node-server';
 import { config } from './config';
 import { authRoutes } from './routes/auth';
 import { playerRoutes } from './routes/player';
-import { stationRoutes } from './routes/stations';
-import { unitRoutes } from './routes/units';
-import { missionRoutes } from './routes/missions';
 import { settingsRoutes } from './routes/settings';
 import { saveRoutes } from './routes/saves';
 import { inboxRoutes } from './routes/inbox';
@@ -20,6 +17,7 @@ import { analyticsRoutes } from './routes/analytics';
 import { shopRoutes, shopWebhookHandler } from './routes/shop';
 import { seedDatabase } from './db/seed';
 import { authMiddleware, type AuthVars } from './auth/middleware';
+import { isAdminPlayer } from './lib/requireAdmin';
 import { createWsServer } from './websocket/wsServer';
 import { startGuestPruneJob } from './jobs/pruneGuests';
 import { startPremiumExpiryJob } from './jobs/premiumExpiry';
@@ -62,9 +60,6 @@ app.route('/api/auth', authRoutes);
 
 app.use('/api/player/*', authMiddleware);
 app.use('/api/inbox/*', authMiddleware);
-app.use('/api/stations/*', authMiddleware);
-app.use('/api/units/*', authMiddleware);
-app.use('/api/missions/*', authMiddleware);
 app.use('/api/chat/*', authMiddleware);
 app.use('/api/social/*', authMiddleware);
 app.use('/api/leaderboard/*', authMiddleware);
@@ -79,9 +74,6 @@ app.post('/api/shop/webhook', shopWebhookHandler);
 // serve-combined.ts (no alliance routes in this entrypoint).
 app.post('/api/player/stats', rateLimit({ windowMs: 60_000, max: 60, keyFn: playerKey }));
 app.post('/api/analytics/session', rateLimit({ windowMs: 60_000, max: 30, keyFn: playerKey }));
-app.post('/api/missions', rateLimit({ windowMs: 60_000, max: 60, keyFn: playerKey }));
-app.put('/api/missions/:id', rateLimit({ windowMs: 60_000, max: 60, keyFn: playerKey }));
-app.delete('/api/missions/:id', rateLimit({ windowMs: 60_000, max: 60, keyFn: playerKey }));
 app.post('/api/player/settings', rateLimit({ windowMs: 60_000, max: 30, keyFn: playerKey }));
 app.post('/api/social/request', rateLimit({ windowMs: 60_000, max: 30, keyFn: playerKey }));
 app.post('/api/social/respond', rateLimit({ windowMs: 60_000, max: 30, keyFn: playerKey }));
@@ -96,9 +88,6 @@ app.route('/api/player', playerRoutes);
 app.route('/api/player/settings', settingsRoutes);
 app.route('/api/player/saves', saveRoutes);
 app.route('/api/inbox', inboxRoutes);
-app.route('/api/stations', stationRoutes);
-app.route('/api/units', unitRoutes);
-app.route('/api/missions', missionRoutes);
 app.route('/api/chat', chatRoutes);
 app.route('/api/social', socialRoutes);
 app.route('/api/leaderboard', leaderboardRoutes);
@@ -107,7 +96,15 @@ app.route('/api/bug-reports', bugReportRoutes);
 app.route('/api/analytics', analyticsRoutes);
 app.route('/api/shop', shopRoutes);
 
-app.post('/api/seed', async (c) => {
+// Seeding is NOT run at container start (Dockerfile CMD only runs
+// migrations, then serve-combined.js) — the deploy flow seeds manually via
+// this route after a deploy, so the route stays but is now admin-gated:
+// authenticated + founder/ADMIN_EMAILS only. Unauthenticated callers get
+// 401 from authMiddleware; authenticated non-admins get 403 here.
+app.post('/api/seed', authMiddleware, async (c) => {
+  if (!(await isAdminPlayer(c.get('playerId')))) {
+    return c.json({ error: 'Forbidden — not an admin account' }, 403);
+  }
   try {
     await seedDatabase();
     return c.json({ success: true, message: 'Database seeded successfully' });

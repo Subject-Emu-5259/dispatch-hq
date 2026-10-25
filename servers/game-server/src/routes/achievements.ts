@@ -22,6 +22,9 @@ const ACHIEVEMENT_SEED = [
   // Seasonal contest winner badges — awarded to the top clearer when a window ends (v0.21.1).
   { key: 'seasonal_winner_independence-day', name: 'July 4th Champion', description: 'Cleared the most calls during the Fourth of July contest.', icon: '🏆', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
   { key: 'seasonal_winner_christmas', name: 'Holiday Champion', description: 'Cleared the most calls during the Christmas contest.', icon: '🏆', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
+  // Halloween 2026 (window Oct 26 – Nov 1 UTC) — same pattern as above.
+  { key: 'seasonal_halloween', name: 'Night Watch', description: 'Kept the city safe through Halloween week.', icon: '🎃', xpBonus: 200, requirementType: 'seasonal_clears', requirementValue: 1 },
+  { key: 'seasonal_winner_halloween', name: 'Halloween Champion', description: 'Cleared the most calls during the Halloween contest.', icon: '🏆', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
 ];
 
 async function ensureAchievements() {

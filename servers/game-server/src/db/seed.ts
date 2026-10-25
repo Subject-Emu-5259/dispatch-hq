@@ -19,6 +19,9 @@ const ACHIEVEMENT_SEED = [
   { key: 'seasonal_christmas', name: 'Holiday Hero', description: 'Kept the city safe through Christmas Eve and Day.', icon: '\uD83C\uDF84', xpBonus: 200, requirementType: 'seasonal_clears', requirementValue: 1 },
   { key: 'seasonal_winner_independence-day', name: 'July 4th Champion', description: 'Cleared the most calls during the Fourth of July contest.', icon: '\uD83C\uDFC6', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
   { key: 'seasonal_winner_christmas', name: 'Holiday Champion', description: 'Cleared the most calls during the Christmas contest.', icon: '\uD83C\uDFC6', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
+  // Halloween 2026 (window Oct 26 – Nov 1 UTC) — same pattern as above.
+  { key: 'seasonal_halloween', name: 'Night Watch', description: 'Kept the city safe through Halloween week.', icon: '\uD83C\uDF83', xpBonus: 200, requirementType: 'seasonal_clears', requirementValue: 1 },
+  { key: 'seasonal_winner_halloween', name: 'Halloween Champion', description: 'Cleared the most calls during the Halloween contest.', icon: '\uD83C\uDFC6', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
 ];
 
 /** Welcome promo: grants 10,000 credits + 500 XP, up to 500 redemptions. */

@@ -49,6 +49,25 @@ export const SEASONAL_EVENTS: SeasonalEvent[] = [
       icon: '🎄',
     },
   },
+  {
+    // Halloween 2026: Oct 26 – Nov 1 (UTC, inclusive). Starts the day before
+    // the Oct 27 launch so the event is live for launch week, and covers
+    // Oct 31 itself. Contest + badges follow the established pattern:
+    // participation badge for any clear during the window, winner badge
+    // (seasonal_winner_halloween, 1,000 XP) for the top clearer.
+    id: 'halloween',
+    name: 'Halloween',
+    icon: '🎃',
+    window: { start: { month: 10, day: 26 }, end: { month: 11, day: 1 } },
+    boostedTemplates: ['crowd_incident', 'bin_fire', 'room_fire'],
+    rewardMult: 1.5,
+    badge: {
+      key: 'seasonal_halloween',
+      name: 'Night Watch',
+      description: 'Kept the city safe through Halloween week.',
+      icon: '🎃',
+    },
+  },
 ];
 
 function dayKey(month: number, day: number): number {

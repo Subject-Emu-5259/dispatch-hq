@@ -142,19 +142,13 @@ player.get('/:id', async (c) => {
   });
 });
 
-player.put('/:id', async (c) => {
-  const id = c.req.param('id');
-  const body = await c.req.json();
-  const allowedFields = ['credits', 'coins', 'xp', 'level', 'isPremium', 'homeLat', 'homeLng', 'lastActive'];
-  const updates: Record<string, unknown> = {};
-  for (const field of allowedFields) {
-    if (field in body) updates[field] = body[field];
-  }
-  if (Object.keys(updates).length === 0) {
-    return c.json({ error: 'No valid fields to update' }, 400);
-  }
-  await db.update(players).set(updates).where(eq(players.id, id));
-  return c.json({ success: true });
-});
+// NOTE (2026-10-25 server-gate batch): the old PUT /:id route was DELETED,
+// not gated. It let any authenticated player rewrite any player's wallet,
+// level, and premium flag, and no client caller exists anywhere in the tree
+// (web, desktop, servers, packages, scripts, docs) — game state syncs via
+// the WebSocket actionHandler and /player/saves + /player/stats. Admin
+// grants go through POST /api/admin/grant. If a write endpoint is ever
+// needed again, it must check id === playerId (or admin) and must never
+// let a non-admin set isPremium.
 
 export { player as playerRoutes };

@@ -3,14 +3,22 @@ import { SEASONAL_WINDOWS, SEASONAL_WINDOW_LABELS, windowActive, windowEnded, pa
 
 const july = SEASONAL_WINDOWS.find((w) => w.id === 'independence-day')!;
 const christmas = SEASONAL_WINDOWS.find((w) => w.id === 'christmas')!;
+const halloween = SEASONAL_WINDOWS.find((w) => w.id === 'halloween')!;
 
 describe('seasonal windows', () => {
-  it('mirrors the client windows (independence-day + christmas)', () => {
-    expect(SEASONAL_WINDOWS.length).toBe(2);
+  it('mirrors the client windows (independence-day + christmas + halloween)', () => {
+    expect(SEASONAL_WINDOWS.length).toBe(3);
     expect(july.start).toEqual({ month: 7, day: 1 });
     expect(july.end).toEqual({ month: 7, day: 6 });
     expect(christmas.start).toEqual({ month: 12, day: 24 });
     expect(christmas.end).toEqual({ month: 12, day: 26 });
+    // Halloween 2026: live for the Oct 27 launch week run-up and Oct 31.
+    expect(halloween.start).toEqual({ month: 10, day: 26 });
+    expect(halloween.end).toEqual({ month: 11, day: 1 });
+    expect(windowActive(halloween, new Date(Date.UTC(2026, 9, 27)))).toBe(true);
+    expect(windowActive(halloween, new Date(Date.UTC(2026, 9, 31)))).toBe(true);
+    expect(windowActive(halloween, new Date(Date.UTC(2026, 10, 1)))).toBe(true);
+    expect(windowActive(halloween, new Date(Date.UTC(2026, 10, 2)))).toBe(false);
   });
 
   it('windowActive is true only inside the inclusive window (UTC)', () => {

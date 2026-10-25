@@ -56,8 +56,8 @@ describe('seasonal', () => {
     expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 4)))?.id).toBe('independence-day');
     // July 8: ended 2 days ago → final standings still shown.
     expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 8)))?.id).toBe('independence-day');
-    // July 20: too stale → next upcoming is Christmas.
-    expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 20)))?.id).toBe('christmas');
+    // July 20: too stale → next upcoming is Halloween (added 2026-10-25).
+    expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 20)))?.id).toBe('halloween');
     // April: next upcoming is July 4th.
     expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 3, 15)))?.id).toBe('independence-day');
   });
@@ -73,6 +73,18 @@ describe('seasonal', () => {
     expect(seasonalTimeLeft(july, new Date(Date.UTC(2026, 6, 6, 12)))).toBe('12 hours left');
     // Live on the last day just before midnight: rounds up to 1 hour.
     expect(seasonalTimeLeft(july, new Date(Date.UTC(2026, 6, 6, 23, 30)))).toBe('1 hour left');
+  });
+
+  it('halloween window covers launch week and Oct 31 (UTC, inclusive)', () => {
+    const hw = SEASONAL_EVENTS.find((e) => e.id === 'halloween')!;
+    expect(hw.window).toEqual({ start: { month: 10, day: 26 }, end: { month: 11, day: 1 } });
+    expect(hw.badge.key).toBe('seasonal_halloween');
+    expect(seasonalWindowLabel(hw)).toBe('Oct 26 – Nov 1');
+    expect(activeSeasonalEvent(new Date(Date.UTC(2026, 9, 27, 12)))?.id).toBe('halloween');
+    expect(activeSeasonalEvent(new Date(Date.UTC(2026, 9, 31, 12)))?.id).toBe('halloween');
+    expect(activeSeasonalEvent(new Date(Date.UTC(2026, 10, 1, 12)))?.id).toBe('halloween');
+    expect(activeSeasonalEvent(new Date(Date.UTC(2026, 10, 2, 12)))).toBeNull();
+    expect(seasonalRewardMult(new Date(Date.UTC(2026, 9, 31, 12)))).toBe(1.5);
   });
 
   it('seasonalBoostedPick only returns boosted templates during the event', () => {
