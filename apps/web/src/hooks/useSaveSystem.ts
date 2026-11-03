@@ -23,6 +23,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useGameStore } from '@/stores/gameStore';
+import { ensureUnitStaffDefaults } from '@/lib/unitsStaff';
 import {
   getSaveSlots,
   loadSave as loadSaveFromServer,
@@ -759,7 +760,7 @@ function restoreSave(save: SaveData): void {
             postMissionBehavior: 'return' as const,
           },
     );
-    store.setUnits(units);
+    store.setUnits(units.map((u) => ensureUnitStaffDefaults(u)));
   });
   guard('missions', () => store.setMissions(Array.isArray(save.missions) ? save.missions : []));
   guard('tech', () => store.setTechPurchased(Array.isArray(save.techPurchased) ? save.techPurchased : []));

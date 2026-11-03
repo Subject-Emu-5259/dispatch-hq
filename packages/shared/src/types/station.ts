@@ -36,6 +36,8 @@ export interface Station {
   staffLevel?: number;
   /** Chosen station specialization perks (v0.20.1) — see constants/perks. */
   perks?: string[];
+  /** Batch 3a shift schedule: true = that shift is covered. Absent = unscheduled (neutral). */
+  shifts?: { day?: boolean; night?: boolean; weekend?: boolean };
 }
 
 export interface GeoPoint {

@@ -9,6 +9,7 @@ import type { CareerStats, ShiftStats } from '@/stores/gameStore';
 import { formatTimer } from '@/utils/timeFormat';
 import { patientOutcomesForShift, type PatientShiftOutcomes } from '@/lib/hospital';
 import type { Patient, Station } from '@dispatch-hq/shared';
+import { shiftCoverage, shiftKeyFor, shiftResponseMultiplier } from './unitsStaff';
 
 export type TierKey = 'routine' | 'moderate' | 'serious' | 'critical';
 
@@ -20,6 +21,9 @@ export const TIER_LABELS: Record<TierKey, string> = {
 };
 
 export interface ShiftSummary {
+  // Batch 3a shift coverage (present when gameMinutes is passed)
+  shiftCoverageRows?: { stationName: string; shift: string; coverage: string; multiplier: number }[];
+  shiftCoverageLine?: string | null;
   bestResponseSec: number | null;
   clearanceRate: number;        // 0..1
   topZone: string | null;
@@ -47,8 +51,9 @@ export function buildShiftSummary(input: {
   career: CareerStats;
   stations?: Station[];
   patients?: Patient[];
+  gameMinutes?: number;
 }): ShiftSummary {
-  const { shift, units, career, stations, patients } = input;
+  const { shift, units, career, stations, patients, gameMinutes } = input;
 
   // Mean fatigue across every employee in the department (null when nobody is hired).
   const allEmployees = (stations ?? []).flatMap((s) => s.employees ?? []);
@@ -105,6 +110,21 @@ export function buildShiftSummary(input: {
     ? `Ward: ${wardExpansions} upgrade${wardExpansions === 1 ? '' : 's'} · +${shift.wardBedsAdded ?? 0} beds · $${(shift.wardCreditsSpent ?? 0).toLocaleString()}`
     : null;
 
+  // Batch 3a: shift coverage for the report (current game-clock shift).
+  const shiftCoverageRows = gameMinutes !== undefined
+    ? (stations ?? []).map((st) => ({
+        stationName: st.name,
+        shift: shiftKeyFor(gameMinutes),
+        coverage: shiftCoverage(st, gameMinutes),
+        multiplier: shiftResponseMultiplier(st, gameMinutes),
+      }))
+    : [];
+  const coveredCount = shiftCoverageRows.filter((r) => r.coverage === 'covered').length;
+  const shiftCoverageLine = shiftCoverageRows.length > 0
+    ? `Shift coverage (${shiftCoverageRows[0].shift}): ${coveredCount}/${shiftCoverageRows.length} stations covered`
+      + shiftCoverageRows.map((r) => ` · ${r.stationName}: ${r.coverage} (${r.multiplier === 1 ? 'no schedule' : r.multiplier < 1 ? '7% faster' : '12% slower'})`).join('')
+    : null;
+
   const patientOutcomes = patientOutcomesForShift(patients ?? [], shift.startedAt ?? 0);
   const recoveryLine = patientOutcomes.transported > 0
     ? `Recovery: ${patientOutcomes.transported} transported · ${patientOutcomes.treated} treated · `
@@ -130,6 +150,7 @@ export function buildShiftSummary(input: {
       ? `Top units: ${unitLeaders.map((u) => `${u.name} (${u.missions})`).join(', ')}`
       : 'Top units: —',
     ...(crewLine ? [crewLine] : []),
+    ...(shiftCoverageLine ? [shiftCoverageLine] : []),
     ...(wardLine ? [wardLine] : []),
     ...(recoveryLine ? [recoveryLine] : []),
     '———————————————————————',
@@ -152,6 +173,8 @@ export function buildShiftSummary(input: {
     wardExpansions,
     wardBedsAdded: shift.wardBedsAdded ?? 0,
     wardCreditsSpent: shift.wardCreditsSpent ?? 0,
+    shiftCoverageRows,
+    shiftCoverageLine,
     copyText,
   };
 }

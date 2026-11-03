@@ -18,6 +18,7 @@ import { patientOutcomesForShift } from '@/lib/hospital';
 import { formatTimer } from '@/utils/timeFormat';
 import { rankForLevel } from '@dispatch-hq/shared';
 import { buildShiftSummary, TIER_LABELS } from '@/lib/shiftSummary';
+import { shiftCoverage, shiftKeyFor } from '@/lib/unitsStaff';
 import { fetchSeasonalLeaderboard } from '@/lib/apiClient';
 import { SEASONAL_EVENTS, seasonalTimeLeft } from '@/lib/seasonal';
 import {
@@ -46,6 +47,7 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
   const player = useGameStore((s) => s.player);
   const units = useGameStore((s) => s.units);
   const stations = useGameStore((s) => s.stations);
+  const gameMinutes = useGameStore((s) => s.gameMinutes);
   const patients = useGameStore((s) => s.patients);
   const career = useGameStore((s) => s.career);
   const selectedService = useGameStore((s) => s.selectedService);
@@ -139,6 +141,7 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
     ] : []),
     { label: 'Patrol Coverage', value: `${(shift.patrolDistanceKm || 0).toFixed(1)} km`, icon: Route, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
     { label: 'Patrol Shifts', value: String(shift.patrolShifts || 0), icon: RefreshCw, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20' },
+    ...(stations.length > 0 ? [{ label: 'Shift Coverage', value: `${stations.filter((st) => shiftCoverage(st, gameMinutes) === 'covered').length}/${stations.length} covered · ${shiftKeyFor(gameMinutes)} shift`, icon: Users, color: 'text-violet-300', bg: 'bg-violet-500/10 border-violet-500/20' }] : []),
     ...(crewHours > 0 ? [{ label: 'Crew Hours Ridden', value: crewHoursLabel, icon: Users, color: 'text-amber-300', bg: 'bg-amber-500/10 border-amber-500/20' }] : []),
     { label: 'Credits Earned', value: `$${shift.creditsEarned.toLocaleString()}`, icon: Banknote, color: 'text-yellow-300', bg: 'bg-yellow-500/10 border-yellow-500/20' },
     { label: 'XP Earned', value: String(shift.xpEarned.toLocaleString()), icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
@@ -161,7 +164,7 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
       level: player?.level ?? 1,
       serviceLabel: (selectedService ?? 'police').toUpperCase(),
       shiftDurationLabel: fmtElapsed(shiftMs),
-      summary: buildShiftSummary({ shift, units, career, stations, patients }),
+      summary: buildShiftSummary({ shift, units, career, stations, patients, gameMinutes }),
       creditsEarned: shift.creditsEarned,
       xpEarned: shift.xpEarned,
       zoneRows,
@@ -364,12 +367,12 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
           <DebriefOverlay
             open={showDebrief}
             onClose={() => setShowDebrief(false)}
-            summary={buildShiftSummary({ shift, units, career, stations, patients })}
+            summary={buildShiftSummary({ shift, units, career, stations, patients, gameMinutes })}
             fatigueActive={(loadSettings().fatigueMode ?? 'full') !== 'off'}
             rankLabel={`${rankForLevel(player?.level ?? 1, selectedService ?? undefined).icon} ${rankForLevel(player?.level ?? 1, selectedService ?? undefined).title}`}
             copied={copied}
             onCopy={() => {
-              const s = buildShiftSummary({ shift, units, career, stations, patients });
+              const s = buildShiftSummary({ shift, units, career, stations, patients, gameMinutes });
               navigator.clipboard?.writeText(s.copyText).then(() => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 1600);

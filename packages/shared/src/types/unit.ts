@@ -41,6 +41,12 @@ export interface Unit {
   missionId: string | null;
   trainingLevel: number;
   trainingEndsAt?: number; // epoch ms — unit is unavailable while set (training in progress)
+  /** Batch 3a veterancy: XP earned per cleared mission (rank derived). */
+  veterancyXp?: number;
+  /** Batch 3a academy certs held (course ids: 'driving' | 'hazmat' | 'paramedic'). */
+  certs?: string[];
+  /** Batch 3a academy enrollment in progress (game-clock end), or null. */
+  academy?: { course: string; endsAtGameMin: number } | null;
   createdAt: string;
   waypoints?: GeoPoint[]; // Road-following path waypoints
   waypointIndex?: number; // Current waypoint index

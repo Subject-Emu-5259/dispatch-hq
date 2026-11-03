@@ -203,7 +203,7 @@ describe('loadGame — Continue (resumeOrder fallback ladder)', () => {
     expect(result).toBe('loaded');
     // Active slot (2) tried first, then the most recent (3) — 1 is never reached.
     expect(apiMock.loadSave.mock.calls.map(([slot]) => slot)).toEqual(['2', '3']);
-    expect(storeMock.setters.setUnits).toHaveBeenCalledWith(SAVE_3.units);
+    expect(storeMock.setters.setUnits).toHaveBeenCalledWith([{ id: 'u-3', veterancyXp: 0, certs: [], academy: null }]);
     // A resume that lands on a non-active slot makes it the campaign home.
     expect(localStorage.getItem(ACTIVE_KEY)).toBe('3');
   });
@@ -225,7 +225,7 @@ describe('loadGame — Continue (resumeOrder fallback ladder)', () => {
 
     expect(result).toBe('loaded');
     expect(apiMock.loadSave.mock.calls.map(([slot]) => slot)).toEqual(['2', '3', '1']);
-    expect(storeMock.setters.setUnits).toHaveBeenCalledWith(SAVE_1.units);
+    expect(storeMock.setters.setUnits).toHaveBeenCalledWith([{ id: 'u-1b', veterancyXp: 0, certs: [], academy: null }]);
     expect(localStorage.getItem(ACTIVE_KEY)).toBe('1');
   });
 

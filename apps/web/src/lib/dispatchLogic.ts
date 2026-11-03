@@ -10,6 +10,7 @@ import { AIR_SPEED_MS } from '@/lib/hospital';
 import { isAirliftMission } from '@/lib/radioDialogueEngine';
 import { useGameStore } from '@/stores/gameStore';
 import { stationCrewEffectiveness } from '@/lib/personnel';
+import { veterancyRankFor, shiftResponseMultiplier, crewConditionMultiplier, applyUnitsStaffEta } from '@/lib/unitsStaff';
 import { loadSettings } from '@/utils/settings';
 
 /**
@@ -50,7 +51,16 @@ export async function dispatchUnitToMission(unitId: string, mission: Mission): P
       distanceKm = route.distanceKm;
       etaBaseSec = route.durationSec;
     }
-    const eta = Math.round(applyTravelTech(etaBaseSec) / Math.max(0.7, eff));
+    // Batch 3a: veterancy rank, shift coverage, and rested/exhausted crew
+    // condition all move the ETA on top of the personnel effectiveness
+    // divisor (pre-3a saves are neutral: Rookie 1.0, unscheduled 1.0, no crew 1.0).
+    const homeStation = st.stations.find((s) => s.id === unit.stationId);
+    const eta = applyUnitsStaffEta(applyTravelTech(etaBaseSec), {
+      veterancyRank: veterancyRankFor(unit.veterancyXp),
+      crewEffectiveness: eff,
+      shiftMultiplier: homeStation ? shiftResponseMultiplier(homeStation, st.gameMinutes) : 1,
+      crewConditionMultiplier: crewConditionMultiplier(homeStation?.employees ?? [], unit.crewIds),
+    });
     st.updateUnit(unitId, {
       status: 'en_route',
       missionId: mission.id,

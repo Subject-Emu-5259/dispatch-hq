@@ -24,6 +24,7 @@ import {
   rerollTraits,
 } from '@/lib/employees';
 import { fatigueLabel, moraleLabel } from '@/lib/personnel';
+import { shiftKeyFor, shiftCoverage, shiftResponseMultiplier, toggleShift, type ShiftKey } from '@/lib/unitsStaff';
 
 /** Cost to re-roll a crew member's traits (v0.21.0). */
 const REROLL_COST = 300;
@@ -135,7 +136,7 @@ function EmployeeRow({
 }
 
 export function EmployeesPanel({ isOpen, onClose, focusStationId, focusUnitId }: EmployeesPanelProps) {
-  const { stations, units, player, updateStation, updateUnit, updatePlayer } = useGameStore();
+  const { stations, units, player, updateStation, updateUnit, updatePlayer, gameMinutes } = useGameStore();
   const { addNotification } = useNotifications();
   const [expandedId, setExpandedId] = useState<string | null>(focusStationId || null);
   const [serviceFilter, setServiceFilter] = useState<ServiceType | 'all'>('all');
@@ -396,6 +397,30 @@ export function EmployeesPanel({ isOpen, onClose, focusStationId, focusUnitId }:
                           className="border-t border-gray-800/50 overflow-hidden"
                         >
                           <div className="p-3 space-y-2">
+                            {/* Batch 3a shift scheduling — covered shifts respond 7% faster, uncovered 12% slower */}
+                            <div className="rounded-lg bg-gray-800/40 border border-gray-700/50 p-2">
+                              <p className="text-[11px] font-bold text-gray-200">
+                                Shift Coverage · now: {shiftKeyFor(gameMinutes)} — {shiftCoverage(station, gameMinutes)}
+                                {shiftCoverage(station, gameMinutes) !== 'unscheduled' && (
+                                  <span className="text-gray-400 font-medium"> ({shiftResponseMultiplier(station, gameMinutes) < 1 ? '7% faster' : '12% slower'})</span>
+                                )}
+                              </p>
+                              <p className="text-[10px] text-gray-500 mt-0.5">No schedule set = neutral. Toggle a shift to cover it; uncovered shifts risk slower response.</p>
+                              <div className="flex gap-1.5 mt-1.5">
+                                {(['day', 'night', 'weekend'] as ShiftKey[]).map((key) => {
+                                  const covered = station.shifts?.[key] === true;
+                                  return (
+                                    <button
+                                      key={key}
+                                      onClick={(e) => { e.stopPropagation(); updateStation(station.id, { shifts: toggleShift(station.shifts, key) }); }}
+                                      className={`flex-1 px-2 py-1 rounded text-[10px] font-bold border transition-colors ${covered ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40' : 'bg-gray-900 text-gray-500 border-gray-800 hover:text-gray-300'}`}
+                                    >
+                                      {key === 'day' ? '☀️ Day' : key === 'night' ? '🌙 Night' : '📅 Weekend'}{covered ? ' ✓' : ''}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleHire(station)}

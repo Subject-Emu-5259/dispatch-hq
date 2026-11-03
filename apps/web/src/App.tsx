@@ -63,6 +63,7 @@ import { CPU_UNIT_NAME, cpuWorkSeconds, cpuMutualAidPayout, partnerAgencyService
 import { unitCanPatrol } from '@/lib/dispatchLogic';
 import { activeSeasonalEvent, seasonalRewardMult, type SeasonalEvent } from '@/lib/seasonal';
 import { advancePersonnel, stationCrewEffectiveness, OVERWORK_THRESHOLD } from '@/lib/personnel';
+import { applyMissionVeterancy, completeAcademy, eligibleCertForMission, unitHasCert } from '@/lib/unitsStaff';
 import { stationRewardMultiplier } from '@dispatch-hq/shared';
 import { runPoliceFieldActivity, tickPursuitRadio, clearPursuitTracking } from '@/lib/fieldActivities';
 import { hasCompletedTutorial } from '@/lib/tutorialSeen';
@@ -1588,6 +1589,26 @@ function GameApp() {
         }
       }
 
+      // Batch 3a academy: courses finish on the GAME clock. Completing
+      // units gain their cert and a notification; enrollment itself is
+      // free (no pay-skip) from the unit panel.
+      {
+        const stAc = useGameStore.getState();
+        for (const u of stAc.units) {
+          if (!u.academy) continue;
+          const done = completeAcademy(u, stAc.gameMinutes);
+          if (!done) continue;
+          stAc.updateUnit(u.id, { certs: done.certs, academy: null });
+          addNotification({
+            type: 'success',
+            title: 'Academy Complete',
+            message: `${u.name} earned ${done.completedCourse === 'driving' ? 'Emergency Driving' : done.completedCourse === 'hazmat' ? 'Hazmat Operations' : 'Advanced Paramedic'} certification.`,
+            icon: '🎓',
+            duration: 4000,
+          });
+        }
+      }
+
       // Live chase phase: active pursuit missions broadcast periodic radio
       // position updates (turns/speeds/road changes) from the lead unit.
       tickPursuitRadio(Date.now());
@@ -1987,6 +2008,28 @@ function GameApp() {
               // Debrief tallies: per-unit completions + difficulty-tier mix.
               const unitShiftStats = { ...(s.unitShiftStats || {}) };
               m.assignedUnits.forEach((uid) => { unitShiftStats[uid] = (unitShiftStats[uid] ?? 0) + 1; });
+              // Batch 3a veterancy: every assigned unit earns XP for the
+              // clear (certified units earn 50% more on matching-tier
+              // missions); a rank crossing notifies like a level-up.
+              {
+                const stVet = useGameStore.getState();
+                const tierCert = eligibleCertForMission(m);
+                for (const uid of m.assignedUnits) {
+                  const u = stVet.units.find((x) => x.id === uid);
+                  if (!u) continue;
+                  const res = applyMissionVeterancy(u, m.difficulty, tierCert ? unitHasCert(u, tierCert) : false);
+                  stVet.updateUnit(uid, { veterancyXp: res.veterancyXp });
+                  if (res.rankedUp) {
+                    addNotification({
+                      type: 'levelup',
+                      title: `${u.name} ranked up!`,
+                      message: `${u.name} is now ${res.rank} — faster response on every call.`,
+                      icon: '⭐',
+                      duration: 4000,
+                    });
+                  }
+                }
+              }
               const tierCounts = { ...(s.tierCounts || {}) };
               tierCounts[difficultyTierFor(m.difficulty)] = (tierCounts[difficultyTierFor(m.difficulty)] ?? 0) + 1;
               useGameStore.getState().recordShiftStats({

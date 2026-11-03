@@ -12,6 +12,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { UNIT_CONFIGS } from '@dispatch-hq/shared';
 import type { Unit, UnitStatus } from '@dispatch-hq/shared';
 import { isTraining, trainingRemainingSec } from '@/lib/training';
+import { veterancyRankFor, veterancyXpToNext, ACADEMY_COURSES, enrollAcademy, academyRemainingGameMin } from '@/lib/unitsStaff';
 import { formatTimer } from '@/utils/timeFormat';
 import { getUnitServiceType } from '@/utils/routing';
 import { getUnitCurrentSpeedMph } from '@/lib/techTree';
@@ -28,7 +29,7 @@ const STATUS_META: Record<UnitStatus, { label: string; color: string; dot: strin
 };
 
 function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
-  const { missions, updateUnit, updateMission, selectMission, setUnitLivery } = useGameStore();
+  const { missions, updateUnit, updateMission, selectMission, setUnitLivery, gameMinutes } = useGameStore();
   const config = UNIT_CONFIGS[unit.type];
   const meta = STATUS_META[unit.status];
   const assignedMission = unit.missionId ? missions.find((m) => m.id === unit.missionId) : null;
@@ -106,6 +107,9 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
         <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">
           Lv {unit.trainingLevel}
         </span>
+        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25" title={`Veterancy XP: ${unit.veterancyXp ?? 0}${veterancyXpToNext(unit.veterancyXp) != null ? ` · ${veterancyXpToNext(unit.veterancyXp)} XP to next rank` : ' · max rank'}`}>
+          {veterancyRankFor(unit.veterancyXp).toUpperCase()}
+        </span>
       </div>
 
       {/* Training — unit is off-duty at its station */}
@@ -113,6 +117,36 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
         <div className="mt-1.5 flex items-center gap-1 text-[9px] text-yellow-300">
           <GraduationCap className="w-3 h-3 shrink-0" />
           <span className="truncate">Training to Lv {unit.trainingLevel + 1} — {formatTimer(trainingRemainingSec(unit))}</span>
+        </div>
+      )}
+
+      {/* Batch 3a academy — certs held, course in progress, free enrollment */}
+      {(unit.certs?.length ? true : false) || unit.academy ? (
+        <div className="mt-1.5 text-[9px] text-gray-400 flex flex-wrap items-center gap-1">
+          <GraduationCap className="w-3 h-3 shrink-0 text-purple-300" />
+          {(unit.certs ?? []).map((c) => (
+            <span key={c} className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/25 font-bold">{c.toUpperCase()} ✓</span>
+          ))}
+          {unit.academy && (
+            <span className="text-purple-200">Academy: {unit.academy.course} — {academyRemainingGameMin(unit, gameMinutes)} game-min left</span>
+          )}
+        </div>
+      ) : null}
+      {unit.status === 'available' && !isTraining(unit) && !unit.academy && (
+        <div className="mt-1.5 flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
+          {ACADEMY_COURSES.filter((c) => !(unit.certs ?? []).includes(c.id)).map((c) => (
+            <button
+              key={c.id}
+              onClick={() => {
+                const res = enrollAcademy(unit, c.id, gameMinutes);
+                if (res) updateUnit(unit.id, res);
+              }}
+              title={`${c.label} — ${c.durationGameMin} game-min · ${c.tierLabel} tier · free, no pay-skip`}
+              className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 text-[9px] font-bold"
+            >
+              🎓 {c.label}
+            </button>
+          ))}
         </div>
       )}
 
