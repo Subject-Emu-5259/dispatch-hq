@@ -6,6 +6,8 @@
 // edition, via the local save-blob economy — the Reddit edition passes
 // false and stays XP-only, never touching money).
 
+import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useGameStore } from '@/stores/gameStore';
 import { DAILY_CHALLENGES, WEEKLY_CHALLENGES, challengeProgress, claimChallenge } from '@/lib/challenges';
 import { playClick } from '@/utils/sound';
@@ -13,6 +15,15 @@ import { playClick } from '@/utils/sound';
 export function ChallengeTracker({ coinRewards }: { coinRewards: boolean }) {
   const challenges = useGameStore((s) => s.challenges);
   const player = useGameStore((s) => s.player);
+  // Collapsed by default (v0.0.14): the full tracker used to push the menu
+  // items down / dominate the pause panel. One slim row shows the claim
+  // count; tapping it expands the full tracker, where claiming works exactly
+  // as before. Shared by MainMenu and PauseScreen, so both collapse alike.
+  const [expanded, setExpanded] = useState(false);
+  const claimable = [...DAILY_CHALLENGES, ...WEEKLY_CHALLENGES].filter((def) => {
+    const prog = challengeProgress(challenges, def);
+    return prog.completed && !prog.claimed;
+  }).length;
 
   function handleClaim(scope: 'daily' | 'weekly', id: string) {
     playClick();
@@ -60,10 +71,29 @@ export function ChallengeTracker({ coinRewards }: { coinRewards: boolean }) {
 
   return (
     <div className="w-full rounded-xl bg-gray-900/60 border border-gray-700/40 px-3 py-2.5 space-y-2">
-      <p className="text-[11px] font-bold text-white">📋 Daily Challenges{challenges.streak > 0 ? ` · 🔥 ${challenges.streak} streak` : ''}</p>
-      <div className="space-y-2">{DAILY_CHALLENGES.map(renderRow)}</div>
-      <p className="text-[11px] font-bold text-white pt-1 border-t border-gray-800">🗓️ Weekly Challenges</p>
-      <div className="space-y-2">{WEEKLY_CHALLENGES.map(renderRow)}</div>
+      <button
+        type="button"
+        onClick={() => { playClick(); setExpanded((e) => !e); }}
+        aria-expanded={expanded}
+        className="w-full flex items-center gap-2 text-left"
+      >
+        <span className="text-[11px] font-bold text-white flex-1 truncate">
+          📋 Daily Challenges{challenges.streak > 0 ? ` · 🔥 ${challenges.streak} streak` : ''}
+        </span>
+        {claimable > 0 && (
+          <span className="text-[11px] font-bold text-amber-300 shrink-0">{claimable} to claim</span>
+        )}
+        {expanded
+          ? <ChevronUp className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          : <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />}
+      </button>
+      {expanded && (
+        <>
+          <div className="space-y-2">{DAILY_CHALLENGES.map(renderRow)}</div>
+          <p className="text-[11px] font-bold text-white pt-1 border-t border-gray-800">🗓️ Weekly Challenges</p>
+          <div className="space-y-2">{WEEKLY_CHALLENGES.map(renderRow)}</div>
+        </>
+      )}
     </div>
   );
 }

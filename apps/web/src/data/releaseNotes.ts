@@ -18,9 +18,21 @@ export function currentVersion(): string {
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
     version: '0.52.0',
-    date: '2026-08-28',
-    title: 'Alliance activity feed — unified timeline of all co-op events',
+    date: '2026-11-03',
+    title: 'Alliance activity feed — plus the November 2026 update',
     items: [
+      'November 2026 update — trust fixes, multiplayer hardening, and five feature batches:',
+      'Trust fixes: player profiles are now self/admin only (no more email or wallet exposure), the map proxy is authenticated, rate-limited, and cache-bounded, money moves are atomic, promo grants go through a ledger, and stats/XP are server-verified.',
+      'Alliance XP from ordinary clears is paused until a server mission ledger exists — a disclosed behavior change, not a silent nerf.',
+      'Veterancy, training academy (3 free courses, cert-tier bonuses, never hard gates), deeper fatigue, and shift scheduling (day/night/weekend toggles, coverage in the shift report).',
+      'Disaster waves in 3 stages, 8 unlockable districts per city with satisfaction, hospital/jail capacity decisions, and adopt-a-city (atlas cap 24).',
+      'Live mutual aid over the socket relay (60/40 split, CLEARED BY badges), competitions on server-verified seasonal clears only, shared-station leases (1–30 days, 0–50% treasury share), and a reconnect fix (capped 30s retries, health poll re-arms the socket).',
+      'Generic seasons (Winter Storm Jan 12–18, Summer Wildfire Aug 10–16), daily/weekly challenges, station livery with 5 patches, deeper fog grid with full-clear bonus, and mission-state radio lines.',
+      'Tech tree operations branch (Drone Recon +25% all calls, Hazmat Team +30% hazmat, K9 Unit +20% police), incident replay (S–F grades), photo gallery (cap 12), Guided First Shift onboarding, and an offline action queue (cap 50, banner counts queued actions).',
+      'Main menu community row is Reddit-only now: the Facebook button is gone and the Reddit button spans the full row.',
+      'Daily Challenges block in the main menu and pause menu is collapsed by default — a slim row with the claim count — and expands on tap; claiming works as before once expanded. (Reddit-only changes in this round — admin username gating, the Live chip label, wider panels, and the guest exit — are not in the main game.)',
+      'Desktop: 0.4.2 build preparation refreshed (badge icon, smoke-gate fix); the Mac build itself ships separately.',
+      'Alliance activity feed — unified timeline of all co-op events (original 0.52.0 entry, kept below as history):',
       'New Activity Feed in the Alliance tab: a reverse-chronological timeline of all co-op events — treasury deposits/withdrawals, credit gifts, station builds/upgrades/claims, and unit loans.',
       'Activity logging: every treasury, gift, station, and loan action now logs to the shared activity feed with player name, event type, and timestamp.',
       'Auto-refresh: the feed refreshes every 60 seconds so members stay in sync.',
