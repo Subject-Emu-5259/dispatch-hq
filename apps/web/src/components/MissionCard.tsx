@@ -19,6 +19,7 @@ import { requiredServicesForMission, unitCommittedElsewhere, dispatchPlanParts }
 import type { Mission, Unit } from '@dispatch-hq/shared';
 import { difficultyTierFor, TIER_META } from '@dispatch-hq/shared';
 import { useNotifications } from './NotificationCenter';
+import { wsClient } from '@/lib/wsClient';
 
 interface MissionCardProps {
   mission: Mission;
@@ -462,6 +463,26 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
               <AlertTriangle className="w-3.5 h-3.5" />
               No available units — build or recall units first.
             </div>
+          )}
+
+          {/* Batch 3c: live mutual aid — ask online alliance members for help.
+              Only when the socket is live and this mission hasn't already
+              asked; the helper's CLEARED BY credit lands via the WS handler
+              in App.tsx. No server money moves — the 60/40 split applies to
+              the local save reward (see lib/mutualAidLive.ts). */}
+          {!isDispatched && !isExpired && (useGameStore.getState().wsConnected) && !(mission as any).aidRequested && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const city = useGameStore.getState().selectedCity?.name ?? '';
+                wsClient.sendMutualAidRequest(mission.id, mission.name, city);
+                updateMission(mission.id, { aidRequested: true } as any);
+                addNotification({ type: 'info', title: 'Aid Requested', message: `Alliance members notified about ${mission.name}`, icon: '🤝', duration: 3000 });
+              }}
+              className="w-full mt-2 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 bg-blue-600/80 text-white hover:bg-blue-600 active:scale-[0.98]"
+            >
+              <Handshake className="w-3.5 h-3.5" /> Request Alliance Aid (60/40 split)
+            </button>
           )}
 
           {/* Dispatch / recall action */}

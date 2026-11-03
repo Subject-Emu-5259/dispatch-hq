@@ -100,4 +100,30 @@ describe('wsClient connection mirroring', () => {
     socket.onclose?.();
     expect(wsClient.isConnected()).toBe(false);
   });
+
+  // Batch 3c (P1-M4): the old client gave up after 5 attempts and never
+  // retried while staying on the same screen. Drive 8 consecutive closes
+  // (each without an open, so attempts accumulate) and prove a 9th
+  // connection is still attempted — retries never give up permanently.
+  it('keeps retrying past 5 failed attempts instead of giving up', () => {
+    vi.useFakeTimers();
+    try {
+      let constructions = 0;
+      (globalThis as any).WebSocket = function (this: unknown, url: string) {
+        constructions++;
+        socket = new FakeWebSocket(url);
+        return socket;
+      };
+      wsClient.connect();
+      expect(constructions).toBe(1);
+      for (let i = 0; i < 8; i++) {
+        socket.onclose?.();
+        vi.runAllTimers();
+      }
+      expect(constructions).toBe(9);
+      expect(wsClient.getReconnectAttempts()).toBe(8);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

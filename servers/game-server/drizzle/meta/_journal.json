@@ -15,6 +15,13 @@
       "when": 1793676752116,
       "tag": "0001_batch1-grant-ledger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793687089921,
+      "tag": "0002_rainy_thunderball",
+      "breakpoints": true
     }
   ]
 }

@@ -8,8 +8,9 @@
 import { Hono } from 'hono';
 import { eq, and, sql } from 'drizzle-orm';
 import { db } from '../db';
-import { stations, allianceMembers, allianceTreasury, allianceTreasuryTransactions, players } from '../db/schema';
+import { stations, stationLeases, allianceMembers, allianceTreasury, allianceTreasuryTransactions, players } from '../db/schema';
 import { logAllianceActivity } from './activity';
+import { validateLeaseTerms, leaseFeeFor, leaseEndDate, leaseEffectiveStatus, leaseRevenueSplit } from '../lib/leases';
 import type { AuthVars } from '../auth/middleware';
 
 const sharedStationsRouter = new Hono<{ Variables: AuthVars }>();
@@ -261,6 +262,14 @@ sharedStationsRouter.post('/:id/claim', async (c) => {
   // double-claim can never double-spend either. The old code checked the
   // balance OUTSIDE the transaction and wrote absolute values for both legs.
   const claimed = await db.transaction(async (tx) => {
+    // Batch 3c: a station under an active lease cannot be claimed — the
+    // lease would be orphaned by the ownership transfer. Checked INSIDE
+    // the transaction so a lease landing mid-claim still blocks it.
+    const activeLease = await tx.select({ id: stationLeases.id })
+      .from(stationLeases)
+      .where(and(eq(stationLeases.stationId, stationId), eq(stationLeases.status, 'active')))
+      .limit(1);
+    if (activeLease.length > 0) return 'leased' as const;
     const transferred = await tx.update(stations)
       .set({ allianceId: null, ownerId: playerId })
       .where(and(eq(stations.id, stationId), eq(stations.allianceId, membership.allianceId)))
@@ -286,6 +295,9 @@ sharedStationsRouter.post('/:id/claim', async (c) => {
     });
     return debited[0];
   });
+  if (claimed === 'leased') {
+    return c.json({ error: 'Station is under an active lease and cannot be claimed until the lease ends' }, 409);
+  }
   if (!claimed) {
     return c.json({ error: 'Station already claimed or insufficient credits' }, 409);
   }
@@ -300,6 +312,137 @@ sharedStationsRouter.post('/:id/claim', async (c) => {
     claimCost,
     playerCredits: claimed.credits,
   });
+});
+
+// ── Batch 3c: shared-station leases ────────────────────────────────────────
+// A lease is tenancy, not ownership: the station stays alliance-owned for
+// the term, the lessee pays an upfront fee (guarded debit → treasury, one
+// transaction, Batch 1 pattern), and revenueSharePct is the treasury's
+// share of future station revenue (pure rule in lib/leases — automated
+// distribution is queued behind the server mission ledger, same blocker as
+// the fastest-response competition board).
+
+// ── GET /api/alliances/shared-stations/leases — alliance leases ────────────
+sharedStationsRouter.get('/leases', async (c) => {
+  const playerId = c.get('playerId');
+  const membership = await getMembership(playerId);
+  if (!membership) return c.json({ error: 'Not in an alliance' }, 403);
+  const rows = await db.select().from(stationLeases)
+    .where(eq(stationLeases.allianceId, membership.allianceId));
+  const now = new Date();
+  return c.json({
+    leases: rows.map((l) => ({
+      id: l.id,
+      stationId: l.stationId,
+      lesseeId: l.lesseeId,
+      termDays: l.termDays,
+      revenueSharePct: l.revenueSharePct,
+      upfrontFee: l.upfrontFee,
+      status: leaseEffectiveStatus(l.status as 'active' | 'ended' | 'expired', l.endsAt, now),
+      startsAt: l.startsAt,
+      endsAt: l.endsAt,
+      // The split rule, shown per lease so members can see the deal:
+      splitFor1000: leaseRevenueSplit(1000, l.revenueSharePct),
+    })),
+  });
+});
+
+// ── POST /api/alliances/shared-stations/leases — lease a shared station ────
+sharedStationsRouter.post('/leases', async (c) => {
+  const playerId = c.get('playerId');
+  const body = (await c.req.json().catch(() => null)) as { stationId?: string; termDays?: number; revenueSharePct?: number } | null;
+  const membership = await getMembership(playerId);
+  if (!membership) return c.json({ error: 'Not in an alliance' }, 403);
+  if (!body || !body.stationId) return c.json({ error: 'stationId is required' }, 400);
+  const termsError = validateLeaseTerms(body.termDays ?? NaN, body.revenueSharePct ?? NaN);
+  if (termsError) return c.json({ error: termsError }, 400);
+  const termDays = body.termDays!;
+  const revenueSharePct = body.revenueSharePct!;
+  const fee = leaseFeeFor(termDays);
+
+  const [station] = await db.select().from(stations)
+    .where(and(eq(stations.id, body.stationId), eq(stations.allianceId, membership.allianceId)))
+    .limit(1);
+  if (!station) return c.json({ error: 'Station not found or not alliance-owned' }, 404);
+
+  await getOrCreateTreasury(membership.allianceId);
+  const now = new Date();
+  try {
+    const leased = await db.transaction(async (tx) => {
+      // Double-lease guard inside the tx (the partial unique index is the
+      // real mutex for the concurrent case — see the catch below).
+      const existing = await tx.select({ id: stationLeases.id }).from(stationLeases)
+        .where(and(eq(stationLeases.stationId, body.stationId!), eq(stationLeases.status, 'active')))
+        .limit(1);
+      if (existing.length > 0) return null;
+      // Guarded debit FIRST (Batch 1 pattern): no balance read outside.
+      const debited = await tx.update(players)
+        .set({ credits: sql`${players.credits} - ${fee}` })
+        .where(and(eq(players.id, playerId), sql`${players.credits} >= ${fee}`))
+        .returning({ credits: players.credits });
+      if (debited.length === 0) return 'insufficient' as const;
+      const credited = await tx.update(allianceTreasury)
+        .set({ balance: sql`${allianceTreasury.balance} + ${fee}`, updatedAt: new Date() })
+        .where(eq(allianceTreasury.allianceId, membership.allianceId))
+        .returning({ balance: allianceTreasury.balance });
+      if (credited.length === 0) return null;
+      await tx.insert(allianceTreasuryTransactions).values({
+        allianceId: membership.allianceId,
+        playerId,
+        delta: fee,
+        reason: 'station_lease',
+        refId: body.stationId!,
+        balanceAfter: credited[0].balance,
+      });
+      const [lease] = await tx.insert(stationLeases).values({
+        stationId: body.stationId!,
+        allianceId: membership.allianceId,
+        lesseeId: playerId,
+        termDays,
+        revenueSharePct,
+        upfrontFee: fee,
+        status: 'active',
+        startsAt: now,
+        endsAt: leaseEndDate(now, termDays),
+      }).returning();
+      return { lease, playerCredits: debited[0].credits, treasuryBalance: credited[0].balance };
+    });
+    if (leased === null) return c.json({ error: 'Station already has an active lease' }, 409);
+    if (leased === 'insufficient') return c.json({ error: 'Insufficient credits for the lease fee' }, 409);
+    void logAllianceActivity(membership.allianceId, playerId, 'station_leased',
+      `Leased ${station.name} for ${termDays} days (${revenueSharePct}% treasury revenue share, ${fee.toLocaleString()} credits fee)`);
+    return c.json({ lease: leased.lease, playerCredits: leased.playerCredits, treasuryBalance: leased.treasuryBalance }, 201);
+  } catch (err) {
+    // Concurrent second lease: the partial unique index rejects it.
+    if (String((err as Error)?.message ?? '').includes('idx_station_leases_one_active')) {
+      return c.json({ error: 'Station already has an active lease' }, 409);
+    }
+    throw err;
+  }
+});
+
+// ── POST /api/alliances/shared-stations/leases/:id/end — end a lease ───────
+sharedStationsRouter.post('/leases/:id/end', async (c) => {
+  const playerId = c.get('playerId');
+  const leaseId = c.req.param('id');
+  const membership = await getMembership(playerId);
+  if (!membership) return c.json({ error: 'Not in an alliance' }, 403);
+  const [lease] = await db.select().from(stationLeases)
+    .where(and(eq(stationLeases.id, leaseId), eq(stationLeases.allianceId, membership.allianceId)))
+    .limit(1);
+  if (!lease) return c.json({ error: 'Lease not found' }, 404);
+  // Lessee may end their own lease; leaders/officers may end any lease.
+  if (lease.lesseeId !== playerId && membership.role !== 'leader' && membership.role !== 'officer') {
+    return c.json({ error: 'Only the lessee or an alliance leader/officer can end a lease' }, 403);
+  }
+  const ended = await db.update(stationLeases)
+    .set({ status: 'ended' })
+    .where(and(eq(stationLeases.id, leaseId), eq(stationLeases.status, 'active')))
+    .returning({ id: stationLeases.id });
+  if (ended.length === 0) return c.json({ error: 'Lease is not active' }, 409);
+  void logAllianceActivity(membership.allianceId, playerId, 'station_lease_ended',
+    `Lease on station ${lease.stationId} ended`);
+  return c.json({ leaseId, ended: true });
 });
 
 export { sharedStationsRouter };

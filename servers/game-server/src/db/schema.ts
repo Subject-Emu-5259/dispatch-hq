@@ -50,6 +50,31 @@ export const stations = pgTable('stations', {
   index('idx_stations_alliance').on(table.allianceId),
 ]);
 
+// Shared-station leases (Batch 3c): an alliance member leases an
+// alliance-owned station for a fixed term. The station STAYS
+// alliance-owned — a lease is tenancy, not a claim — and a station with an
+// active lease cannot be claimed (the claim route checks). The partial
+// unique index is the double-lease mutex: a second concurrent active
+// lease for the same station conflicts instead of double-booking.
+export const stationLeases = pgTable('station_leases', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  stationId: uuid('station_id').references(() => stations.id).notNull(),
+  allianceId: uuid('alliance_id').references(() => alliances.id).notNull(),
+  lesseeId: uuid('lessee_id').references(() => players.id).notNull(),
+  termDays: integer('term_days').notNull(),
+  revenueSharePct: integer('revenue_share_pct').notNull(),
+  upfrontFee: integer('upfront_fee').notNull(),
+  status: varchar('status', { length: 20 }).default('active').notNull(),
+  startsAt: timestamp('starts_at', { withTimezone: true }).defaultNow().notNull(),
+  endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  index('idx_station_leases_station').on(table.stationId),
+  index('idx_station_leases_alliance').on(table.allianceId),
+  index('idx_station_leases_lessee').on(table.lesseeId),
+  uniqueIndex('idx_station_leases_one_active').on(table.stationId).where(sql`status = 'active'`),
+]);
+
 // Units
 export const units = pgTable('units', {
   id: uuid('id').primaryKey().defaultRandom(),

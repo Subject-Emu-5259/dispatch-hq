@@ -33,6 +33,10 @@ class WsClient {
   connect() {
     this.shouldReconnect = true;
     this.reconnectAttempts = 0;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     this.doConnect();
   }
 
@@ -93,17 +97,25 @@ class WsClient {
   private scheduleReconnect() {
     if (this.reconnectTimer) return;
     if (!this.shouldReconnect) return;
-    if (this.reconnectAttempts >= 5) {
-      this.shouldReconnect = false;
-      this.connected = false;
-      return;
-    }
+    // Batch 3c (P1-M4): NEVER give up permanently. The old code set
+    // shouldReconnect = false after 5 attempts, so a ~30s outage left the
+    // chip on gray "Offline" forever until the player left the screen (the
+    // connect effect only re-runs on gameScreen/onlineMode/maintenance
+    // changes). Backoff still caps at 30s; attempts keep counting so the
+    // UI can show how long recovery has been trying, but retries continue
+    // indefinitely while the session wants a connection. Only an explicit
+    // disconnect() stops them.
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
     this.reconnectAttempts++;
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       this.doConnect();
     }, delay);
+  }
+
+  /** Consecutive failed attempts since the last successful open (0 = connected or never tried). */
+  getReconnectAttempts() {
+    return this.reconnectAttempts;
   }
 
   /** Send a message to the server. No-op if the socket isn't open. */
@@ -116,6 +128,21 @@ class WsClient {
   /** Report a unit's live position for the multiplayer relay (throttled by the caller). */
   sendUnitPosition(unitId: string, lat: number, lng: number, speedKmh: number, heading: number) {
     this.send({ type: 'unit_position', unitId, lat, lng, speedKmh, heading });
+  }
+
+  /** Batch 3c — live mutual aid: ask alliance members for help on a mission. */
+  sendMutualAidRequest(missionId: string, missionName: string, city: string) {
+    this.send({ type: 'mutual_aid_request', missionId, missionName, city });
+  }
+
+  /** Batch 3c — live mutual aid: accept another commander's aid request. */
+  sendMutualAidAccept(missionId: string, requesterName: string) {
+    this.send({ type: 'mutual_aid_accept', missionId, requesterName });
+  }
+
+  /** Batch 3c — live mutual aid: report a helper-cleared mission (CLEARED BY credit). */
+  sendMutualAidCleared(missionId: string, helperName: string) {
+    this.send({ type: 'mutual_aid_cleared', missionId, helperName });
   }
 
   /** Send an alliance chat message — the server persists + broadcasts it live. */

@@ -18,6 +18,7 @@ import { alliancesRouter as allianceRoutes } from './routes/alliances';
 import { treasuryRouter } from './routes/treasury';
 import { giftsRouter } from './routes/gifts';
 import { sharedStationsRouter } from './routes/sharedStations';
+import { competitionsRouter } from './routes/competitions';
 import { loansRouter, expireOverdueLoans } from './routes/loans';
 import { activityRouter } from './routes/activity';
 import { adminRoutes } from './routes/admin';
@@ -192,6 +193,8 @@ app.post('/api/alliances/gifts/send', rateLimit({ windowMs: 60_000, max: 5, keyF
 app.post('/api/alliances/shared-stations/build', rateLimit({ windowMs: 60_000, max: 2, keyFn: playerKey }));
 app.post('/api/alliances/shared-stations/:id/upgrade', rateLimit({ windowMs: 60_000, max: 5, keyFn: playerKey }));
 app.post('/api/alliances/shared-stations/:id/claim', rateLimit({ windowMs: 60_000, max: 2, keyFn: playerKey }));
+app.post('/api/alliances/shared-stations/leases', rateLimit({ windowMs: 60_000, max: 5, keyFn: playerKey }));
+app.post('/api/alliances/shared-stations/leases/:id/end', rateLimit({ windowMs: 60_000, max: 5, keyFn: playerKey }));
 
 app.route('/api/player/settings', settingsRoutes);
 app.route('/api/player/saves', saveRoutes);
@@ -209,6 +212,7 @@ app.route('/api/alliances/gifts', giftsRouter);
 app.route('/api/alliances/shared-stations', sharedStationsRouter);
 app.route('/api/alliances/loans', loansRouter);
 app.route('/api/alliances/activity', activityRouter);
+app.route('/api/alliances/competitions', competitionsRouter);
 app.route('/api/promo', promoRoutes);
 app.route('/api/daily-bonus', dailyBonusRoutes);
 app.route('/api/seasonal', seasonalRoutes);

@@ -2910,6 +2910,45 @@ function GameApp() {
       }
     });
 
+    // ── Batch 3c: live mutual-aid network ──
+    // Request → alliance members see a notification and can answer from
+    // their own board (accept is a broadcast, not a mission transfer);
+    // when a helper clears it, the mission card gets the CLEARED BY credit
+    // via the same allianceClearedBy field the co-op board already renders.
+    const unAidRequest = wsClient.onMessage('mutual_aid_request', (msg: ServerMessage) => {
+      if (msg.type !== 'mutual_aid_request') return;
+      addNotification({
+        type: 'dispatch',
+        title: 'Mutual Aid Request',
+        message: `${msg.playerName} needs backup on ${msg.missionName} (${msg.city}) — answer from the Alliance tab`,
+        icon: '🤝',
+        duration: 6000,
+      });
+    });
+    const unAidAccept = wsClient.onMessage('mutual_aid_accept', (msg: ServerMessage) => {
+      if (msg.type !== 'mutual_aid_accept') return;
+      addNotification({
+        type: 'info',
+        title: 'Aid Accepted',
+        message: `${msg.playerName} is answering an aid request`,
+        icon: '🤝',
+        duration: 4000,
+      });
+    });
+    const unAidCleared = wsClient.onMessage('mutual_aid_cleared', (msg: ServerMessage) => {
+      if (msg.type !== 'mutual_aid_cleared') return;
+      useGameStore.getState().updateMission(msg.missionId, {
+        allianceClearedBy: msg.helperName,
+      } as any);
+      addNotification({
+        type: 'success',
+        title: 'Mutual Aid Clear',
+        message: `Cleared by ${msg.helperName} — helper earns the 40% aid share`,
+        icon: '🎉',
+        duration: 4000,
+      });
+    });
+
     const unNearby = wsClient.onMessage('nearby_state', (msg: ServerMessage) => {
       if (msg.type !== 'nearby_state') return;
       setNearbyStations(msg.stations ?? []);
@@ -2963,8 +3002,16 @@ function GameApp() {
               icon: '🌐',
               duration: 4000,
             });
+            // Batch 3c (P1-M4): the old code notified but never reconnected —
+            // a socket that died during maintenance stayed dead. Re-arm here.
+            if (onlineAllowed() && !wsClient.isConnected()) wsClient.connect();
           }
         }
+        // Batch 3c (P1-M4): the poll is also the recovery net for a socket
+        // that died mid-session (wsClient now retries forever, but a poll
+        // re-arm costs nothing and covers a wedged client state). Only when
+        // online play is allowed and the server is not in maintenance.
+        if (!m.maintenance && onlineAllowed() && !wsClient.isConnected()) wsClient.connect();
       } catch {
         // Offline / transient — the next poll or reconnect retries.
       }
@@ -2990,7 +3037,7 @@ function GameApp() {
 
     return () => {
       unConnChange();
-      unauth(); unDelta(); unConfirmed(); unRejected(); unPong(); unNotification(); unAllianceMission(); unAllianceDispatch(); unAllianceCancel(); unAllianceComplete(); unNearby(); unPresence(); unMaintenance();
+      unauth(); unDelta(); unConfirmed(); unRejected(); unPong(); unNotification(); unAllianceMission(); unAllianceDispatch(); unAllianceCancel(); unAllianceComplete(); unAidRequest(); unAidAccept(); unAidCleared(); unNearby(); unPresence(); unMaintenance();
       clearInterval(healthInterval);
       wsClient.disconnect();
       useGameStore.getState().setWsConnected(false);

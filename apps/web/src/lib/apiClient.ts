@@ -1282,6 +1282,65 @@ export async function claimSharedStation(stationId: string): Promise<{ stationId
   });
 }
 
+// ── Batch 3c: alliance competitions + shared-station leases ────────────────
+export interface CompetitionRanking {
+  allianceId: string;
+  rank: number;
+  totalClears: number;
+  manualClears: number;
+  cityClears: number;
+  memberCount: number;
+}
+
+export interface CompetitionsCurrentResponse {
+  weekKey: string;
+  weekStart: string;
+  event: string;
+  source: string;
+  rankings: CompetitionRanking[];
+  mine: CompetitionRanking | null;
+  fastestAverageResponse: { available: boolean; reason: string };
+}
+
+/** This week's most-clears board — server-verified entries only, never client XP. */
+export async function fetchCompetitionsCurrent(): Promise<CompetitionsCurrentResponse> {
+  return apiFetch('/alliances/competitions/current');
+}
+
+export interface StationLeaseEntry {
+  id: string;
+  stationId: string;
+  lesseeId: string;
+  termDays: number;
+  revenueSharePct: number;
+  upfrontFee: number;
+  status: string;
+  startsAt: string;
+  endsAt: string;
+  splitFor1000: { lessee: number; treasury: number };
+}
+
+export async function fetchStationLeases(): Promise<{ leases: StationLeaseEntry[] }> {
+  return apiFetch('/alliances/shared-stations/leases');
+}
+
+export async function createStationLease(args: {
+  stationId: string;
+  termDays: number;
+  revenueSharePct: number;
+}): Promise<{ lease: StationLeaseEntry; playerCredits: number; treasuryBalance: number }> {
+  return apiFetch('/alliances/shared-stations/leases', {
+    method: 'POST',
+    body: JSON.stringify(args),
+  });
+}
+
+export async function endStationLease(leaseId: string): Promise<{ leaseId: string; ended: boolean }> {
+  return apiFetch(`/alliances/shared-stations/leases/${leaseId}/end`, {
+    method: 'POST',
+  });
+}
+
 // ── Alliance Unit Loans (v0.49.0 — Phase 4 co-op endgame) ─────────────────
 
 export interface AllianceLoanEntry {

@@ -33,6 +33,9 @@ const lastAllianceTypingAt = new Map<string, number>();
 // cluster fan-out is the amplification surface a scripted client could spam,
 // so only the broadcast is throttled; the chat poll reconciles ✓✓ within 8s.
 const lastAllianceReceiptAt = new Map<string, number>();
+// Batch 3c: aid-request throttle (1 per 10s per player) — separate map so
+// aid traffic can never eat the chat/spawn throttle budget.
+const lastAidRequestAt = new Map<string, number>();
 
 async function buildStateSnapshot(playerId: string): Promise<GameStateSnapshot | null> {
   const playerRows = await db.select().from(players).where(eq(players.id, playerId)).limit(1);
@@ -507,6 +510,57 @@ export function createWsServer(app: AnyHono): NodeWebSocket {
               } satisfies ServerMessage);
               break;
             }
+            // ── Batch 3c: live mutual-aid network ──────────────────────────
+            // Relay ONLY: the server validates alliance membership, field
+            // presence, and rate, then re-broadcasts to the alliance. It
+            // never moves money and never trusts a client reward number —
+            // helper rewards are applied to the local save by the clients
+            // (split rule in apps/web/src/lib/mutualAidLive.ts), exactly
+            // like every other mission reward. No actionHandler money path
+            // is revived here, so no Batch 1 (P1-M2) hole re-opens.
+            case 'mutual_aid_request': {
+              const allianceId = connectionManager.getAlliance(socket.playerId!);
+              if (!allianceId) break;
+              if (!message.missionId?.trim() || !message.missionName?.trim() || !message.city?.trim()) break;
+              const now = Date.now();
+              if (now - (lastAidRequestAt.get(socket.playerId!) ?? 0) < 10000) break;
+              lastAidRequestAt.set(socket.playerId!, now);
+              connectionManager.broadcastToAlliance(allianceId, {
+                type: 'mutual_aid_request',
+                missionId: message.missionId,
+                missionName: message.missionName,
+                city: message.city,
+                playerName: socket.username ?? 'Commander',
+                allianceId,
+              } satisfies ServerMessage);
+              break;
+            }
+            case 'mutual_aid_accept': {
+              const allianceId = connectionManager.getAlliance(socket.playerId!);
+              if (!allianceId) break;
+              if (!message.missionId?.trim()) break;
+              connectionManager.broadcastToAlliance(allianceId, {
+                type: 'mutual_aid_accept',
+                missionId: message.missionId,
+                requesterName: message.requesterName,
+                playerName: socket.username ?? 'Commander',
+                allianceId,
+              } satisfies ServerMessage);
+              break;
+            }
+            case 'mutual_aid_cleared': {
+              const allianceId = connectionManager.getAlliance(socket.playerId!);
+              if (!allianceId) break;
+              if (!message.missionId?.trim() || !message.helperName?.trim()) break;
+              connectionManager.broadcastToAlliance(allianceId, {
+                type: 'mutual_aid_cleared',
+                missionId: message.missionId,
+                helperName: message.helperName,
+                playerName: socket.username ?? 'Commander',
+                allianceId,
+              } satisfies ServerMessage);
+              break;
+            }
             default: {
               ws.send(JSON.stringify({
                 type: 'action_rejected',
@@ -524,6 +578,7 @@ export function createWsServer(app: AnyHono): NodeWebSocket {
             // entries for departed sockets.
             lastAllianceTypingAt.delete(socket.playerId);
             lastAllianceReceiptAt.delete(socket.playerId);
+            lastAidRequestAt.delete(socket.playerId);
           }
         },
       };

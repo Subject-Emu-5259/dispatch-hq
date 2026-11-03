@@ -18,6 +18,10 @@ export type ClientMessage =
   | { type: 'alliance_mission_spawn'; mission: any; playerName: string; city: string; allianceId: string }
   | { type: 'alliance_mission_dispatch'; missionId: string; playerName: string; unitCount: number; eta: number; service: string }
   | { type: 'alliance_mission_cancel'; missionId: string; playerName: string }
+  // Batch 3c — live mutual aid (client → server; server re-broadcasts to the alliance).
+  | { type: 'mutual_aid_request'; missionId: string; missionName: string; city: string }
+  | { type: 'mutual_aid_accept'; missionId: string; requesterName: string }
+  | { type: 'mutual_aid_cleared'; missionId: string; helperName: string }
   | UnitPositionMessage;
 
 // Server → Client
@@ -42,6 +46,10 @@ export type ServerMessage =
   | { type: 'alliance_mission_dispatch'; missionId: string; playerName: string; unitCount: number; eta: number; service: string }
   | { type: 'alliance_mission_cancel'; missionId: string; playerName: string }
   | { type: 'alliance_mission_complete'; missionId: string; playerName: string; service: string }
+  // Batch 3c — live mutual aid (server → alliance members).
+  | { type: 'mutual_aid_request'; missionId: string; missionName: string; city: string; playerName: string; allianceId: string }
+  | { type: 'mutual_aid_accept'; missionId: string; requesterName: string; playerName: string; allianceId: string }
+  | { type: 'mutual_aid_cleared'; missionId: string; helperName: string; playerName: string; allianceId: string }
   | UnitPositionBroadcast;
 
 /** What a commander is doing right now — shown in the players panel (v0.22.17). */
