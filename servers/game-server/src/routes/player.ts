@@ -74,15 +74,25 @@ export function validateStatsSync(
   submitted: StatsSubmission,
 ): string | null {
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : NaN);
+  // No-row baseline is ZERO, not a free pass: a first-ever sync is gated by the
+  // same per-sync delta caps. Otherwise any fresh token could post the full
+  // absolute cap (1,000,000 missions) on its first sync and top the board —
+  // the exact attack this gate exists to stop (proven live 2026-11-03: a
+  // throwaway guest's first sync of exactly 1,000,000 missions landed).
+  const baseline: StatsSubmission = existing ?? {
+    missionsCompleted: 0,
+    totalCreditsEarned: 0,
+    missionsFailed: 0,
+    mutualAidAnswered: 0,
+    bestResponseTime: 0,
+  };
   for (const key of ['missionsCompleted', 'totalCreditsEarned', 'missionsFailed', 'mutualAidAnswered'] as const) {
     const value = num(submitted[key]);
     if (!Number.isFinite(value) || value < 0) return `${key} must be a non-negative number`;
     if (value > STATS_ABSOLUTE_CAPS[key]) return `${key} exceeds the plausible maximum`;
-    if (existing) {
-      const delta = value - num(existing[key]);
-      if (delta > STATS_DELTA_CAPS[key]) {
-        return `${key} jumped by ${Math.floor(delta)} in one sync — implausible, rejected`;
-      }
+    const delta = value - num(baseline[key]);
+    if (delta > STATS_DELTA_CAPS[key]) {
+      return `${key} jumped by ${Math.floor(delta)} in one sync — implausible, rejected`;
     }
   }
   const brt = num(submitted.bestResponseTime);

@@ -140,6 +140,20 @@ describe('P1-M5 stats plausibility gate', () => {
     expect(validateStatsSync(null, { ...base, missionsCompleted: 1000001 })).toMatch(/plausible maximum/);
   });
 
+  it('rejects a first-ever sync jumping straight to the absolute cap (no free first sync)', () => {
+    // Regression: live 2026-11-03 a throwaway guest's first sync of exactly
+    // 1,000,000 missions landed and ranked on the missions board, because the
+    // delta check only ran when a baseline row already existed.
+    expect(validateStatsSync(null, { ...base, missionsCompleted: 1000000 })).toMatch(/implausible/);
+    expect(validateStatsSync(null, { ...base, missionsCompleted: 501 })).toMatch(/implausible/);
+    expect(validateStatsSync(null, { ...base, totalCreditsEarned: 2000001 })).toMatch(/implausible/);
+  });
+
+  it('accepts a legit small first-ever sync (baseline is zero)', () => {
+    expect(validateStatsSync(null, { missionsCompleted: 5, totalCreditsEarned: 1200, missionsFailed: 1, mutualAidAnswered: 2, bestResponseTime: 300 })).toBeNull();
+    expect(validateStatsSync(null, { missionsCompleted: 500, totalCreditsEarned: 2000000, missionsFailed: 500, mutualAidAnswered: 500, bestResponseTime: 0 })).toBeNull();
+  });
+
   it('rejects impossible best response times (too fast or over a day)', () => {
     expect(validateStatsSync(base, { ...base, bestResponseTime: 2 })).toMatch(/plausible range/);
     expect(validateStatsSync(base, { ...base, bestResponseTime: 90000 })).toMatch(/plausible range/);
