@@ -56,12 +56,12 @@ export function BottomBar({ onOpenShop }: BottomBarProps) {
                 <span className="text-sm font-bold text-yellow-300 font-mono tabular-nums">
                   {(player?.coins || 0).toLocaleString()}
                 </span>
-                <span className="text-[10px] text-gray-500 group-hover:text-yellow-300 transition-colors hidden sm:inline">shop</span>
+                <span className="text-[11px] text-gray-500 group-hover:text-yellow-300 transition-colors hidden sm:inline">shop</span>
               </button>
 
               {player?.isPremium && (
                 <span
-                  className="flex items-center gap-1 text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded px-1.5 py-0.5"
+                  className="flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded px-1.5 py-0.5"
                   title="Commander member"
                 >
                   <Crown className="w-3 h-3" /> ✦
@@ -134,7 +134,7 @@ export function BottomBar({ onOpenShop }: BottomBarProps) {
                     );
                   })}
                   {mainMissions.length > 8 && (
-                    <span className="text-[10px] text-gray-500">+{mainMissions.length - 8}</span>
+                    <span className="text-[11px] text-gray-500">+{mainMissions.length - 8}</span>
                   )}
                 </div>
               )}
@@ -142,7 +142,7 @@ export function BottomBar({ onOpenShop }: BottomBarProps) {
               {/* Mutual Aid requests — labeled, kept out of the department count */}
               {mutualAidCount > 0 && (
                 <span
-                  className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-[10px] font-semibold text-blue-300"
+                  className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-[11px] font-semibold text-blue-300"
                   title="Mutual Aid requests from partner departments (see the labeled section in your call list)"
                 >
                   <Handshake className="w-3 h-3" /> {mutualAidCount}

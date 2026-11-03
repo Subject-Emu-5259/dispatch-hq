@@ -28,6 +28,7 @@ import {
   followUpExchange,
   dialogueSummary,
 } from '@/lib/radioDialogueEngine.lazy';
+import { missionStateLine } from '@/lib/radioMissionLines';
 import { patrolZonesForCity } from '@/lib/patrol/patrolZones';
 
 export type RadioMessage = DialogueMessage & { id: string; timestamp: string };
@@ -66,6 +67,7 @@ export function RadioComms() {
   const logEndRef = useRef<HTMLDivElement>(null);
   const messageIdRef = useRef(0);
   const prevUnitsRef = useRef<Record<string, string>>({});
+  const prevMissionsRef = useRef<Record<string, string>>({});
   const seenDispatchKeysRef = useRef<Set<string>>(new Set());
   const handledKeysAtRef = useRef<Map<string, number>>(new Map());
 
@@ -164,6 +166,25 @@ export function RadioComms() {
     });
     prevUnitsRef.current = prev;
   }, [units, missions, addMessage, addMessages]);
+
+  // Batch 3d: mission-state lines — a mission changing state reads over
+  // the air (on scene, working, all clear, closed without a clear).
+  useEffect(() => {
+    const prev = prevMissionsRef.current;
+    const next: Record<string, string> = {};
+    missions.forEach((m) => {
+      next[m.id] = m.status;
+      const line = missionStateLine(
+        (prev[m.id] as import('@dispatch-hq/shared').MissionStatus | undefined) ?? null,
+        m.status,
+        m.name,
+      );
+      if (line) {
+        addMessage({ from: 'Dispatch', to: 'all', text: `📻 ${line}`, type: 'broadcast' });
+      }
+    });
+    prevMissionsRef.current = next;
+  }, [missions, addMessage]);
 
   // Keep the dialogue engine pointed at the real map: when the selected city
   // / map bounds change, rebuild the zone grid and feed it to the engine so
@@ -277,7 +298,7 @@ export function RadioComms() {
           <div className="relative">
             <button
               onClick={() => setShowServiceFilter(!showServiceFilter)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[9px] bg-gray-800/60 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[11px] bg-gray-800/60 text-gray-400 hover:text-white transition-colors"
             >
               <Filter className="w-3 h-3" />
               <span>{SERVICE_FILTERS.find(f => f.id === serviceFilter)?.label || 'All'}</span>
@@ -289,7 +310,7 @@ export function RadioComms() {
                   <button
                     key={f.id}
                     onClick={() => { setServiceFilter(f.id); setShowServiceFilter(false); }}
-                    className={`w-full text-left px-3 py-1.5 text-[10px] hover:bg-gray-800 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                    className={`w-full text-left px-3 py-1.5 text-[11px] hover:bg-gray-800 transition-colors first:rounded-t-lg last:rounded-b-lg ${
                       serviceFilter === f.id ? 'bg-gray-800 text-white' : 'text-gray-400'
                     }`}
                   >
@@ -303,7 +324,7 @@ export function RadioComms() {
           <select
             value={selectedUnit}
             onChange={e => setSelectedUnit(e.target.value)}
-            className="px-2 py-1 rounded text-[9px] bg-gray-800/60 text-gray-400 border border-gray-700/30 focus:outline-none focus:border-dispatch-red/50"
+            className="px-2 py-1 rounded text-[11px] bg-gray-800/60 text-gray-400 border border-gray-700/30 focus:outline-none focus:border-dispatch-red/50"
           >
             <option value="all">All Units</option>
             {units.map(unit => {
@@ -318,7 +339,7 @@ export function RadioComms() {
 
           <button
             onClick={() => setBroadcastMode(!broadcastMode)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] transition-all ${
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] transition-all ${
               broadcastMode
                 ? 'bg-dispatch-red/20 text-dispatch-red border border-dispatch-red/30'
                 : 'bg-gray-800/60 text-gray-400 hover:text-white'
@@ -330,7 +351,7 @@ export function RadioComms() {
 
           <button
             onClick={() => setAutoChatter(!autoChatter)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] transition-all ${
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] transition-all ${
               autoChatter
                 ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                 : 'bg-gray-800/60 text-gray-500'
@@ -341,7 +362,7 @@ export function RadioComms() {
           </button>
 
           <div className="flex-1" />
-          <span className="text-[8px] text-gray-600">
+          <span className="text-[11px] text-gray-600">
             {filteredMessages.length} messages
           </span>
         </div>
@@ -353,7 +374,7 @@ export function RadioComms() {
           <div className="flex flex-col items-center justify-center py-12 text-gray-600">
             <Radio className="w-6 h-6 mb-2" />
             <p className="text-xs text-gray-400">Radio is quiet</p>
-            <p className="text-[10px] text-gray-600 mt-1">Traffic will appear when units are in the field</p>
+            <p className="text-[11px] text-gray-600 mt-1">Traffic will appear when units are in the field</p>
           </div>
         ) : (
           filteredMessages.map((msg, i) => {
@@ -365,7 +386,7 @@ export function RadioComms() {
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`flex items-start gap-2 px-2 py-1.5 rounded-md text-[10px] ${
+                className={`flex items-start gap-2 px-2 py-1.5 rounded-md text-[11px] ${
                   msg.type === 'broadcast'
                     ? 'bg-dispatch-red/10 border border-dispatch-red/20'
                     : msg.type === 'dispatch'
@@ -376,7 +397,7 @@ export function RadioComms() {
                 } ${isSelf ? 'ml-4' : ''}`}
                 ref={isLast ? logEndRef : undefined}
               >
-                <span className="text-[8px] text-gray-600 font-mono shrink-0 mt-0.5 w-14">
+                <span className="text-[11px] text-gray-600 font-mono shrink-0 mt-0.5 w-14">
                   {msg.timestamp}
                 </span>
 
@@ -396,18 +417,18 @@ export function RadioComms() {
                       {msg.from}
                     </span>
                     <span className="text-gray-600">→</span>
-                    <span className="text-gray-400 text-[9px]">
+                    <span className="text-gray-400 text-[11px]">
                       {msg.to === 'all' ? 'All Units' : msg.to}
                     </span>
                     {msg.type === 'broadcast' && (
-                      <span className="text-[8px] px-1 py-0 rounded bg-dispatch-red/20 text-dispatch-red font-medium">ALL</span>
+                      <span className="text-[11px] px-1 py-0 rounded bg-dispatch-red/20 text-dispatch-red font-medium">ALL</span>
                     )}
                   </div>
                   <p className="text-gray-300 mt-0.5 leading-relaxed">{msg.text}</p>
                 </div>
 
                 {msg.service && (
-                  <span className={`text-[8px] px-1 py-0 rounded shrink-0 ${
+                  <span className={`text-[11px] px-1 py-0 rounded shrink-0 ${
                     msg.service === 'police' ? 'bg-blue-500/10 text-blue-400' :
                     msg.service === 'fire' ? 'bg-red-500/10 text-red-400' :
                     'bg-green-500/10 text-green-400'
@@ -451,7 +472,7 @@ export function RadioComms() {
         {broadcastMode && (
           <div className="flex items-center gap-1 mt-1">
             <AlertTriangle className="w-3 h-3 text-dispatch-red" />
-            <p className="text-[9px] text-dispatch-red/80">
+            <p className="text-[11px] text-dispatch-red/80">
               Broadcasting to all active units. Message will be received by {activeUnits.length} unit(s) in the field.
             </p>
           </div>

@@ -97,7 +97,7 @@ export function StressMeter({ activeMissions, failedMissions, availableUnits, is
       >
         <Icon className={`w-4 h-4 ${level.color}`} />
         <div className="flex flex-col items-start">
-          <span className="text-[10px] text-gray-500 font-medium uppercase">Stress</span>
+          <span className="text-[11px] text-gray-500 font-medium uppercase">Stress</span>
           <div className="flex items-center gap-1.5">
             <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
               <motion.div
@@ -106,7 +106,7 @@ export function StressMeter({ activeMissions, failedMissions, availableUnits, is
                 transition={{ duration: 0.5 }}
               />
             </div>
-            <span className={`text-[10px] font-bold ${level.color}`}>
+            <span className={`text-[11px] font-bold ${level.color}`}>
               {level.label === 'Critical' && <span className="mr-0.5 animate-pulse" aria-hidden>⚠</span>}
               {Math.round(stress)}%
             </span>
@@ -130,15 +130,15 @@ export function StressMeter({ activeMissions, failedMissions, availableUnits, is
             </div>
 
             <div className="space-y-2 mb-3">
-              <div className="flex justify-between text-[10px]">
+              <div className="flex justify-between text-[11px]">
                 <span className="text-gray-400">Active Missions</span>
                 <span className="text-white">{activeMissions}</span>
               </div>
-              <div className="flex justify-between text-[10px]">
+              <div className="flex justify-between text-[11px]">
                 <span className="text-gray-400">Failed Missions</span>
                 <span className="text-red-400">{failedMissions}</span>
               </div>
-              <div className="flex justify-between text-[10px]">
+              <div className="flex justify-between text-[11px]">
                 <span className="text-gray-400">Available Units</span>
                 <span className="text-green-400">{availableUnits}</span>
               </div>
@@ -146,19 +146,19 @@ export function StressMeter({ activeMissions, failedMissions, availableUnits, is
 
             {/* What this level means + how to recover (v0.28.0) */}
             <div className={`border-t border-gray-800 pt-2 ${stress >= 60 ? 'bg-red-500/5 rounded-lg mt-1 -mx-1 px-1' : ''}`}>
-              <p className="text-[10px] text-gray-500 font-medium mb-1 flex items-center gap-1">
+              <p className="text-[11px] text-gray-500 font-medium mb-1 flex items-center gap-1">
                 <AlertTriangle className={`w-3 h-3 ${level.color}`} /> Consequence
               </p>
-              <p className={`text-[10px] ${stress >= 60 ? 'text-amber-300/90' : 'text-gray-400'}`}>
+              <p className={`text-[11px] ${stress >= 60 ? 'text-amber-300/90' : 'text-gray-400'}`}>
                 {CONSEQUENCES[level.label]}
               </p>
             </div>
 
             <div className="border-t border-gray-800 pt-2 mt-1">
-              <p className="text-[10px] text-gray-500 font-medium mb-1.5">Recovery per tick</p>
+              <p className="text-[11px] text-gray-500 font-medium mb-1.5">Recovery per tick</p>
               <div className="space-y-0.5">
                 {STRESS_MECHANICS.map((m) => (
-                  <div key={m.label} className="flex justify-between text-[10px]">
+                  <div key={m.label} className="flex justify-between text-[11px]">
                     <span className="text-gray-400">{m.label}</span>
                     <span className={`font-mono font-bold ${m.cls}`}>{m.change}</span>
                   </div>
@@ -167,15 +167,15 @@ export function StressMeter({ activeMissions, failedMissions, availableUnits, is
             </div>
 
             <div className="border-t border-gray-800 pt-2 mt-1">
-              <p className="text-[10px] text-gray-500 font-medium mb-1">💡 Tip:</p>
-              <p className="text-[10px] text-gray-400">
+              <p className="text-[11px] text-gray-500 font-medium mb-1">💡 Tip:</p>
+              <p className="text-[11px] text-gray-400">
                 {STRESS_TIPS[Math.floor(Math.random() * STRESS_TIPS.length)]}
               </p>
             </div>
 
             {/* Mini stress graph */}
             <div className="mt-3">
-              <p className="text-[9px] text-gray-500 mb-1">History</p>
+              <p className="text-[11px] text-gray-500 mb-1">History</p>
               <div className="flex items-end gap-[1px] h-6">
                 {stressHistory.map((val, i) => (
                   <div

@@ -245,7 +245,7 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
                 >
                   <s.icon className={`w-5 h-5 shrink-0 ${s.color}`} />
                   <div className="min-w-0">
-                    <p className="text-[9px] uppercase tracking-wider text-gray-500 truncate">{s.label}</p>
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 truncate">{s.label}</p>
                     <p className={`text-sm font-bold ${s.color}`}>{s.value}</p>
                   </div>
                 </div>
@@ -253,7 +253,7 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
 
               {/* Completion rate bar */}
               <div className="col-span-2 p-3 rounded-xl bg-gray-800/40 border border-gray-700/30">
-                <div className="flex justify-between text-[10px] mb-1.5">
+                <div className="flex justify-between text-[11px] mb-1.5">
                   <span className="text-gray-400">Shift Clearance Rate</span>
                   <span className="text-dispatch-green font-semibold">{completionRate}%</span>
                 </div>
@@ -276,10 +276,10 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
                 <div className="px-5 pb-5 pt-0">
                   <div className="rounded-xl bg-dispatch-red/5 border border-dispatch-red/20 p-3">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-dispatch-red flex items-center gap-1.5">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-dispatch-red flex items-center gap-1.5">
                         <Trophy className="w-3.5 h-3.5" /> Seasonal Contest
                       </p>
-                      <span className="text-[9px] text-gray-400">
+                      <span className="text-[11px] text-gray-400">
                         {ev ? `${ev.icon} ${ev.name}` : 'Holiday Event'}
                         {timeLeft && (
                           <span className="ml-1.5 font-semibold text-amber-300/90">⏳ {timeLeft}</span>
@@ -296,9 +296,9 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
                       )}
                     </p>
                     <div className="flex items-center justify-between mt-1.5">
-                      <p className="text-[9px] text-gray-500">Full standings: Leaderboard → Seasonal tab.</p>
+                      <p className="text-[11px] text-gray-500">Full standings: Leaderboard → Seasonal tab.</p>
                       {contestTotal && (
-                        <p className="text-[9px] font-semibold text-dispatch-red">
+                        <p className="text-[11px] font-semibold text-dispatch-red">
                           {contestTotal.rank ? `#${contestTotal.rank} · ` : ''}{contestTotal.calls} total
                         </p>
                       )}
@@ -313,17 +313,17 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
               <div className="px-5 pb-5 pt-0">
                 <div className="rounded-xl bg-gray-800/40 border border-gray-700/30 p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
                       <Flame className="w-3.5 h-3.5 text-orange-400" /> Neighborhood Heat
                     </p>
-                    <span className="text-[9px] text-gray-500">{totalZoneCalls} calls this shift</span>
+                    <span className="text-[11px] text-gray-500">{totalZoneCalls} calls this shift</span>
                   </div>
                   <div className="space-y-1.5">
                     {zoneRows.map((row) => {
                       const pct = totalZoneCalls > 0 ? Math.round((row.calls / totalZoneCalls) * 100) : 0;
                       return (
                         <div key={row.id} className="flex items-center gap-2">
-                          <span className="w-28 shrink-0 truncate text-[10px] text-gray-300" title={row.name}>{row.name}</span>
+                          <span className="w-28 shrink-0 truncate text-[11px] text-gray-300" title={row.name}>{row.name}</span>
                           <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                             <motion.div
                               className="h-full bg-gradient-to-r from-orange-500 via-red-500 to-red-600 rounded-full"
@@ -332,8 +332,8 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
                               transition={{ duration: 0.5, ease: 'easeOut' }}
                             />
                           </div>
-                          <span className="w-5 shrink-0 text-right text-[10px] font-bold text-orange-300">{row.calls}</span>
-                          <span className="w-14 shrink-0 text-right text-[9px] text-gray-500" title="Patrol coverage">{row.patrolKm.toFixed(1)} km</span>
+                          <span className="w-5 shrink-0 text-right text-[11px] font-bold text-orange-300">{row.calls}</span>
+                          <span className="w-14 shrink-0 text-right text-[11px] text-gray-500" title="Patrol coverage">{row.patrolKm.toFixed(1)} km</span>
                         </div>
                       );
                     })}
@@ -420,7 +420,7 @@ function DebriefOverlay({ open, onClose, summary, fatigueActive, rankLabel, copi
             className="w-full max-w-md bg-gray-900 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden max-h-[88vh] flex flex-col"
           >
             <div className="relative bg-gradient-to-br from-dispatch-cyan/20 via-gray-900 to-gray-900 px-6 pt-6 pb-5 border-b border-gray-800 shrink-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-dispatch-cyan">End of Shift</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-dispatch-cyan">End of Shift</p>
               <h2 className="text-xl font-black text-white mt-1">Debrief — {rankLabel}</h2>
               <p className="text-[11px] text-gray-400 mt-1">A summary of the shift, ready to share.</p>
             </div>
@@ -428,27 +428,27 @@ function DebriefOverlay({ open, onClose, summary, fatigueActive, rankLabel, copi
             <div className="p-5 space-y-4 overflow-y-auto">
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
-                  <p className="text-[9px] uppercase tracking-wider text-gray-500">Clearance</p>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500">Clearance</p>
                   <p className="text-lg font-bold text-dispatch-green">{Math.round(summary.clearanceRate * 100)}%</p>
                 </div>
                 <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
-                  <p className="text-[9px] uppercase tracking-wider text-gray-500">Best Response</p>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500">Best Response</p>
                   <p className="text-lg font-bold text-white">{summary.bestResponseSec != null ? formatTimer(summary.bestResponseSec) : '--:--'}</p>
                 </div>
               </div>
 
               <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
-                <p className="text-[9px] uppercase tracking-wider text-gray-500 mb-1">Busiest Neighborhood</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">Busiest Neighborhood</p>
                 <p className="text-sm font-bold text-orange-300">{summary.topZone ?? '—'}</p>
               </div>
 
               {tierRows.length > 0 && (
                 <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
-                  <p className="text-[9px] uppercase tracking-wider text-gray-500 mb-2">Difficulty Mix</p>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-2">Difficulty Mix</p>
                   <div className="space-y-1.5">
                     {tierRows.map((k) => (
                       <div key={k} className="flex items-center gap-2">
-                        <span className="w-20 shrink-0 text-[10px] text-gray-300 capitalize">{TIER_LABELS[k]}</span>
+                        <span className="w-20 shrink-0 text-[11px] text-gray-300 capitalize">{TIER_LABELS[k]}</span>
                         <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                           <motion.div
                             className="h-full bg-gradient-to-r from-dispatch-cyan to-dispatch-red rounded-full"
@@ -457,7 +457,7 @@ function DebriefOverlay({ open, onClose, summary, fatigueActive, rankLabel, copi
                             transition={{ duration: 0.5, ease: 'easeOut' }}
                           />
                         </div>
-                        <span className="w-5 text-right text-[10px] font-bold text-gray-300">{summary.tierMix[k]}</span>
+                        <span className="w-5 text-right text-[11px] font-bold text-gray-300">{summary.tierMix[k]}</span>
                       </div>
                     ))}
                   </div>
@@ -466,7 +466,7 @@ function DebriefOverlay({ open, onClose, summary, fatigueActive, rankLabel, copi
 
               {summary.unitLeaders.length > 0 && (
                 <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
-                  <p className="text-[9px] uppercase tracking-wider text-gray-500 mb-2">Unit Leaders</p>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-2">Unit Leaders</p>
                   <div className="space-y-1">
                     {summary.unitLeaders.map((u, i) => (
                       <div key={i} className="flex items-center justify-between">
@@ -482,13 +482,13 @@ function DebriefOverlay({ open, onClose, summary, fatigueActive, rankLabel, copi
               {summary.avgFatigue != null && (
                 <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[9px] uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5 text-amber-400" /> Crew Condition
                     </p>
-                    <span className="text-[9px] text-gray-500">{summary.crewHoursRidden.toFixed(1)}h ridden</span>
+                    <span className="text-[11px] text-gray-500">{summary.crewHoursRidden.toFixed(1)}h ridden</span>
                   </div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-24 shrink-0 text-[10px] text-gray-400">Avg fatigue</span>
+                    <span className="w-24 shrink-0 text-[11px] text-gray-400">Avg fatigue</span>
                     <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                       <motion.div
                         className={`h-full rounded-full ${summary.avgFatigue >= 70 ? 'bg-red-500' : summary.avgFatigue >= 40 ? 'bg-amber-500' : 'bg-emerald-500'}`}
@@ -497,10 +497,10 @@ function DebriefOverlay({ open, onClose, summary, fatigueActive, rankLabel, copi
                         transition={{ duration: 0.5, ease: 'easeOut' }}
                       />
                     </div>
-                    <span className="w-9 shrink-0 text-right text-[10px] font-bold text-gray-200">{Math.round(summary.avgFatigue)}%</span>
+                    <span className="w-9 shrink-0 text-right text-[11px] font-bold text-gray-200">{Math.round(summary.avgFatigue)}%</span>
                   </div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="w-24 shrink-0 text-[10px] text-gray-400">Peak fatigue</span>
+                    <span className="w-24 shrink-0 text-[11px] text-gray-400">Peak fatigue</span>
                     <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                       <motion.div
                         className="h-full bg-gradient-to-r from-amber-500 to-red-600 rounded-full"
@@ -509,9 +509,9 @@ function DebriefOverlay({ open, onClose, summary, fatigueActive, rankLabel, copi
                         transition={{ duration: 0.5, ease: 'easeOut' }}
                       />
                     </div>
-                    <span className="w-9 shrink-0 text-right text-[10px] font-bold text-gray-200">{summary.peakFatigue}%</span>
+                    <span className="w-9 shrink-0 text-right text-[11px] font-bold text-gray-200">{summary.peakFatigue}%</span>
                   </div>
-                  <p className="text-[10px] text-gray-400 flex items-center gap-1.5">
+                  <p className="text-[11px] text-gray-400 flex items-center gap-1.5">
                     <BatteryLow className="w-3 h-3 text-gray-500" />
                     {fatigueActive
                       ? `Morale events: ${summary.overworkEvents} overwork · ${summary.moraleBoosts} training boosts · ${summary.restEvents} rest breaks`

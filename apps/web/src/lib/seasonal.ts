@@ -50,6 +50,36 @@ export const SEASONAL_EVENTS: SeasonalEvent[] = [
     },
   },
   {
+    // Batch 3d: winter storm season — ice, chimney fires, and pile-ups.
+    id: 'winter-storm',
+    name: 'Winter Storm Season',
+    icon: '❄️',
+    window: { start: { month: 1, day: 12 }, end: { month: 1, day: 18 } },
+    boostedTemplates: ['chimney_fire', 'vehicle_accident', 'fall_rescue', 'medical_call'],
+    rewardMult: 1.5,
+    badge: {
+      key: 'seasonal_winter_storm',
+      name: 'Storm Watch',
+      description: 'Held the line through Winter Storm Season.',
+      icon: '❄️',
+    },
+  },
+  {
+    // Batch 3d: summer wildfire season — brush, wildfire, and heat calls.
+    id: 'summer-wildfire',
+    name: 'Summer Wildfire Season',
+    icon: '🔥',
+    window: { start: { month: 8, day: 10 }, end: { month: 8, day: 16 } },
+    boostedTemplates: ['wildfire', 'brush_fire', 'heatstroke_response', 'room_fire'],
+    rewardMult: 1.5,
+    badge: {
+      key: 'seasonal_summer_wildfire',
+      name: 'Wildfire Line',
+      description: 'Held the line through Summer Wildfire Season.',
+      icon: '🔥',
+    },
+  },
+  {
     // Halloween 2026: Oct 26 – Nov 1 (UTC, inclusive). Starts the day before
     // the Oct 27 launch so the event is live for launch week, and covers
     // Oct 31 itself. Contest + badges follow the established pattern:

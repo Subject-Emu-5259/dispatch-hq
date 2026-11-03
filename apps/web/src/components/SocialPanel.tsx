@@ -129,7 +129,7 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white">Friends & Community</h2>
-                <p className="text-[10px] text-gray-500">{friends.length} friends · {incoming.length} pending</p>
+                <p className="text-[11px] text-gray-500">{friends.length} friends · {incoming.length} pending</p>
               </div>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors">
@@ -144,7 +144,7 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
 
             {/* Add friend */}
             <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1.5">
                 <UserPlus className="w-3 h-3" /> Add a Friend
               </p>
               <div className="relative">
@@ -166,19 +166,19 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
                       <div key={r.id} className="flex items-center justify-between px-3 py-1.5 bg-gray-900 border border-gray-700/40 rounded-lg">
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-white truncate">{r.username}</p>
-                          <p className="text-[10px] text-gray-500">{rankForLevel(r.level).icon} {rankForLevel(r.level).title} · Lv {r.level}</p>
+                          <p className="text-[11px] text-gray-500">{rankForLevel(r.level).icon} {rankForLevel(r.level).title} · Lv {r.level}</p>
                         </div>
                         {isMe ? (
-                          <span className="text-[10px] text-gray-600">You</span>
+                          <span className="text-[11px] text-gray-600">You</span>
                         ) : isFriend ? (
-                          <span className="text-[10px] text-blue-400">Friend ✓</span>
+                          <span className="text-[11px] text-blue-400">Friend ✓</span>
                         ) : isOutgoing ? (
-                          <span className="text-[10px] text-gray-500">Requested</span>
+                          <span className="text-[11px] text-gray-500">Requested</span>
                         ) : (
                           <button
                             onClick={() => doSend(r.username)}
                             disabled={busy === r.username}
-                            className="px-2.5 py-1 bg-blue-500 text-white text-[10px] font-bold rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+                            className="px-2.5 py-1 bg-blue-500 text-white text-[11px] font-bold rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
                           >
                             {busy === r.username ? '…' : 'Add'}
                           </button>
@@ -189,14 +189,14 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
                 </div>
               )}
               {query.trim().length >= 2 && results.length === 0 && (
-                <p className="mt-2 text-[10px] text-gray-600">No players found.</p>
+                <p className="mt-2 text-[11px] text-gray-600">No players found.</p>
               )}
             </div>
 
             {/* Incoming requests */}
             {incoming.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Requests ({incoming.length})</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Requests ({incoming.length})</p>
                 <div className="space-y-1.5">
                   {incoming.map((r) => (
                     <div key={r.id} className="flex items-center justify-between px-3 py-2 bg-gray-800/40 border border-amber-500/20 rounded-xl">
@@ -204,7 +204,7 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
                         <p className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
                           <span>{r.avatarEmoji || '🚨'}</span> {r.username}
                         </p>
-                        <p className="text-[10px] text-gray-500">{rankForLevel(r.level).icon} {rankForLevel(r.level).title} · Lv {r.level}</p>
+                        <p className="text-[11px] text-gray-500">{rankForLevel(r.level).icon} {rankForLevel(r.level).title} · Lv {r.level}</p>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button
@@ -232,7 +232,7 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
 
             {/* Friends list */}
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Friends ({friends.length})</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Friends ({friends.length})</p>
               {friends.length === 0 && (
                 <div className="text-center py-6 bg-gray-800/30 border border-gray-800/40 rounded-xl">
                   <p className="text-2xl mb-1">🤝</p>
@@ -248,7 +248,7 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-semibold text-white truncate">{f.username}</p>
-                        <p className="text-[10px] text-gray-500">{rankForLevel(f.level).icon} {rankForLevel(f.level).title} · Lv {f.level}</p>
+                        <p className="text-[11px] text-gray-500">{rankForLevel(f.level).icon} {rankForLevel(f.level).title} · Lv {f.level}</p>
                       </div>
                     </div>
                     <button
@@ -264,7 +264,7 @@ export function SocialPanel({ isOpen, onClose }: SocialPanelProps) {
               </div>
             </div>
 
-            <p className="text-[10px] text-gray-600 text-center">
+            <p className="text-[11px] text-gray-600 text-center">
               Signed in as <span className="text-gray-400">{player?.username ?? 'guest'}</span> · {myAvatar} profile
             </p>
           </div>

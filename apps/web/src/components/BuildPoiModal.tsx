@@ -220,7 +220,7 @@ export function BuildPoiModal({ isOpen, onClose, pendingLocation }: BuildPoiModa
                             <div className="flex-1">
                               <h3 className="font-semibold text-white flex items-center gap-2">
                                 City General Hospital
-                                <span className="px-1.5 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-[9px] font-bold text-emerald-300">
+                                <span className="px-1.5 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-[11px] font-bold text-emerald-300">
                                   1 PER CITY
                                 </span>
                               </h3>
@@ -250,7 +250,7 @@ export function BuildPoiModal({ isOpen, onClose, pendingLocation }: BuildPoiModa
                             <div className="flex-1">
                               <h3 className="font-semibold text-white flex items-center gap-2">
                                 Air Ambulance Helipad
-                                <span className="px-1.5 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-[9px] font-bold text-amber-300">
+                                <span className="px-1.5 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-[11px] font-bold text-amber-300">
                                   1 PER CITY
                                 </span>
                               </h3>
@@ -286,7 +286,7 @@ export function BuildPoiModal({ isOpen, onClose, pendingLocation }: BuildPoiModa
                                   <span className="text-xl">{m.icon}</span>
                                   <div className="min-w-0">
                                     <h3 className="font-semibold text-white text-xs truncate">{m.label}</h3>
-                                    <p className="text-[10px] text-amber-400 font-mono">
+                                    <p className="text-[11px] text-amber-400 font-mono">
                                       💰 {POI_BUILD_COST.toLocaleString()}
                                     </p>
                                   </div>
@@ -394,7 +394,7 @@ export function RemovePoiButton({ poiId, onDone }: { poiId: string; onDone?: () 
     <button
       onClick={() => { removePoi(poiId); onDone?.(); }}
       className="mt-2 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg
-                 border border-red-500/30 bg-red-500/10 text-[10px] font-semibold text-red-300
+                 border border-red-500/30 bg-red-500/10 text-[11px] font-semibold text-red-300
                  hover:bg-red-500/20 transition-colors"
       title="Remove this landmark"
     >

@@ -50,7 +50,7 @@ export function WeatherStatusStrip() {
         <p className="text-xs font-bold text-white truncate flex-1">
           {weatherEvent.icon} {weatherEvent.name}
         </p>
-        <span className="text-[10px] font-mono text-sky-300 shrink-0">
+        <span className="text-[11px] font-mono text-sky-300 shrink-0">
           {formatTimer(secondsLeft)}
         </span>
       </div>
@@ -60,7 +60,7 @@ export function WeatherStatusStrip() {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <p className="mt-1 text-[9px] text-gray-400 leading-snug">
+      <p className="mt-1 text-[11px] text-gray-400 leading-snug">
         {weatherEvent.effect} — severe weather shifts the call mix and response speed until it clears.
       </p>
     </div>

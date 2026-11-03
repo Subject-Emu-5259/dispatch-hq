@@ -33,8 +33,12 @@ import { WeatherOverlay } from './components/WeatherOverlay';
 import { useGameStore } from './stores/gameStore';
 const AuthScreen = lazy(() => import('./components/AuthScreen').then((m) => ({ default: m.AuthScreen })));
 import { apiFetch, syncCareerStats, setUnauthorizedHandler, fetchMyAlliance, fetchPendingGrants, ackGrants, reportSeasonalClear } from './lib/apiClient';
-import { useSaveSystem, loadGame, hasSaveGame, saveGame, refreshSaveSlots, clearLocalSaveCache, deleteSaveGame, setActiveSlot, wasSessionActive, markSessionActive, clearSessionActive, getSavedPlayerBaseline, setSavedPlayerBaseline, loadAppliedGrantIds, saveAppliedGrantIds, type SaveSlotId } from './hooks/useSaveSystem';
+import { useSaveSystem, loadGame, hasSaveGame, saveGame, refreshSaveSlots, clearLocalSaveCache, deleteSaveGame, setActiveSlot, wasSessionActive, markSessionActive, clearSessionActive, getSavedPlayerBaseline, setSavedPlayerBaseline, loadAppliedGrantIds, saveAppliedGrantIds, lastSaveFailure, type SaveSlotId } from './hooks/useSaveSystem';
 import { useAchievements } from './hooks/useAchievements';
+import { useBatch3dSync } from './hooks/useBatch3dSync';
+import { OfflineBanner } from './components/OfflineBanner';
+import { SAVE_FAILURE_COPY } from './lib/saveFailure';
+import { fogBonusMultiplier, FOG_ZONE_COUNT } from './lib/fogExploration';
 const AIDispatch = lazy(() => import('./components/AIDispatch').then((m) => ({ default: m.AIDispatch })));
 const UnifiedDispatchCenter = lazy(() => import('./components/UnifiedDispatchCenter').then((m) => ({ default: m.UnifiedDispatchCenter })));
 const RadioComms = lazy(() => import('./components/RadioComms').then((m) => ({ default: m.RadioComms })));
@@ -353,12 +357,16 @@ function GameApp() {
     onStatus: (status) => {
       // Autosave outcomes: warn on the first failure of a streak, confirm recovery.
       if (status === 'failed') {
+        // Batch 3d: three-way save-failure copy (offline / too-large /
+        // stale / auth / server) — never a connectivity message for a
+        // too-large or stale save.
+        const copy = SAVE_FAILURE_COPY[lastSaveFailure()];
         addNotification({
           type: 'warning',
-          title: 'Auto Save Failed',
-          message: 'Could not reach dispatch cloud — retrying. Recent progress may not be saved.',
+          title: copy.title,
+          message: copy.message,
           icon: '⚠️',
-          duration: 5000,
+          duration: 8000,
         });
       } else if (status === 'recovered') {
         addNotification({
@@ -529,6 +537,7 @@ function GameApp() {
 
   // ── Achievement engine ──
   useAchievements(gameScreen === 'playing');
+  useBatch3dSync(gameScreen === 'playing');
 
   useEffect(() => {
     refreshSaveSlots().then(() => setSaveExists(hasSaveGame()));
@@ -2036,6 +2045,7 @@ function GameApp() {
                 techRewardMult: getMissionRewardMultiplier(),
                 stationRewardMult,
                 seasonalMult: seasonalRewardMult(),
+                fogRewardMult: fogBonusMultiplier(useGameStore.getState().fogRevealed.length, FOG_ZONE_COUNT),
                 premiumMult: premiumCreditMultiplier(p.isPremium ?? false),
                 districtRewardMult: districtMultForRewards,
                 waveRewardMult: waveRewardMultForStage(m.waveStage),
@@ -3358,7 +3368,7 @@ function GameApp() {
         <button
           onClick={() => setShowPlayersPanel(true)}
           title="Commanders Online — who's on duty right now"
-          className={`pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border backdrop-blur-md shadow-lg cursor-pointer transition-transform active:scale-[0.97] ${
+          className={`pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border backdrop-blur-md shadow-lg cursor-pointer transition-transform active:scale-[0.97] ${
             maintenance
               ? 'bg-amber-900/70 border-amber-500/40 text-amber-300'
               : wsConnected
@@ -3380,12 +3390,12 @@ function GameApp() {
             <button
               onClick={() => { wsClient.connect(); setLastWsAttemptAt(Date.now()); }}
               title="Reconnect to the dispatch server now"
-              className="px-2.5 py-1 rounded-full text-[10px] font-semibold border border-gray-700/50 bg-gray-900/70 text-gray-300 backdrop-blur-md shadow-lg cursor-pointer hover:bg-gray-800 active:scale-[0.97]"
+              className="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-gray-700/50 bg-gray-900/70 text-gray-300 backdrop-blur-md shadow-lg cursor-pointer hover:bg-gray-800 active:scale-[0.97]"
             >
               Reconnect
             </button>
             {lastWsAttemptAt && (
-              <span className="text-[9px] text-gray-500">
+              <span className="text-[11px] text-gray-500">
                 Last attempt {new Date(lastWsAttemptAt).toLocaleTimeString()}
               </span>
             )}
@@ -3410,7 +3420,7 @@ function GameApp() {
         // top-[128px]: parked just below the map zoom controls (which sit at
         // 56px) so this floating chip never covers the +/− buttons.
         return (
-          <div className={`absolute top-[128px] ${isSidebarOpen ? 'left-80' : 'left-4'} z-[40] flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold border bg-gray-800/80 border-gray-600 ${cfg.color}`}>
+          <div className={`absolute top-[128px] ${isSidebarOpen ? 'left-80' : 'left-4'} z-[40] flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold border bg-gray-800/80 border-gray-600 ${cfg.color}`}>
             <span>{cfg.icon}</span>
             <span className="text-white">{cfg.label}</span>
             <span className="text-gray-500">·</span>
@@ -3419,6 +3429,7 @@ function GameApp() {
         );
       })()}
 
+      <OfflineBanner />
       <TopBar
         activeTab={activeNavTab}
         onTabChange={handleTabChange}
@@ -3499,13 +3510,13 @@ function GameApp() {
             </div>
             <button
               onClick={() => toggleRadio()}
-              className="px-2 py-1 rounded text-[10px] bg-gray-800/60 hover:bg-gray-700 text-gray-300 transition-colors"
+              className="px-2 py-1 rounded text-[11px] bg-gray-800/60 hover:bg-gray-700 text-gray-300 transition-colors"
             >
               Close
             </button>
           </div>
           <div className="flex-1 min-h-0 p-2 overflow-hidden">
-            <Suspense fallback={<div className="h-full flex items-center justify-center text-[10px] text-gray-500">Opening radio…</div>}>
+            <Suspense fallback={<div className="h-full flex items-center justify-center text-[11px] text-gray-500">Opening radio…</div>}>
               <RadioComms />
             </Suspense>
           </div>
@@ -3670,6 +3681,7 @@ function GameApp() {
           mapCenter={[selectedCity.lat, selectedCity.lng]}
           stations={stations.map(s => ({ lat: s.position.lat, lng: s.position.lng }))}
           missions={missions.map(m => ({ lat: m.location.lat, lng: m.location.lng }))}
+          units={units.filter(u => u.position).map(u => ({ lat: u.position!.lat, lng: u.position!.lng }))}
           isVisible={showFogOfWar}
           onToggle={() => setShowFogOfWar(!showFogOfWar)}
         />

@@ -53,7 +53,7 @@ export function ReleaseNotesModal({ isOpen, onClose }: ReleaseNotesModalProps) {
           <div className="flex items-center gap-3">
             <Newspaper className="w-5 h-5 text-dispatch-cyan" />
             <h2 className="text-lg font-bold text-white">Release Notes</h2>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-dispatch-cyan/15 text-dispatch-cyan border border-dispatch-cyan/30 font-bold">
+            <span className="text-[11px] px-1.5 py-0.5 rounded bg-dispatch-cyan/15 text-dispatch-cyan border border-dispatch-cyan/30 font-bold">
               v{currentVersion()}
             </span>
           </div>
@@ -66,9 +66,9 @@ export function ReleaseNotesModal({ isOpen, onClose }: ReleaseNotesModalProps) {
             <div key={i} className="bg-gray-800/40 border border-gray-700/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-bold text-white">{note.title}</h3>
-                <span className="text-[10px] text-gray-500">{note.version}</span>
+                <span className="text-[11px] text-gray-500">{note.version}</span>
               </div>
-              <p className="text-[10px] text-gray-500 mb-2">{note.date}</p>
+              <p className="text-[11px] text-gray-500 mb-2">{note.date}</p>
               <ul className="space-y-1">
                 {note.items.map((item, j) => (
                   <li key={j} className="text-xs text-gray-300 flex items-start gap-2">
@@ -80,7 +80,7 @@ export function ReleaseNotesModal({ isOpen, onClose }: ReleaseNotesModalProps) {
             </div>
           ))}
         </div>
-        <p className="text-center text-[10px] text-gray-600 mt-4">
+        <p className="text-center text-[11px] text-gray-600 mt-4">
           More updates coming. Keep dispatching.
         </p>
       </motion.div>

@@ -60,7 +60,7 @@ export function SignupPausedNotice({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <p className="text-[10px] text-amber-400/90 leading-snug">
+      <p className="text-[11px] text-amber-400/90 leading-snug">
         <span className="font-semibold">New signups are temporarily paused.</span>{' '}
         {countdown
           ? <>Reopens in <span className="font-mono font-bold text-amber-300">{countdown}</span>.</>
@@ -72,7 +72,7 @@ export function SignupPausedNotice({ compact = false }: { compact?: boolean }) {
   return (
     <div className="px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
       <p className="text-[11px] text-amber-300 leading-snug">
-        <span className="font-bold uppercase tracking-wider text-[9px]">Signups paused</span>
+        <span className="font-bold uppercase tracking-wider text-[11px]">Signups paused</span>
         <br />
         New account creation is temporarily closed.
         {countdown

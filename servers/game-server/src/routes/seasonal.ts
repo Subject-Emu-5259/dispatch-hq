@@ -28,6 +28,9 @@ interface SeasonalWindow {
 export const SEASONAL_WINDOWS: SeasonalWindow[] = [
   { id: 'independence-day', start: { month: 7, day: 1 }, end: { month: 7, day: 6 } },
   { id: 'christmas', start: { month: 12, day: 24 }, end: { month: 12, day: 26 } },
+  // Batch 3d: generic-season windows (mirror apps/web/src/lib/seasonal.ts).
+  { id: 'winter-storm', start: { month: 1, day: 12 }, end: { month: 1, day: 18 } },
+  { id: 'summer-wildfire', start: { month: 8, day: 10 }, end: { month: 8, day: 16 } },
   // Halloween 2026: Oct 26 – Nov 1 (UTC, inclusive) — live for the Oct 27
   // launch week run-up and Oct 31 itself. Mirrors the client entry exactly.
   { id: 'halloween', start: { month: 10, day: 26 }, end: { month: 11, day: 1 } },
@@ -38,6 +41,8 @@ export const SEASONAL_WINDOW_LABELS: Record<string, string> = {
   'independence-day': 'Fourth of July',
   christmas: 'Christmas Holiday',
   halloween: 'Halloween',
+  'winter-storm': 'Winter Storm Season',
+  'summer-wildfire': 'Summer Wildfire Season',
 };
 
 function dayKey(month: number, day: number): number {

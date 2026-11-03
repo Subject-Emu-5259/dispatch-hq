@@ -247,11 +247,11 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
           Primary department first, cross-service requirements tinted so the
           crossover need reads at a glance (v0.22.13). */}
       <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-        <span className="text-[9px] uppercase tracking-wider text-gray-500">Needs</span>
+        <span className="text-[11px] uppercase tracking-wider text-gray-500">Needs</span>
         {dispatchPlanParts(mission).map((p) => (
           <span
             key={p.label}
-            className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border ${
+            className={`px-1.5 py-0.5 rounded text-[11px] font-semibold border ${
               p.crossover
                 ? p.service === 'fire'
                   ? 'bg-red-500/15 text-red-400 border-red-500/30'
@@ -269,7 +269,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
 
       {/* Status badge */}
       {isDispatched && (
-        <div className={`mt-2 px-2 py-0.5 rounded text-[10px] font-medium inline-flex items-center gap-1 ${
+        <div className={`mt-2 px-2 py-0.5 rounded text-[11px] font-medium inline-flex items-center gap-1 ${
           isInProgress 
             ? 'bg-dispatch-red/20 text-dispatch-red border border-dispatch-red/30'
             : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
@@ -290,8 +290,8 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
             />
           </div>
           <div className="flex items-center justify-between mt-0.5">
-            <span className="text-[10px] text-gray-500">Progress</span>
-            <span className="text-[10px] text-gray-400 font-mono">{Math.round(progressPercent)}%</span>
+            <span className="text-[11px] text-gray-500">Progress</span>
+            <span className="text-[11px] text-gray-400 font-mono">{Math.round(progressPercent)}%</span>
           </div>
         </div>
       )}
@@ -299,7 +299,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
       {/* Stats Row — wraps to a second line on narrow cards so chips never overflow. */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 py-1.5 px-2 bg-gray-800/40 rounded-lg">
         {isMutualAid && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-300" title="Belongs to another department — answering it earns a +25% mutual aid bonus">
+          <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-blue-300" title="Belongs to another department — answering it earns a +25% mutual aid bonus">
             <Handshake className="w-2.5 h-2.5" /> Mutual Aid +25%
           </span>
         )}
@@ -312,11 +312,11 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
 
         <div className={`flex items-center gap-1 ${getDifficultyColor(mission.difficulty)}`}>
           <span className="text-[11px] font-medium">Lv.{mission.difficulty}</span>
-          <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold ${tierMeta.chipClass}`}>
+          <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] font-semibold ${tierMeta.chipClass}`}>
             {tierMeta.icon} {tierMeta.label}
           </span>
           {mission.chainId && mission.chainStage && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-cyan-400">
+            <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-cyan-400">
               🔗 CHAIN {mission.chainStage}/{mission.chainTotal}
             </span>
           )}
@@ -353,7 +353,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                 const { required, selected } = requirementSatisfaction(t);
                 const met = selected >= required;
                 return (
-                  <span key={t} className={`px-2 py-0.5 text-[10px] border rounded-full ${met ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-dispatch-red/20 text-dispatch-red border-dispatch-red/30'}`}>
+                  <span key={t} className={`px-2 py-0.5 text-[11px] border rounded-full ${met ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-dispatch-red/20 text-dispatch-red border-dispatch-red/30'}`}>
                     {selected}/{required}× {t.replace('_', ' ')}
                   </span>
                 );
@@ -369,14 +369,14 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                 if (candidates.length === 0) return null;
                 return (
                   <div key={reqType}>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">{reqType.replace('_', ' ')}</p>
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">{reqType.replace('_', ' ')}</p>
                     <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
                       {candidates.map(unit => {
                         const crossService = getUnitServiceType(unit.type) !== missionService(mission);
                         return (
                           <label
                             key={unit.id}
-                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-[10px] transition-colors cursor-pointer ${
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] transition-colors cursor-pointer ${
                               selectedUnitIds.has(unit.id) ? 'bg-dispatch-red/20 border border-dispatch-red/30' : 'bg-gray-800/50 hover:bg-gray-800'
                             }`}
                           >
@@ -388,7 +388,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                             />
                             <span className="text-gray-300 flex-1 truncate">{unit.name}</span>
                             {crossService && (
-                              <span className={`px-1 rounded text-[8px] font-bold uppercase ${
+                              <span className={`px-1 rounded text-[11px] font-bold uppercase ${
                                 getUnitServiceType(unit.type) === 'fire' ? 'bg-red-500/20 text-red-400'
                                 : getUnitServiceType(unit.type) === 'ems' ? 'bg-emerald-500/20 text-emerald-400'
                                 : 'bg-blue-500/20 text-blue-400'
@@ -396,7 +396,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                                 {getUnitServiceType(unit.type)}
                               </span>
                             )}
-                            <span className="text-[9px] text-gray-500">{getDistance(unit.position, mission.location).toFixed(1)} km</span>
+                            <span className="text-[11px] text-gray-500">{getDistance(unit.position, mission.location).toFixed(1)} km</span>
                           </label>
                         );
                       })}
@@ -418,7 +418,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                 if (extras.length === 0) return null;
                 return (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">
                       Nearest {answerServices.size > 1 ? 'required-service' : 'ready'} units
                     </p>
                     <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
@@ -427,7 +427,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                         return (
                           <label
                             key={unit.id}
-                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-[10px] transition-colors cursor-pointer ${
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] transition-colors cursor-pointer ${
                               selectedUnitIds.has(unit.id) ? 'bg-dispatch-red/20 border border-dispatch-red/30' : 'bg-gray-800/50 hover:bg-gray-800'
                             }`}
                           >
@@ -439,7 +439,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                             />
                             <span className="text-gray-300 flex-1 truncate">{unit.name}</span>
                             {crossService && (
-                              <span className={`px-1 rounded text-[8px] font-bold uppercase ${
+                              <span className={`px-1 rounded text-[11px] font-bold uppercase ${
                                 getUnitServiceType(unit.type) === 'fire' ? 'bg-red-500/20 text-red-400'
                                 : getUnitServiceType(unit.type) === 'ems' ? 'bg-emerald-500/20 text-emerald-400'
                                 : 'bg-blue-500/20 text-blue-400'
@@ -447,7 +447,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                                 {getUnitServiceType(unit.type)}
                               </span>
                             )}
-                            <span className="text-[9px] text-gray-500">{getDistance(unit.position, mission.location).toFixed(1)} km</span>
+                            <span className="text-[11px] text-gray-500">{getDistance(unit.position, mission.location).toFixed(1)} km</span>
                           </label>
                         );
                       })}
@@ -510,19 +510,19 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
 
 
           {!allRequirementsMet && !isDispatched && !isExpired && (
-            <p className="text-[10px] text-amber-400 mt-2">
+            <p className="text-[11px] text-amber-400 mt-2">
               Recommended: assign at least one unit per requirement for best response.
             </p>
           )}
 
           {isDispatched && mission.assignedUnits.length > 0 && (
             <div className="mt-2 space-y-1">
-              <p className="text-[10px] text-gray-500 mb-1">Assigned units</p>
+              <p className="text-[11px] text-gray-500 mb-1">Assigned units</p>
               {mission.assignedUnits.map(uid => {
                 const unit = units.find(u => u.id === uid);
                 if (!unit) return null;
                 return (
-                  <div key={uid} className="flex items-center gap-2 text-[10px] px-2 py-1 bg-gray-800/60 rounded-md">
+                  <div key={uid} className="flex items-center gap-2 text-[11px] px-2 py-1 bg-gray-800/60 rounded-md">
                     <span className={`w-1.5 h-1.5 rounded-full ${
                       unit.status === 'on_scene' ? 'bg-dispatch-red' : 'bg-amber-400 animate-pulse'
                     }`} />

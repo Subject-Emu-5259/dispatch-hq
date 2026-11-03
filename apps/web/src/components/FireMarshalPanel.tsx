@@ -65,7 +65,7 @@ export default function FireMarshalPanel() {
             <Flame className="w-4 h-4 text-orange-400" />
             Fire Marshal Bureau
           </div>
-          <div className="text-[10px] text-gray-500">{counts.open} open case{counts.open === 1 ? '' : 's'}</div>
+          <div className="text-[11px] text-gray-500">{counts.open} open case{counts.open === 1 ? '' : 's'}</div>
         </div>
         <div className="mt-2 flex items-center gap-2">
           {[
@@ -75,7 +75,7 @@ export default function FireMarshalPanel() {
             <button
               key={k}
               onClick={() => setView(k as 'open' | 'cleared')}
-              className={`text-[10px] px-2 py-1.5 rounded-lg border transition-colors ${
+              className={`text-[11px] px-2 py-1.5 rounded-lg border transition-colors ${
                 view === k ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-900/50 text-gray-400 border-white/10 hover:bg-gray-800'
               }`}
             >
@@ -99,7 +99,7 @@ export default function FireMarshalPanel() {
           <div className="text-center py-10 text-gray-500">
             <FileSearch className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <div className="text-sm">No open investigations.</div>
-            <div className="text-[10px] mt-1">Clear fire scenes to open a marshal case on the cause.</div>
+            <div className="text-[11px] mt-1">Clear fire scenes to open a marshal case on the cause.</div>
           </div>
         )}
         {filtered.map((inv) => (
@@ -117,7 +117,7 @@ export default function FireMarshalPanel() {
 
 function CardBadge({ text, cls }: { text: string; cls: string }) {
   return (
-    <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${cls}`}>
+    <span className={`text-[11px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${cls}`}>
       {text}
     </span>
   );
@@ -134,7 +134,7 @@ function InvestigationCard({ inv, reward, onFileReport }: { inv: FireInvestigati
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold text-white truncate">{inv.structure}</span>
-            <span className="text-[9px] text-gray-500">Lv {inv.difficulty}</span>
+            <span className="text-[11px] text-gray-500">Lv {inv.difficulty}</span>
           </div>
           <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-300">
             <MapPin className="w-3 h-3 text-gray-500 shrink-0" />
@@ -142,11 +142,11 @@ function InvestigationCard({ inv, reward, onFileReport }: { inv: FireInvestigati
           </div>
           <div className="mt-1.5 grid grid-cols-2 gap-2 text-xs">
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Opened</div>
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Opened</div>
               <div className="text-gray-200">{formatDuration(Date.now() - inv.openedAt)} ago</div>
             </div>
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1">
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1">
                 {inv.status === 'open' ? <AlertTriangle className="w-2.5 h-2.5" /> : <BadgeCheck className="w-2.5 h-2.5" />} Status
               </div>
               <div className="text-gray-200">{inv.status === 'open' ? 'Under investigation' : 'Case closed'}</div>
@@ -158,7 +158,7 @@ function InvestigationCard({ inv, reward, onFileReport }: { inv: FireInvestigati
           {inv.status === 'open' && (
             <button
               onClick={onFileReport}
-              className="text-[10px] mt-0.5 px-2 py-1 rounded bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/30 transition-colors flex items-center gap-1"
+              className="text-[11px] mt-0.5 px-2 py-1 rounded bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/30 transition-colors flex items-center gap-1"
             >
               <ClipboardCheck className="w-3 h-3" /> File Report · ${reward.toLocaleString()}
             </button>

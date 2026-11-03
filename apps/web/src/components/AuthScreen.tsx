@@ -185,7 +185,7 @@ export function AuthScreen({ onAuthed }: AuthScreenProps) {
             )}
             {guestLoading ? 'Connecting...' : 'Quick Play'}
           </motion.button>
-          <p className="text-center text-[10px] text-gray-600 mt-2">
+          <p className="text-center text-[11px] text-gray-600 mt-2">
             {hasSave ? 'Pick up where you left off, or start fresh as a guest.' : 'Jump in as a guest — progress saved per device.'}
           </p>
         </div>
@@ -193,7 +193,7 @@ export function AuthScreen({ onAuthed }: AuthScreenProps) {
         {/* Divider */}
         <div className="flex items-center gap-3 px-8 py-2">
           <div className="flex-1 h-px bg-gray-800" />
-          <span className="text-[10px] text-gray-600 font-medium">OR</span>
+          <span className="text-[11px] text-gray-600 font-medium">OR</span>
           <div className="flex-1 h-px bg-gray-800" />
         </div>
 

@@ -400,11 +400,11 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
       antialias: true,
     });
 
-    m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+    // Batch 3d: NavigationControl lives bottom-right now — the old top-left
+    // slot (offset to 56px) collided with the service chip at top-[128px]
+    // when the sidebar was open. ScaleControl keeps bottom-left.
+    m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
     m.addControl(new maplibregl.ScaleControl(), 'bottom-left');
-
-    const navControl = m.getContainer().querySelector('.maplibregl-ctrl-top-left') as HTMLElement;
-    if (navControl) navControl.style.top = '56px';
 
     m.on('load', () => {
       setMapLoaded(true);
@@ -2078,11 +2078,11 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
       )}
       {showPatrolHeat && (
         <div className="absolute top-2 right-2 z-10 rounded-lg bg-gray-950/85 border border-gray-700/50 px-2.5 py-1.5 backdrop-blur-sm pointer-events-none">
-          <p className="text-[9px] font-bold text-gray-300 uppercase tracking-wider mb-1">Crime Heat</p>
+          <p className="text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">Crime Heat</p>
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] text-gray-500">Low</span>
+            <span className="text-[11px] text-gray-500">Low</span>
             <div className="w-20 h-1.5 rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" />
-            <span className="text-[9px] text-gray-500">High</span>
+            <span className="text-[11px] text-gray-500">High</span>
           </div>
         </div>
       )}
@@ -2113,10 +2113,10 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold text-[13px] text-white leading-tight">{popupPoi.name}</h3>
                 <div className="flex items-center gap-1 mt-1">
-                  <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-400 border border-gray-700/40">
+                  <span className="text-[11px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-400 border border-gray-700/40">
                     {POI_TYPE_META[popupPoi.type].label}
                   </span>
-                  <span className="text-[9px] text-gray-600 flex items-center gap-0.5">
+                  <span className="text-[11px] text-gray-600 flex items-center gap-0.5">
                     <MapPin className="w-2.5 h-2.5" /> landmark
                   </span>
                 </div>
@@ -2131,7 +2131,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
             </div>
 
             {/* Incidents at this place */}
-            <p className="px-3 pb-1 text-[9px] uppercase tracking-wider text-gray-500">
+            <p className="px-3 pb-1 text-[11px] uppercase tracking-wider text-gray-500">
               {popupPoiAnchored.length > 0 ? 'Active incidents here' : 'Active incidents'}
             </p>
             <div className="px-3 pb-3 max-h-40 overflow-y-auto">
@@ -2147,9 +2147,9 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                       <span className="text-sm shrink-0">{mm.icon || '🚨'}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-[11px] text-gray-200 truncate">{mm.name}</span>
-                        <span className="block text-[9px] text-gray-500">{tier?.icon} {tier?.label}</span>
+                        <span className="block text-[11px] text-gray-500">{tier?.icon} {tier?.label}</span>
                       </span>
-                      <span className={`text-[10px] font-mono shrink-0 ${mm.timeRemaining < 120 ? 'text-red-400 font-bold' : 'text-gray-400'}`}>
+                      <span className={`text-[11px] font-mono shrink-0 ${mm.timeRemaining < 120 ? 'text-red-400 font-bold' : 'text-gray-400'}`}>
                         {formatTimer(mm.timeRemaining)}
                       </span>
                     </button>
@@ -2166,7 +2166,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                     >
                       <span className="text-sm shrink-0">{mm.icon || '🚨'}</span>
                       <span className="min-w-0 flex-1 text-[11px] text-gray-200 truncate">{mm.name}</span>
-                      <span className={`text-[10px] font-mono shrink-0 ${mm.timeRemaining < 120 ? 'text-red-400 font-bold' : 'text-gray-400'}`}>
+                      <span className={`text-[11px] font-mono shrink-0 ${mm.timeRemaining < 120 ? 'text-red-400 font-bold' : 'text-gray-400'}`}>
                         {formatTimer(mm.timeRemaining)}
                       </span>
                     </button>
@@ -2228,10 +2228,10 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                   />
                 </div>
                 <div className="flex items-center gap-1 mt-1">
-                  <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-400 border border-gray-700/40">
+                  <span className="text-[11px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-400 border border-gray-700/40">
                     {popupFacilityData.kind === 'hospital' ? 'Emergency Room' : 'Air Ambulance Helipad'}
                   </span>
-                  <span className="text-[9px] text-gray-600 flex items-center gap-0.5">
+                  <span className="text-[11px] text-gray-600 flex items-center gap-0.5">
                     <MapPin className="w-2.5 h-2.5" />
                     {popupFacilityData.kind === 'hospital'
                       ? `$${HOSPITAL_BUILD_COST.toLocaleString()}`
@@ -2252,7 +2252,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
             {popupFacilityData.kind === 'hospital' ? (
               <div className="px-3 pb-2 space-y-1.5">
                 <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-gray-900/70 border border-gray-800">
-                  <span className="text-[10px] text-gray-400">Beds</span>
+                  <span className="text-[11px] text-gray-400">Beds</span>
                   <span className={`text-[11px] font-mono font-semibold ${
                     facilityErStats && facilityErStats.occupied >= facilityErStats.beds ? 'text-red-400' : 'text-emerald-400'
                   }`}>
@@ -2260,13 +2260,13 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                   </span>
                 </div>
                 <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-gray-900/70 border border-gray-800">
-                  <span className="text-[10px] text-gray-400">Ward</span>
+                  <span className="text-[11px] text-gray-400">Ward</span>
                   <span className="text-[11px] font-mono text-emerald-400">
                     Lv {wardLevel(hospital!)}/{HOSPITAL_WARD_MAX_LEVEL} · {hospital!.beds} base beds
                   </span>
                 </div>
                 <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-gray-900/70 border border-gray-800">
-                  <span className="text-[10px] text-gray-400">ER Staff</span>
+                  <span className="text-[11px] text-gray-400">ER Staff</span>
                   <span className="text-[11px] font-mono text-cyan-400">{facilityErStats?.staff ?? 0} nurses</span>
                 </div>
                 {/* ER fatigue warning — capacity sags as the shift wears on, so
@@ -2282,7 +2282,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                       ? 'Overworked nurses are rotating off the floor — effective beds are sagging. Open the Hospital tab for a nurse rotation.'
                       : 'Shift fatigue is building — nurses start rotating off at 70/100.'}
                   >
-                    <span className={`text-[10px] ${facilityErStats.nursesRotatingOff ? 'text-amber-300 font-bold' : 'text-gray-400'}`}>
+                    <span className={`text-[11px] ${facilityErStats.nursesRotatingOff ? 'text-amber-300 font-bold' : 'text-gray-400'}`}>
                       {facilityErStats.nursesRotatingOff ? '⚠ ER fatigued · capacity sagging' : 'ER staff tiring'}
                     </span>
                     <span className={`text-[11px] font-mono ${facilityErStats.nursesRotatingOff ? 'text-amber-300' : 'text-amber-400/80'}`}>
@@ -2292,7 +2292,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                 )}
                 {facilityErStats && facilityErStats.recovered > 0 && (
                   <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-gray-900/70 border border-gray-800">
-                    <span className="text-[10px] text-gray-400">Recovered this shift</span>
+                    <span className="text-[11px] text-gray-400">Recovered this shift</span>
                     <span className="text-[11px] font-mono text-emerald-400">{facilityErStats.recovered}</span>
                   </div>
                 )}
@@ -2300,7 +2300,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                   <button
                     onClick={handlePopupWardUpgrade}
                     disabled={!wardCanAfford}
-                    className="w-full px-2 py-1.5 rounded-lg text-[10px] font-semibold bg-emerald-600/80 text-white hover:bg-emerald-600 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    className="w-full px-2 py-1.5 rounded-lg text-[11px] font-semibold bg-emerald-600/80 text-white hover:bg-emerald-600 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                     title={wardCanAfford
                       ? `Add ${WARD_BEDS_PER_LEVEL} beds to the base ward for ${nextWardCost.toLocaleString()} credits.`
                       : `Insufficient credits — ward upgrade costs ${nextWardCost.toLocaleString()} credits.`}
@@ -2308,7 +2308,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                     ⬆ Upgrade Ward — {nextWardCost.toLocaleString()} 💰 · +{WARD_BEDS_PER_LEVEL} beds
                   </button>
                 )}
-                <p className="pt-1 text-[9px] uppercase tracking-wider text-gray-500">What this ER does</p>
+                <p className="pt-1 text-[11px] uppercase tracking-wider text-gray-500">What this ER does</p>
                 <ul className="space-y-1">
                   {[
                     'All EMS victims transport here after scenes clear',
@@ -2320,7 +2320,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                       ? 'Critical patients airlift to your helipad'
                       : 'Build the Air Ambulance Helipad to airlift critical patients',
                   ].map((f) => (
-                    <li key={f} className="flex items-start gap-1.5 text-[10px] text-gray-400">
+                    <li key={f} className="flex items-start gap-1.5 text-[11px] text-gray-400">
                       <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
                       <span className="leading-snug">{f}</span>
                     </li>
@@ -2330,12 +2330,12 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
             ) : (
               <div className="px-3 pb-2 space-y-1.5">
                 <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-gray-900/70 border border-gray-800">
-                  <span className="text-[10px] text-gray-400">Status</span>
-                  <span className={`text-[10px] font-semibold ${hospital ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  <span className="text-[11px] text-gray-400">Status</span>
+                  <span className={`text-[11px] font-semibold ${hospital ? 'text-emerald-400' : 'text-amber-400'}`}>
                     {hospital ? 'Ready — air ambulance on standby' : 'Needs the ER built'}
                   </span>
                 </div>
-                <p className="pt-1 text-[9px] uppercase tracking-wider text-gray-500">What this pad does</p>
+                <p className="pt-1 text-[11px] uppercase tracking-wider text-gray-500">What this pad does</p>
                 <ul className="space-y-1">
                   {[
                     'Critical EMS victims are airlifted here — ~200 km/h, about 4× road speed',
@@ -2344,7 +2344,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                       ? 'Airlifts land here whenever an EMS scene clears critical'
                       : 'Build the City General Hospital to enable airlift transports',
                   ].map((f) => (
-                    <li key={f} className="flex items-start gap-1.5 text-[10px] text-gray-400">
+                    <li key={f} className="flex items-start gap-1.5 text-[11px] text-gray-400">
                       <span className="text-amber-500 mt-0.5 shrink-0">✈</span>
                       <span className="leading-snug">{f}</span>
                     </li>
@@ -2396,16 +2396,16 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold text-[13px] text-white leading-tight">{popupMissionLive.name}</h3>
                 <div className="flex items-center gap-1 mt-1 flex-wrap">
-                  <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-400 border border-gray-700/40">
+                  <span className="text-[11px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-400 border border-gray-700/40">
                     {popupMissionLive.category}
                   </span>
                   {popupTier && (
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded border font-semibold ${popupTier.chipClass}`}>
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded border font-semibold ${popupTier.chipClass}`}>
                       {popupTier.icon} {popupTier.label}
                     </span>
                   )}
                   {popupMissionLive.priority && (
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded border font-semibold uppercase ${PRIORITY_STYLE[popupMissionLive.priority] || PRIORITY_STYLE.medium}`}>
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded border font-semibold uppercase ${PRIORITY_STYLE[popupMissionLive.priority] || PRIORITY_STYLE.medium}`}>
                       {popupMissionLive.priority}
                     </span>
                   )}
@@ -2442,7 +2442,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
             {popupReqTypes.length > 0 && (
               <div className="px-3 pb-2 flex flex-wrap gap-1">
                 {popupReqTypes.map((t) => (
-                  <span key={t} className="px-1.5 py-0.5 text-[9px] rounded-full bg-gray-800/80 text-gray-300 border border-gray-700/40">
+                  <span key={t} className="px-1.5 py-0.5 text-[11px] rounded-full bg-gray-800/80 text-gray-300 border border-gray-700/40">
                     {t.replace(/_/g, ' ')}
                   </span>
                 ))}
@@ -2453,11 +2453,11 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                 picked. Primary department first; cross-service requirements
                 tinted so the crossover need reads at a glance (v0.22.13). */}
             <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
-              <span className="text-[9px] uppercase tracking-wider text-gray-500">Needs</span>
+              <span className="text-[11px] uppercase tracking-wider text-gray-500">Needs</span>
               {dispatchPlanParts(popupMissionLive).map((p) => (
                 <span
                   key={p.label}
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border ${
+                  className={`px-1.5 py-0.5 rounded text-[11px] font-semibold border ${
                     p.crossover
                       ? p.service === 'fire'
                         ? 'bg-red-500/15 text-red-400 border-red-500/30'
@@ -2476,17 +2476,17 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
             {/* Quick dispatch — nearest units */}
             <div className="border-t border-gray-800 p-3">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[9px] uppercase tracking-wider text-gray-500">Quick Dispatch · Nearest</p>
+                <p className="text-[11px] uppercase tracking-wider text-gray-500">Quick Dispatch · Nearest</p>
                 {!popupDispatched && !popupCpuHandled && (
-                  <span className="text-[9px] text-gray-600">{dispatchCandidates.length}/{maxDispatchUnits} limit</span>
+                  <span className="text-[11px] text-gray-600">{dispatchCandidates.length}/{maxDispatchUnits} limit</span>
                 )}
               </div>
               {popupCpuHandled ? (
-                <div className="flex items-center gap-1.5 mb-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/25">
+                <div className="flex items-center gap-1.5 mb-1 px-2 py-1.5 rounded-lg text-[11px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/25">
                   🏙️ City responding — the partner agency is handling this call automatically.
                 </div>
               ) : popupDispatched ? (
-                <div className={`flex items-center gap-1.5 mb-1 px-2 py-1.5 rounded-lg text-[10px] font-medium ${
+                <div className={`flex items-center gap-1.5 mb-1 px-2 py-1.5 rounded-lg text-[11px] font-medium ${
                   popupMissionLive.status === 'en_route'
                     ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
                     : 'bg-dispatch-red/15 text-dispatch-red border border-dispatch-red/25'
@@ -2499,7 +2499,7 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
               ) : dispatchCandidates.length > 0 ? (
                 <>
                   {popupPartialCrew && (
-                    <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-lg text-[10px] font-medium opacity-60 border border-dashed border-amber-500/40 bg-amber-500/10 text-amber-300">
+                    <div className="flex items-center gap-1.5 mb-2 px-2 py-1.5 rounded-lg text-[11px] font-medium opacity-60 border border-dashed border-amber-500/40 bg-amber-500/10 text-amber-300">
                       ⚠ Needs backup: {popupBackupServices.map(serviceDisplayName).join(' + ')} — dispatch sends a partial crew.
                     </div>
                   )}
@@ -2513,8 +2513,8 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                             {UNIT_CONFIGS[unit.type]?.icon || '🚛'}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-semibold text-white truncate">{unit.name}</p>
-                            <p className="text-[8px] text-gray-500 capitalize">
+                            <p className="text-[11px] font-semibold text-white truncate">{unit.name}</p>
+                            <p className="text-[11px] text-gray-500 capitalize">
                               {unit.type.replace(/_/g, ' ')}
                               {(() => {
                                 const usvc = getUnitServiceType(unit.type);
@@ -2532,13 +2532,13 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                             </p>
                           </div>
                           <div className="text-right shrink-0">
-                            <p className="text-[9px] font-mono text-gray-300">{distKm.toFixed(1)} km</p>
+                            <p className="text-[11px] font-mono text-gray-300">{distKm.toFixed(1)} km</p>
                             {etaLoading ? (
-                              <p className="text-[8px] font-mono text-cyan-400 animate-pulse">ETA ~{formatTimer(etaSec)}…</p>
+                              <p className="text-[11px] font-mono text-cyan-400 animate-pulse">ETA ~{formatTimer(etaSec)}…</p>
                             ) : routeEta != null ? (
-                              <p className="text-[8px] font-mono text-cyan-400">ETA {formatTimer(routeEta)}</p>
+                              <p className="text-[11px] font-mono text-cyan-400">ETA {formatTimer(routeEta)}</p>
                             ) : (
-                              <p className="text-[8px] font-mono text-cyan-400">ETA ~{formatTimer(etaSec)}</p>
+                              <p className="text-[11px] font-mono text-cyan-400">ETA ~{formatTimer(etaSec)}</p>
                             )}
                           </div>
                         </div>
@@ -2546,11 +2546,11 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
                     })}
                   </div>
                   {requirementHint && (
-                    <p className="text-[9px] text-amber-400/90 mb-2">{requirementHint}</p>
+                    <p className="text-[11px] text-amber-400/90 mb-2">{requirementHint}</p>
                   )}
                 </>
               ) : (
-                <p className="text-[10px] text-amber-400 mb-2">
+                <p className="text-[11px] text-amber-400 mb-2">
                   {popupServiceUnitCount > 0
                     ? 'All units busy — wait for one to return or recall one from the roster.'
                     : 'No available units — build or recall a unit first.'}

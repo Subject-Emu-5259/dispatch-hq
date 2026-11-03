@@ -375,10 +375,10 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
                       </div>
                       {trait && (
                         <div className="mt-1 flex items-center gap-1.5">
-                          <span className="inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          <span className="inline-block px-1.5 py-0.5 text-[11px] font-semibold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
                             {trait.name}
                           </span>
-                          <span className="text-[10px] text-gray-500 truncate">
+                          <span className="text-[11px] text-gray-500 truncate">
                             {trait.description}
                           </span>
                         </div>
@@ -470,7 +470,7 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
           className="mt-6 block rounded-xl border border-gray-800/60 bg-gray-800/30 px-4 py-3
                      text-center transition-colors hover:border-dispatch-red/40 hover:bg-gray-800/50 group"
         >
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-dispatch-red transition-colors">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-dispatch-red transition-colors">
             🎮 {itchPromoLabel()}
           </p>
           <p className="text-[11px] text-gray-400 mt-0.5">

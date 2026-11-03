@@ -90,31 +90,31 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
               buttonClassName="p-0.5 rounded hover:bg-white/10 text-gray-500 hover:text-gray-200 transition-colors shrink-0"
             />
           </div>
-          <p className="text-[9px] text-gray-500 truncate flex items-center gap-1">
+          <p className="text-[11px] text-gray-500 truncate flex items-center gap-1">
             <span>{config?.name || unit.type}</span>
             <span className="text-gray-700">·</span>
             <Gauge className="w-2.5 h-2.5" />
             <span>{getUnitCurrentSpeedMph(unit)} mph</span>
           </p>
         </div>
-        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${meta.color} ${
+        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${meta.color} ${
           unit.status === 'available' ? 'bg-green-500/15'
             : unit.status === 'en_route' ? 'bg-cyan-500/15'
             : unit.status === 'on_scene' ? 'bg-red-500/15'
             : 'bg-gray-700/40'}`}>
           {meta.label.toUpperCase()}
         </span>
-        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">
+        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">
           Lv {unit.trainingLevel}
         </span>
-        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25" title={`Veterancy XP: ${unit.veterancyXp ?? 0}${veterancyXpToNext(unit.veterancyXp) != null ? ` · ${veterancyXpToNext(unit.veterancyXp)} XP to next rank` : ' · max rank'}`}>
+        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25" title={`Veterancy XP: ${unit.veterancyXp ?? 0}${veterancyXpToNext(unit.veterancyXp) != null ? ` · ${veterancyXpToNext(unit.veterancyXp)} XP to next rank` : ' · max rank'}`}>
           {veterancyRankFor(unit.veterancyXp).toUpperCase()}
         </span>
       </div>
 
       {/* Training — unit is off-duty at its station */}
       {isTraining(unit) && (
-        <div className="mt-1.5 flex items-center gap-1 text-[9px] text-yellow-300">
+        <div className="mt-1.5 flex items-center gap-1 text-[11px] text-yellow-300">
           <GraduationCap className="w-3 h-3 shrink-0" />
           <span className="truncate">Training to Lv {unit.trainingLevel + 1} — {formatTimer(trainingRemainingSec(unit))}</span>
         </div>
@@ -122,7 +122,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
 
       {/* Batch 3a academy — certs held, course in progress, free enrollment */}
       {(unit.certs?.length ? true : false) || unit.academy ? (
-        <div className="mt-1.5 text-[9px] text-gray-400 flex flex-wrap items-center gap-1">
+        <div className="mt-1.5 text-[11px] text-gray-400 flex flex-wrap items-center gap-1">
           <GraduationCap className="w-3 h-3 shrink-0 text-purple-300" />
           {(unit.certs ?? []).map((c) => (
             <span key={c} className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/25 font-bold">{c.toUpperCase()} ✓</span>
@@ -142,7 +142,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
                 if (res) updateUnit(unit.id, res);
               }}
               title={`${c.label} — ${c.durationGameMin} game-min · ${c.tierLabel} tier · free, no pay-skip`}
-              className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 text-[9px] font-bold"
+              className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 text-[11px] font-bold"
             >
               🎓 {c.label}
             </button>
@@ -153,7 +153,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
       {/* En route — live ETA + progress bar */}
       {unit.status === 'en_route' && (
         <div className="mt-2">
-          <div className="flex items-center justify-between text-[9px] mb-1">
+          <div className="flex items-center justify-between text-[11px] mb-1">
             <span className="text-gray-500 flex items-center gap-1">
               <Radio className="w-2.5 h-2.5" /> ETA
             </span>
@@ -172,7 +172,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
       {/* On scene — assigned mission progress */}
       {unit.status === 'on_scene' && assignedMission && (
         <div className="mt-2">
-          <div className="flex items-center justify-between text-[9px] mb-1">
+          <div className="flex items-center justify-between text-[11px] mb-1">
             <span className="text-gray-500">On scene</span>
             <span className="text-red-300 font-mono font-bold">{Math.round(assignedMission.progress || 0)}%</span>
           </div>
@@ -188,7 +188,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
 
       {/* Assigned mission line */}
       {assignedMission && (
-        <div className="mt-1.5 flex items-center gap-1 text-[9px] text-gray-400">
+        <div className="mt-1.5 flex items-center gap-1 text-[11px] text-gray-400">
           <MapPin className="w-2.5 h-2.5 shrink-0" />
           <span className="truncate">{assignedMission.name}</span>
           <ArrowRight className="w-2.5 h-2.5 shrink-0 ml-auto opacity-60" />
@@ -201,7 +201,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
           onClick={(e) => { e.stopPropagation(); handleRecall(); }}
           className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1 rounded-md
                      bg-gray-800/60 hover:bg-amber-500/15 border border-gray-700/40 hover:border-amber-500/40
-                     text-[9px] text-gray-400 hover:text-amber-400 transition-colors"
+                     text-[11px] text-gray-400 hover:text-amber-400 transition-colors"
         >
           <RotateCcw className="w-2.5 h-2.5" />
           Recall to station
@@ -213,7 +213,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
         className="mt-1.5 flex items-center justify-between gap-2 px-1"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-[8px] text-gray-600 uppercase tracking-wider">Livery</span>
+        <span className="text-[11px] text-gray-600 uppercase tracking-wider">Livery</span>
         <LiveryPicker
           service={getUnitServiceType(unit.type)}
           value={unit.liveryId}
@@ -249,7 +249,7 @@ export function UnitPanel({ onUnitClick }: { onUnitClick?: (unit: Unit) => void 
       <div className="text-center py-5 text-gray-600">
         <div className="mx-auto mb-2 opacity-40"><Truck className="w-6 h-6" /></div>
         <p className="text-xs font-medium text-gray-400">No units yet</p>
-        <p className="text-[10px] text-gray-700 mt-0.5">Build a station to receive your first units</p>
+        <p className="text-[11px] text-gray-700 mt-0.5">Build a station to receive your first units</p>
       </div>
     );
   }
@@ -281,7 +281,7 @@ function SummaryTile({ value, label, tone }: { value: number; label: string; ton
   return (
     <div className="rounded-md bg-gray-800/40 border border-gray-700/30 px-1.5 py-1.5 text-center">
       <p className={`text-sm font-bold ${tone}`}>{value}</p>
-      <p className="text-[8px] text-gray-500 uppercase tracking-wide">{label}</p>
+      <p className="text-[11px] text-gray-500 uppercase tracking-wide">{label}</p>
     </div>
   );
 }
@@ -293,8 +293,8 @@ function UnitGroup({
   return (
     <div>
       <div className="flex items-center gap-2 mb-1.5">
-        <span className={`text-[10px] font-bold uppercase tracking-wider ${accent}`}>{title}</span>
-        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500 font-mono">{units.length}</span>
+        <span className={`text-[11px] font-bold uppercase tracking-wider ${accent}`}>{title}</span>
+        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500 font-mono">{units.length}</span>
         <div className="flex-1 h-px bg-gray-800/60" />
       </div>
       <div className="space-y-1.5">

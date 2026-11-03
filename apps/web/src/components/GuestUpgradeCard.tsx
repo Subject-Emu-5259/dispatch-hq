@@ -78,16 +78,16 @@ export function GuestUpgradeCard({ onDismiss, onUpgraded }: GuestUpgradeCardProp
 
   return (
     <div className={`bg-gray-800/40 border ${border} rounded-xl p-4 space-y-2.5`}>
-      <p className={`text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5`}>
+      <p className={`text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5`}>
         <UserPlus className="w-3 h-3" /> Create an Account
       </p>
-      <p className="text-[10px] text-gray-400">
+      <p className="text-[11px] text-gray-400">
         Guest progress lives on this device. Create a real account so your city follows you anywhere — and keep everything you've built.
       </p>
       {/* Founder-closed signup gate: pause notice + live reopen countdown */}
       <SignupPausedNotice compact />
       <div>
-        <label className="text-[10px] text-gray-500 block mb-1">Username</label>
+        <label className="text-[11px] text-gray-500 block mb-1">Username</label>
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -97,7 +97,7 @@ export function GuestUpgradeCard({ onDismiss, onUpgraded }: GuestUpgradeCardProp
         />
       </div>
       <div>
-        <label className="text-[10px] text-gray-500 block mb-1">Email</label>
+        <label className="text-[11px] text-gray-500 block mb-1">Email</label>
         <input
           type="email"
           value={email}
@@ -107,7 +107,7 @@ export function GuestUpgradeCard({ onDismiss, onUpgraded }: GuestUpgradeCardProp
         />
       </div>
       <div>
-        <label className="text-[10px] text-gray-500 block mb-1">Password</label>
+        <label className="text-[11px] text-gray-500 block mb-1">Password</label>
         <input
           type="password"
           value={password}
@@ -123,7 +123,7 @@ export function GuestUpgradeCard({ onDismiss, onUpgraded }: GuestUpgradeCardProp
           onChange={(e) => setMerge(e.target.checked)}
           className="mt-0.5 accent-amber-400"
         />
-        <span className="text-[10px] text-gray-300 leading-snug">
+        <span className="text-[11px] text-gray-300 leading-snug">
           Merge my guest campaign — Lv {player?.level ?? 1} · {player?.credits?.toLocaleString() ?? 0} credits · {career.missionsCompleted} missions cleared — into this account.
         </span>
       </label>
@@ -137,13 +137,13 @@ export function GuestUpgradeCard({ onDismiss, onUpgraded }: GuestUpgradeCardProp
       {onDismiss && !msg?.ok && (
         <button
           onClick={onDismiss}
-          className="w-full text-center text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+          className="w-full text-center text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
         >
           Maybe later — I'll keep playing as a guest
         </button>
       )}
       {msg && (
-        <p className={`flex items-center gap-1.5 text-[10px] ${msg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>
+        <p className={`flex items-center gap-1.5 text-[11px] ${msg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>
           {msg.ok ? <CheckCircle2 className="w-3 h-3 shrink-0" /> : <AlertCircle className="w-3 h-3 shrink-0" />}
           {msg.text}
         </p>

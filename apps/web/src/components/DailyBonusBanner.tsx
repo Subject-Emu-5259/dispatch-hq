@@ -72,7 +72,7 @@ export function DailyBonusBanner() {
             <p className="text-[11px] font-bold text-amber-300">
               Daily Login Bonus
             </p>
-            <p className="text-[10px] text-gray-400">
+            <p className="text-[11px] text-gray-400">
               {claiming ? 'Claiming…' : `Tap to claim ${status.coins} coins`}
             </p>
           </div>
@@ -96,7 +96,7 @@ export function DailyBonusBanner() {
             <p className="text-[11px] font-bold text-green-300">
               Bonus Claimed!
             </p>
-            <p className="text-[10px] text-gray-400">
+            <p className="text-[11px] text-gray-400">
               +{status.coins} coins added to your balance
             </p>
           </div>

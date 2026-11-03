@@ -12,6 +12,7 @@ import {
   PlayCircle, Clapperboard, GraduationCap, LogOut,
 } from 'lucide-react';
 import { DailyBonusBanner } from './DailyBonusBanner';
+import { ChallengeTracker } from './ChallengeTracker';
 import type { LucideIcon } from 'lucide-react';
 
 import { useGameStore } from '@/stores/gameStore';
@@ -300,6 +301,11 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
           <DailyBonusBanner />
         </div>
 
+        {/* Batch 3d: daily + weekly challenges */}
+        <div className="w-full max-w-xs">
+          <ChallengeTracker coinRewards />
+        </div>
+
         {/* Menu items */}
         <div className="w-full max-w-xs space-y-2">
           {visibleMenuItems.map((item, index) => (
@@ -334,11 +340,11 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
                 <p className="text-sm font-semibold text-white group-hover:text-dispatch-red transition-colors">
                   {item.label}
                 </p>
-                <p className="text-[10px] text-gray-500 truncate">{item.description}</p>
+                <p className="text-[11px] text-gray-500 truncate">{item.description}</p>
                 {item.id === 'continue' && tourWaiting && (
                   <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md
                                     bg-amber-500/10 border border-amber-500/30
-                                    text-[9px] font-bold text-amber-400">
+                                    text-[11px] font-bold text-amber-400">
                     <GraduationCap className="w-3 h-3" />
                     Step {tourStep + 1} of {TUTORIAL_STEP_COUNT} — tour in progress
                   </span>
@@ -367,7 +373,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
             <p className="text-sm font-semibold text-white group-hover:text-dispatch-red transition-colors">
               Watch Trailer
             </p>
-            <p className="text-[10px] text-gray-400">60-second walkthrough — real gameplay</p>
+            <p className="text-[11px] text-gray-400">60-second walkthrough — real gameplay</p>
           </div>
           <ChevronRight className="w-4 h-4 text-dispatch-red/60 group-hover:text-dispatch-red transition-colors" />
         </motion.button>
@@ -379,7 +385,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
           transition={{ delay: 0.7 }}
           className="w-full max-w-xs mt-6"
         >
-          <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 mb-2">Community</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-600 mb-2">Community</p>
           <div className="grid grid-cols-1 gap-2">
             {SOCIAL_LINKS.map((social) => (
               <a
@@ -400,7 +406,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
                   <span className="block text-[11px] font-semibold text-white group-hover:text-dispatch-red transition-colors truncate">
                     {social.label}
                   </span>
-                  <span className="block text-[9px] text-gray-500 truncate">{social.handle}</span>
+                  <span className="block text-[11px] text-gray-500 truncate">{social.handle}</span>
                 </span>
                 <ExternalLink className="w-3 h-3 text-gray-600 group-hover:text-gray-400 ml-auto shrink-0 transition-colors" />
               </a>
@@ -416,7 +422,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
           transition={{ delay: 0.75 }}
           className="w-full max-w-xs mt-6"
         >
-          <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 mb-2">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-600 mb-2">
             {itchPromoLabel()}
           </p>
           <div
@@ -435,7 +441,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
               <a href="https://agreatgame.itch.io/dispatch-hq">Dispatch HQ by AGreatGame</a>
             </iframe>
           </div>
-          <p className="text-[10px] text-gray-500 mt-2 leading-snug">
+          <p className="text-[11px] text-gray-500 mt-2 leading-snug">
             <span className="text-emerald-400 font-semibold">Web version is FREE.</span>{' '}
             A membership program and coin purchases for gamers are coming in a future update.
           </p>
@@ -452,7 +458,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
             <div key={i} className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-3 text-center">
               <stat.icon className="w-4 h-4 text-gray-600 mx-auto mb-1" />
               <p className="text-sm font-bold text-white">{stat.value}</p>
-              <p className="text-[9px] text-gray-500 mt-0.5">{stat.label}</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">{stat.label}</p>
             </div>
           ))}
         </motion.div>
@@ -465,7 +471,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
           className="w-full max-w-xs mt-6 flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-gray-800/30 border border-gray-800/50"
         >
           <div className="min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Signed in as</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-gray-600">Signed in as</p>
             <p className="text-xs font-semibold text-gray-300 truncate">{player?.username || player?.email || 'Commander'}</p>
           </div>
           <button
@@ -483,7 +489,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="text-[10px] text-gray-700 mt-8 font-mono"
+          className="text-[11px] text-gray-700 mt-8 font-mono"
         >
           v{currentVersion()} • Built with ❤️ by Dispatch HQ Team
         </motion.p>
@@ -529,7 +535,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
                 ))}
               </div>
 
-              <p className="text-center text-[10px] text-gray-600 mt-6">
+              <p className="text-center text-[11px] text-gray-600 mt-6">
                 Stats persist across sessions when connected to the server.
               </p>
             </motion.div>
@@ -581,7 +587,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
                 playsInline
                 className="w-full rounded-xl bg-black aspect-video"
               />
-              <p className="text-center text-[10px] text-gray-600 mt-3">
+              <p className="text-center text-[11px] text-gray-600 mt-3">
                 Real gameplay — West Memphis to Nashville. Command the chaos. Save the city.
               </p>
             </motion.div>

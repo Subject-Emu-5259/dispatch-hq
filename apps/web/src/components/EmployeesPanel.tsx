@@ -85,13 +85,13 @@ function EmployeeRow({
         </div>
         <div className="mt-1.5 grid grid-cols-2 gap-2">
           <div className="flex items-center gap-1">
-            <span className="text-[9px] text-amber-400/90 w-8 shrink-0">{fatigueLabel(fatigue)}</span>
+            <span className="text-[11px] text-amber-400/90 w-8 shrink-0">{fatigueLabel(fatigue)}</span>
             <div className="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden" title={`Fatigue ${fatigue}%`}>
               <div className="h-full bg-amber-500" style={{ width: `${fatigue}%` }} />
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-[9px] text-emerald-400/90 w-8 shrink-0">{moraleLabel(morale)}</span>
+            <span className="text-[11px] text-emerald-400/90 w-8 shrink-0">{moraleLabel(morale)}</span>
             <div className="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden" title={`Morale ${morale}%`}>
               <div className="h-full bg-emerald-500" style={{ width: `${morale}%` }} />
             </div>
@@ -100,21 +100,21 @@ function EmployeeRow({
       </div>
       <div className="flex flex-col gap-1 shrink-0">
         {isStationStaff(employee) ? (
-          <span className="px-2 py-1 rounded bg-gray-800 text-gray-500 border border-gray-700 text-[10px] font-semibold whitespace-nowrap">📞 Station Staff</span>
+          <span className="px-2 py-1 rounded bg-gray-800 text-gray-500 border border-gray-700 text-[11px] font-semibold whitespace-nowrap">📞 Station Staff</span>
         ) : employee.status === 'available' ? (
           <>
-            <button onClick={onAssign} className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 text-[10px] font-bold">Assign</button>
-            <button onClick={onRest} className="px-2 py-1 rounded bg-gray-700/60 text-gray-400 hover:bg-gray-600 text-[10px] font-semibold" title="Send off duty — fatigue recovers twice as fast">Rest</button>
+            <button onClick={onAssign} className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 text-[11px] font-bold">Assign</button>
+            <button onClick={onRest} className="px-2 py-1 rounded bg-gray-700/60 text-gray-400 hover:bg-gray-600 text-[11px] font-semibold" title="Send off duty — fatigue recovers twice as fast">Rest</button>
           </>
         ) : employee.status === 'off_duty' ? (
-          <button onClick={onRecall} className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 text-[10px] font-bold">Recall</button>
+          <button onClick={onRecall} className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 text-[11px] font-bold">Recall</button>
         ) : (
-          <button onClick={onUnassign} className="px-2 py-1 rounded bg-gray-700 text-gray-300 hover:bg-gray-600 text-[10px] font-bold">Unassign</button>
+          <button onClick={onUnassign} className="px-2 py-1 rounded bg-gray-700 text-gray-300 hover:bg-gray-600 text-[11px] font-bold">Unassign</button>
         )}
         <button
           onClick={onTrain}
           disabled={!canAffordTrain}
-          className={`px-2 py-1 rounded text-[10px] font-bold flex items-center justify-center gap-1 ${
+          className={`px-2 py-1 rounded text-[11px] font-bold flex items-center justify-center gap-1 ${
             canAffordTrain ? 'bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20' : 'bg-gray-800 text-gray-600 cursor-not-allowed'
           }`}
         >
@@ -124,7 +124,7 @@ function EmployeeRow({
           onClick={onReroll}
           disabled={!canAffordReroll}
           title="Re-roll traits — retrain this crew member's personality"
-          className={`px-2 py-1 rounded text-[10px] font-bold flex items-center justify-center gap-1 ${
+          className={`px-2 py-1 rounded text-[11px] font-bold flex items-center justify-center gap-1 ${
             canAffordReroll ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20' : 'bg-gray-800 text-gray-600 cursor-not-allowed'
           }`}
         >
@@ -321,7 +321,7 @@ export function EmployeesPanel({ isOpen, onClose, focusStationId, focusUnitId }:
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-dispatch-cyan" />
                 <h2 className="text-sm font-bold text-white">Personnel Command</h2>
-                <span className="px-2 py-0.5 rounded-full bg-gray-800 text-[10px] text-gray-400 font-medium">{stations.reduce((sum, s) => sum + (s.employees?.length || 0), 0)}</span>
+                <span className="px-2 py-0.5 rounded-full bg-gray-800 text-[11px] text-gray-400 font-medium">{stations.reduce((sum, s) => sum + (s.employees?.length || 0), 0)}</span>
               </div>
               <button onClick={onClose} className="p-1.5 hover:bg-gray-800 rounded-lg transition-colors">
                 <X className="w-4 h-4 text-gray-400" />
@@ -333,7 +333,7 @@ export function EmployeesPanel({ isOpen, onClose, focusStationId, focusUnitId }:
                 <button
                   key={svc}
                   onClick={() => setServiceFilter(svc)}
-                  className={`px-2 py-1 rounded-md text-[10px] font-bold border transition-colors ${
+                  className={`px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ${
                     serviceFilter === svc
                       ? 'bg-dispatch-cyan/20 text-dispatch-cyan border-dispatch-cyan/40'
                       : 'bg-gray-900 text-gray-500 border-gray-800 hover:text-gray-300'
@@ -405,7 +405,7 @@ export function EmployeesPanel({ isOpen, onClose, focusStationId, focusUnitId }:
                                   <span className="text-gray-400 font-medium"> ({shiftResponseMultiplier(station, gameMinutes) < 1 ? '7% faster' : '12% slower'})</span>
                                 )}
                               </p>
-                              <p className="text-[10px] text-gray-500 mt-0.5">No schedule set = neutral. Toggle a shift to cover it; uncovered shifts risk slower response.</p>
+                              <p className="text-[11px] text-gray-500 mt-0.5">No schedule set = neutral. Toggle a shift to cover it; uncovered shifts risk slower response.</p>
                               <div className="flex gap-1.5 mt-1.5">
                                 {(['day', 'night', 'weekend'] as ShiftKey[]).map((key) => {
                                   const covered = station.shifts?.[key] === true;
@@ -413,7 +413,7 @@ export function EmployeesPanel({ isOpen, onClose, focusStationId, focusUnitId }:
                                     <button
                                       key={key}
                                       onClick={(e) => { e.stopPropagation(); updateStation(station.id, { shifts: toggleShift(station.shifts, key) }); }}
-                                      className={`flex-1 px-2 py-1 rounded text-[10px] font-bold border transition-colors ${covered ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40' : 'bg-gray-900 text-gray-500 border-gray-800 hover:text-gray-300'}`}
+                                      className={`flex-1 px-2 py-1 rounded text-[11px] font-bold border transition-colors ${covered ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40' : 'bg-gray-900 text-gray-500 border-gray-800 hover:text-gray-300'}`}
                                     >
                                       {key === 'day' ? '☀️ Day' : key === 'night' ? '🌙 Night' : '📅 Weekend'}{covered ? ' ✓' : ''}
                                     </button>

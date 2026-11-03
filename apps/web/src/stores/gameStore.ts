@@ -14,6 +14,7 @@ import type { Hospital, Helipad } from '@/lib/hospital';
 import type { SatisfactionRecord } from '@/lib/cityDistricts';
 import type { AdoptedCity } from '@/lib/adoptedCities';
 import type { DisasterWaveState } from '@/lib/disasterWaves';
+import { emptyChallengeState, type ChallengeState } from '@/lib/challenges';
 import type { ActiveWeather, ActiveWeatherEvent } from '@/lib/weather';
 
 export interface CityData {
@@ -222,6 +223,10 @@ interface GameState {
   adoptedCities: AdoptedCity[];
   /** Batch 3b: live multi-stage disaster wave, if one is running (see lib/disasterWaves). */
   disasterWave: DisasterWaveState | null;
+  /** Batch 3d: daily/weekly challenge progress (see lib/challenges). */
+  challenges: ChallengeState;
+  /** Batch 3d: revealed fog zone ids (see lib/fogExploration). */
+  fogRevealed: string[];
 
   // Actions
   setPlayer: (player: Player) => void;
@@ -356,6 +361,10 @@ interface GameState {
   setAdoptedCities: (cities: AdoptedCity[]) => void;
   /** Batch 3b: set/clear the live disaster wave. */
   setDisasterWave: (wave: DisasterWaveState | null) => void;
+  /** Batch 3d: replace challenge progress (sync hook / claim output). */
+  setChallenges: (c: ChallengeState) => void;
+  /** Batch 3d: replace the revealed fog zone list. */
+  setFogRevealed: (ids: string[]) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -450,6 +459,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   districtSatisfaction: {},
   adoptedCities: [],
   disasterWave: null,
+  challenges: emptyChallengeState(),
+  fogRevealed: [],
 
   // Actions
   setPlayer: (player) => set({ player }),
@@ -480,6 +491,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     districtSatisfaction: {},
     adoptedCities: [],
     disasterWave: null,
+    challenges: emptyChallengeState(),
+    fogRevealed: [],
     // Clear career records so a different player never sees stale stats.
     career: { ...EMPTY_CAREER },
     weekly: emptyWeekly(),
@@ -855,6 +868,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   setDistrictSatisfaction: (record) => set({ districtSatisfaction: record }),
   setAdoptedCities: (cities) => set({ adoptedCities: cities }),
   setDisasterWave: (wave) => set({ disasterWave: wave }),
+  setChallenges: (c) => set({ challenges: c }),
+  setFogRevealed: (ids) => set({ fogRevealed: ids }),
   setShowDispatchCenter: (show: boolean) => set({ showDispatchCenter: show }),
 }));
 

@@ -14,6 +14,8 @@ import {
 } from '@dispatch-hq/shared';
 import { fatigueLabel, moraleLabel } from '@/lib/personnel';
 import { InlineRename } from './InlineRename';
+import { LiveryPicker } from './LiveryPicker';
+import { STATION_PATCHES, patchFor, serviceForStationType } from '@/lib/stationCustom';
 
 interface StationDetailModalProps {
   station: Station;
@@ -38,7 +40,7 @@ function statusBadge(status: string) {
     status === 'patrolling' ? 'bg-purple-500/20 text-purple-400' :
     'bg-gray-500/20 text-gray-400';
   return (
-    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${color}`}>
+    <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded uppercase ${color}`}>
       {status.replace('_', ' ')}
     </span>
   );
@@ -85,7 +87,7 @@ export function StationDetailModal({ station, units, onClose, onSelectUnit }: St
                     maxLength={50}
                   />
                 </div>
-                <p className="text-[10px] text-gray-500">{config.name} • Level {liveStation.level || 1}</p>
+                <p className="text-[11px] text-gray-500">{config.name} • Level {liveStation.level || 1}</p>
               </div>
             </div>
             <button onClick={onClose} className="p-1.5 hover:bg-gray-800 rounded-lg transition-colors">
@@ -98,15 +100,15 @@ export function StationDetailModal({ station, units, onClose, onSelectUnit }: St
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-gray-800/50 rounded-lg p-2.5 text-center">
                 <p className="text-lg font-bold text-white">{assignedUnits.length}</p>
-                <p className="text-[9px] text-gray-500 uppercase">Units</p>
+                <p className="text-[11px] text-gray-500 uppercase">Units</p>
               </div>
               <div className="bg-gray-800/50 rounded-lg p-2.5 text-center">
                 <p className="text-lg font-bold text-white">{liveStation.capacity}</p>
-                <p className="text-[9px] text-gray-500 uppercase">Capacity</p>
+                <p className="text-[11px] text-gray-500 uppercase">Capacity</p>
               </div>
               <div className="bg-gray-800/50 rounded-lg p-2.5 text-center">
                 <p className="text-lg font-bold text-white">{Math.round((liveStation.coverageRadius || 5))}km</p>
-                <p className="text-[9px] text-gray-500 uppercase">Radius</p>
+                <p className="text-[11px] text-gray-500 uppercase">Radius</p>
               </div>
             </div>
 
@@ -120,7 +122,7 @@ export function StationDetailModal({ station, units, onClose, onSelectUnit }: St
 
             {/* Theme — cosmetic identity preset */}
             <div>
-              <p className="text-[10px] text-gray-500 flex items-center gap-1 mb-1.5">
+              <p className="text-[11px] text-gray-500 flex items-center gap-1 mb-1.5">
                 <Building2 className="w-3 h-3" /> Theme — {theme.name}
               </p>
               <div className="flex items-center gap-2">
@@ -130,7 +132,7 @@ export function StationDetailModal({ station, units, onClose, onSelectUnit }: St
                     <button
                       key={t.id}
                       onClick={() => setStationTheme(liveStation.id, t.id)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[10px] font-semibold transition-all ${
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
                         active
                           ? 'border-white bg-gray-700/60 text-white'
                           : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:text-gray-200'
@@ -146,6 +148,36 @@ export function StationDetailModal({ station, units, onClose, onSelectUnit }: St
                   );
                 })}
               </div>
+            </div>
+
+            {/* Livery + patch — Batch 3d station customization (cosmetic, saved on the station). */}
+            <div>
+              <p className="text-[11px] text-gray-500 flex items-center gap-1 mb-1.5">
+                🎨 Livery &amp; Patch — {patchFor(liveStation.patch).icon} {patchFor(liveStation.patch).name}
+              </p>
+              <LiveryPicker
+                service={serviceForStationType(liveStation.type)}
+                value={liveStation.liveryId}
+                onChange={(liveryId) => updateStation(liveStation.id, { liveryId })}
+              />
+              <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                {STATION_PATCHES.map((p) => {
+                  const active = patchFor(liveStation.patch).id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      title={p.name}
+                      onClick={() => updateStation(liveStation.id, { patch: p.id })}
+                      className={`px-2 py-1 rounded-md border text-[11px] transition-all ${
+                        active ? 'border-white bg-gray-700/60 text-white' : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:text-gray-200'
+                      }`}
+                    >
+                      {p.icon} {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-gray-600 mt-1">Station name edits above; livery + patch are pure cosmetic.</p>
             </div>
 
             {/* Units */}
@@ -169,7 +201,7 @@ export function StationDetailModal({ station, units, onClose, onSelectUnit }: St
                         <span className="text-base">{uc?.icon || '🚛'}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold text-white truncate">{u.name}</p>
-                          <p className="text-[10px] text-gray-500">{uc?.name || u.type}</p>
+                          <p className="text-[11px] text-gray-500">{uc?.name || u.type}</p>
                         </div>
                         {statusBadge(u.status)}
                       </button>
@@ -193,7 +225,7 @@ export function StationDetailModal({ station, units, onClose, onSelectUnit }: St
               {nextLevel ? (
                 <div className="p-2.5 rounded-lg bg-gray-800/30 border border-dispatch-red/20">
                   <p className="text-xs text-white">Level {nextLevel.level}</p>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[11px] text-gray-500">
                     Capacity {liveStation.capacity} → {nextLevel.capacity} • Coverage {Math.round(perkAdjustedRadius(nextLevel.coverageRadius, liveStation))}km
                     {hasRadiusPerk(liveStation) ? ' (with Response Radius)' : ''}
                   </p>
@@ -226,11 +258,11 @@ interface EmployeeRosterProps {
 }
 
 function statusBadgeSmall(status: EmployeeStatus) {
-  if (status === 'available') return <span className="px-1.5 py-0.5 rounded text-[9px] bg-green-500/15 text-green-400">Available</span>;
-  if (status === 'assigned') return <span className="px-1.5 py-0.5 rounded text-[9px] bg-blue-500/15 text-blue-400">Unit</span>;
-  if (status === 'training') return <span className="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/15 text-amber-400">Training</span>;
-  if (status === 'off_duty') return <span className="px-1.5 py-0.5 rounded text-[9px] bg-gray-700 text-gray-400">Off</span>;
-  return <span className="px-1.5 py-0.5 rounded text-[9px] bg-red-500/15 text-red-400">Injured</span>;
+  if (status === 'available') return <span className="px-1.5 py-0.5 rounded text-[11px] bg-green-500/15 text-green-400">Available</span>;
+  if (status === 'assigned') return <span className="px-1.5 py-0.5 rounded text-[11px] bg-blue-500/15 text-blue-400">Unit</span>;
+  if (status === 'training') return <span className="px-1.5 py-0.5 rounded text-[11px] bg-amber-500/15 text-amber-400">Training</span>;
+  if (status === 'off_duty') return <span className="px-1.5 py-0.5 rounded text-[11px] bg-gray-700 text-gray-400">Off</span>;
+  return <span className="px-1.5 py-0.5 rounded text-[11px] bg-red-500/15 text-red-400">Injured</span>;
 }
 
 function hasRadiusPerk(station: Station): boolean {
@@ -259,11 +291,11 @@ function StationPerksSection({ station }: { station: Station }) {
       <div className="flex items-center gap-2 mb-2">
         <Award className="w-3.5 h-3.5 text-gray-400" />
         <h3 className="text-xs font-bold text-white uppercase">Specializations</h3>
-        <span className="text-[9px] text-gray-500">{owned.length}/3 chosen</span>
+        <span className="text-[11px] text-gray-500">{owned.length}/3 chosen</span>
       </div>
       {choices.length > 0 && (
         <div className="mb-2 space-y-1.5">
-          <p className="text-[10px] text-amber-400/90">New specialization unlocked — choose one:</p>
+          <p className="text-[11px] text-amber-400/90">New specialization unlocked — choose one:</p>
           {choices.map((p) => (
             <button
               key={p.id}
@@ -273,7 +305,7 @@ function StationPerksSection({ station }: { station: Station }) {
               <span className="text-base">{p.icon}</span>
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold text-white">{p.name}</p>
-                <p className="text-[10px] text-gray-500">{p.description}</p>
+                <p className="text-[11px] text-gray-500">{p.description}</p>
               </div>
             </button>
           ))}
@@ -284,7 +316,7 @@ function StationPerksSection({ station }: { station: Station }) {
       ) : (
         <div className="flex flex-wrap gap-1.5">
           {owned.map((p) => (
-            <span key={p.id} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-800/50 border border-gray-700/40 text-[10px] text-gray-300">
+            <span key={p.id} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-800/50 border border-gray-700/40 text-[11px] text-gray-300">
               <span>{p.icon}</span> {p.name}
             </span>
           ))}
@@ -365,7 +397,7 @@ function EmployeeRoster({ station }: EmployeeRosterProps) {
           <Users className="w-3.5 h-3.5 text-gray-400" />
           <h3 className="text-xs font-bold text-white uppercase">Station Personnel</h3>
         </div>
-        <span className="text-[10px] text-gray-500">{employees.length}/{employeeCapacity(station)}</span>
+        <span className="text-[11px] text-gray-500">{employees.length}/{employeeCapacity(station)}</span>
       </div>
 
       <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
@@ -375,8 +407,8 @@ function EmployeeRoster({ station }: EmployeeRosterProps) {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-gray-300 truncate font-medium">{emp.name}</p>
-                <p className="text-[9px] text-gray-500 truncate">{emp.role} • Lv {emp.level} • XP {emp.xp}/{xpToNextLevel(emp.level)}</p>
-                <p className="text-[9px] mt-0.5 text-gray-600">
+                <p className="text-[11px] text-gray-500 truncate">{emp.role} • Lv {emp.level} • XP {emp.xp}/{xpToNextLevel(emp.level)}</p>
+                <p className="text-[11px] mt-0.5 text-gray-600">
                   <span className="text-amber-400/80">{fatigueLabel(emp.fatigue ?? 0)} {emp.fatigue ?? 0}%</span>
                   {' · '}
                   <span className="text-emerald-400/80">{moraleLabel(emp.morale ?? 100)} {emp.morale ?? 100}%</span>
@@ -386,12 +418,12 @@ function EmployeeRoster({ station }: EmployeeRosterProps) {
             </div>
             <div className="flex items-center gap-1 mt-1.5">
               {isStationStaff(emp) ? (
-                <span className="px-2 py-0.5 rounded bg-gray-800 text-gray-500 border border-gray-700 text-[10px] font-semibold whitespace-nowrap">📞 Station Staff</span>
+                <span className="px-2 py-0.5 rounded bg-gray-800 text-gray-500 border border-gray-700 text-[11px] font-semibold whitespace-nowrap">📞 Station Staff</span>
               ) : emp.status !== 'assigned' && emp.status !== 'training' && (
                 <select
                   value=""
                   onChange={(e) => { if (e.target.value) handleAssign(emp, e.target.value); e.target.value = ''; }}
-                  className="bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[10px] text-gray-300 outline-none"
+                  className="bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[11px] text-gray-300 outline-none"
                 >
                   <option value="">Assign to unit…</option>
                   {stationUnits
@@ -402,7 +434,7 @@ function EmployeeRoster({ station }: EmployeeRosterProps) {
                 </select>
               )}
               {emp.status === 'assigned' && (
-                <button onClick={() => handleUnassign(emp)} className="px-1.5 py-0.5 rounded bg-gray-700 text-[10px] text-gray-300 hover:bg-gray-600">
+                <button onClick={() => handleUnassign(emp)} className="px-1.5 py-0.5 rounded bg-gray-700 text-[11px] text-gray-300 hover:bg-gray-600">
                   Unassign
                 </button>
               )}
@@ -410,7 +442,7 @@ function EmployeeRoster({ station }: EmployeeRosterProps) {
                 <button
                   onClick={() => handleTrain(emp)}
                   disabled={(player?.credits || 0) < trainCost(emp, { perks: station.perks ?? [] })}
-                  className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 text-[10px] hover:bg-amber-500/25 disabled:opacity-40 flex items-center gap-1"
+                  className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 text-[11px] hover:bg-amber-500/25 disabled:opacity-40 flex items-center gap-1"
                 >
                   <GraduationCap className="w-3 h-3" /> Train
                 </button>

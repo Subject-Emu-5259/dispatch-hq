@@ -57,7 +57,7 @@ export function MobileNav({ activeTab, onTabChange, onOpenNotifications, onPause
         }}
         aria-label={tab.label}
         aria-current={isActive ? 'page' : undefined}
-        className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full text-[10px] font-semibold
+        className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full text-[11px] font-semibold
                     transition-colors active:scale-95 ${isActive ? 'text-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
       >
         <span className="relative flex items-center justify-center w-11 h-8 rounded-xl">
@@ -72,7 +72,7 @@ export function MobileNav({ activeTab, onTabChange, onOpenNotifications, onPause
             {tab.icon}
             {tab.badge != null && tab.badge > 0 && (
               <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 flex items-center justify-center
-                               bg-amber-500 text-[9px] font-bold text-gray-900 rounded-full ring-2 ring-gray-950">
+                               bg-amber-500 text-[11px] font-bold text-gray-900 rounded-full ring-2 ring-gray-950">
                 {tab.badge > 99 ? '99+' : tab.badge}
               </span>
             )}
@@ -120,7 +120,7 @@ export function MobileNav({ activeTab, onTabChange, onOpenNotifications, onPause
                 className="w-full h-full object-cover"
               />
             </button>
-            <span className={`text-[9px] font-semibold mt-0.5 ${showDispatchCenter ? 'text-dispatch-red' : 'text-gray-500'}`}>
+            <span className={`text-[11px] font-semibold mt-0.5 ${showDispatchCenter ? 'text-dispatch-red' : 'text-gray-500'}`}>
               Dispatch
             </span>
           </div>
@@ -132,7 +132,7 @@ export function MobileNav({ activeTab, onTabChange, onOpenNotifications, onPause
             onClick={() => setMoreOpen((v) => !v)}
             aria-label="More options"
             aria-expanded={moreOpen}
-            className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full text-[10px] font-semibold
+            className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full text-[11px] font-semibold
                         transition-colors active:scale-95 ${moreOpen ? 'text-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
           >
             <span className="relative flex items-center justify-center w-11 h-8 rounded-xl">
@@ -172,7 +172,7 @@ export function MobileNav({ activeTab, onTabChange, onOpenNotifications, onPause
               aria-label="More options"
             >
               <div className="flex items-center justify-between px-4 pt-3 pb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">More</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">More</span>
                 <button onClick={closeMore} aria-label="Close more options" className="p-1.5 rounded-lg hover:bg-gray-800 transition-colors">
                   <X className="w-4 h-4 text-gray-400" />
                 </button>

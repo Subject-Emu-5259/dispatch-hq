@@ -284,15 +284,15 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
                   <InlineRename key={unit.id} value={unit.name} onSave={(name) => updateUnit(unit.id, { name })} maxLength={30} />
                 </span>
               </div>
-              <p className="text-[10px] text-gray-500 truncate">{config?.name || unit.type.replace(/_/g, ' ')}</p>
+              <p className="text-[11px] text-gray-500 truncate">{config?.name || unit.type.replace(/_/g, ' ')}</p>
             </div>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">Lv {unit.trainingLevel}</span>
-            <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded ${meta.color} ${meta.bg}`}>
+            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">Lv {unit.trainingLevel}</span>
+            <span className={`text-[11px] font-bold uppercase px-2 py-0.5 rounded ${meta.color} ${meta.bg}`}>
               {meta.label}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[10px]">
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
             <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2">
               <p className="text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" /> Station</p>
               <p className="text-gray-300 font-medium truncate">{station?.name || 'Unassigned'}</p>
@@ -302,7 +302,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
               <p className="text-gray-300 font-medium">
                 {getUnitCurrentSpeedMph(unit)} mph
               </p>
-              <p className="text-[9px] text-gray-600">max {getUnitMaxSpeedMph(unit.speed || 13.9)} mph</p>
+              <p className="text-[11px] text-gray-600">max {getUnitMaxSpeedMph(unit.speed || 13.9)} mph</p>
             </div>
             {unit.eta != null && unit.eta > 0 && (
               <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2">
@@ -320,7 +320,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
 
           {mission && (
             <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2">
-              <p className="text-[10px] text-gray-500 flex items-center gap-1"><Radio className="w-3 h-3" /> Assigned Mission</p>
+              <p className="text-[11px] text-gray-500 flex items-center gap-1"><Radio className="w-3 h-3" /> Assigned Mission</p>
               <p className="text-xs font-bold text-white">{mission.name}</p>
               {mission.status === 'in_progress' && (
                 <div className="mt-1 h-1 bg-gray-700 rounded-full overflow-hidden">
@@ -332,7 +332,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
 
           {dispatchTargetMission && !mission && (
             <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2">
-              <p className="text-[10px] text-gray-500">Next Mission</p>
+              <p className="text-[11px] text-gray-500">Next Mission</p>
               <p className="text-xs text-gray-300 truncate">{dispatchTargetMission.name}</p>
             </div>
           )}
@@ -342,7 +342,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
           {/* Livery — cosmetic paint scheme for this unit */}
           <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2 space-y-1.5">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Livery</p>
+              <p className="text-[11px] text-gray-500 flex items-center gap-1"><Shield className="w-3 h-3" /> Livery</p>
             </div>
             <LiveryPicker
               service={getUnitServiceType(unit.type)}
@@ -354,7 +354,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
           <CrewBlock station={station} unit={unit} onOpenEmployees={onOpenEmployees} />
 
           {(unit.status === 'available' || unit.status === 'patrolling') && station && !isTraining(unit) && unitCanPatrol(unit.type, helipad) && (
-            <div className="space-y-2 rounded-md bg-gray-900/60 border border-gray-800/40 p-2 text-[10px]">
+            <div className="space-y-2 rounded-md bg-gray-900/60 border border-gray-800/40 p-2 text-[11px]">
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">Patrol mode</span>
                 <select
@@ -412,7 +412,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
               <button
                 onClick={handleDispatch}
                 disabled={routing}
-                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-dispatch-red/20 text-dispatch-red border border-dispatch-red/30 text-[10px] font-bold hover:bg-dispatch-red/30 disabled:opacity-40 flex items-center justify-center gap-1"
+                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-dispatch-red/20 text-dispatch-red border border-dispatch-red/30 text-[11px] font-bold hover:bg-dispatch-red/30 disabled:opacity-40 flex items-center justify-center gap-1"
               >
                 <Navigation className="w-3 h-3" /> DISPATCH
               </button>
@@ -422,7 +422,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
                 data-tutorial="start-patrol"
                 onClick={handleStartPatrol}
                 disabled={routing}
-                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[10px] font-bold hover:bg-blue-500/20 disabled:opacity-40"
+                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[11px] font-bold hover:bg-blue-500/20 disabled:opacity-40"
               >
                 START PATROL
               </button>
@@ -430,7 +430,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
             {unit.status === 'patrolling' && (
               <button
                 onClick={handleStopPatrol}
-                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold hover:bg-amber-500/20"
+                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[11px] font-bold hover:bg-amber-500/20"
               >
                 END PATROL
               </button>
@@ -439,7 +439,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
               <button
                 onClick={handleRecall}
                 disabled={routing}
-                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-gray-800 text-gray-300 border border-gray-700 text-[10px] font-bold hover:bg-gray-700 disabled:opacity-40 flex items-center justify-center gap-1"
+                className="flex-1 min-w-[80px] px-2 py-1.5 rounded-md bg-gray-800 text-gray-300 border border-gray-700 text-[11px] font-bold hover:bg-gray-700 disabled:opacity-40 flex items-center justify-center gap-1"
               >
                 <Crosshair className="w-3 h-3" /> RECALL
               </button>
@@ -477,25 +477,25 @@ function TrainingBlock({ unit, player }: { unit: Unit; player: Player | null }) 
   return (
     <div className="rounded-md bg-gray-900/60 border border-yellow-500/20 p-2 space-y-1.5">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] text-gray-500 flex items-center gap-1"><GraduationCap className="w-3 h-3 text-yellow-400" /> Training</p>
-        {!training && <span className="text-[10px] text-yellow-400 font-semibold">Lv {unit.trainingLevel} → {unit.trainingLevel + 1}</span>}
+        <p className="text-[11px] text-gray-500 flex items-center gap-1"><GraduationCap className="w-3 h-3 text-yellow-400" /> Training</p>
+        {!training && <span className="text-[11px] text-yellow-400 font-semibold">Lv {unit.trainingLevel} → {unit.trainingLevel + 1}</span>}
       </div>
       {training ? (
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-gray-400">Training to Lv {unit.trainingLevel + 1}…</p>
+            <p className="text-[11px] text-gray-400">Training to Lv {unit.trainingLevel + 1}…</p>
             <p className="text-[11px] text-yellow-300 font-mono font-bold">{formatTimer(trainingRemainingSec(unit))}</p>
           </div>
           <button
             onClick={() => void skipTraining()}
-            className="w-full px-2 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[9px] font-bold hover:bg-cyan-500/20"
+            className="w-full px-2 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold hover:bg-cyan-500/20"
           >
             ⚡ Finish now — {skipTrainingCost(trainingRemainingSec(unit))} 🪙
           </button>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[10px] text-gray-500">{cost.toLocaleString()} cr · ~{minutes}m</p>
+          <p className="text-[11px] text-gray-500">{cost.toLocaleString()} cr · ~{minutes}m</p>
           <button
             disabled={unit.status !== 'available' || !canAfford}
             onClick={() => {
@@ -505,7 +505,7 @@ function TrainingBlock({ unit, player }: { unit: Unit; player: Player | null }) 
                 addNotification({ type: 'error', title: 'Cannot Train', message: !canAfford ? 'Insufficient credits' : 'Unit must be available at its station', icon: '⚠️', duration: 3000 });
               }
             }}
-            className="shrink-0 px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 text-[9px] font-bold hover:bg-yellow-500/20 disabled:opacity-40"
+            className="shrink-0 px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 text-[11px] font-bold hover:bg-yellow-500/20 disabled:opacity-40"
           >
             TRAIN
           </button>
@@ -534,11 +534,11 @@ function CrewBlock({ station, unit, onOpenEmployees }: { station: Station | null
 
   return (
     <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2">
-      <p className="text-[10px] text-gray-500 flex items-center gap-1 mb-1">
+      <p className="text-[11px] text-gray-500 flex items-center gap-1 mb-1">
         <Users className="w-3 h-3" /> Crew
         {readiness && (
           <span
-            className={`ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[8px] font-bold tracking-wide ${READINESS_CHIP[readiness.level].cls} ${READINESS_CHIP[readiness.level].pulse ? 'animate-pulse' : ''}`}
+            className={`ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[11px] font-bold tracking-wide ${READINESS_CHIP[readiness.level].cls} ${READINESS_CHIP[readiness.level].pulse ? 'animate-pulse' : ''}`}
             title={readiness.level === 'exhausted' ? 'Exhausted crew — response and clear speed are reduced' : `Worst fatigue ${readiness.worstFatigue}%`}
           >
             {readiness.level === 'exhausted' && '⚠ '}{readiness.label} · {Math.round(readiness.avgEffectiveness * 100)}%
@@ -553,10 +553,10 @@ function CrewBlock({ station, unit, onOpenEmployees }: { station: Station | null
             const fatigue = e.fatigue ?? 0;
             const morale = e.morale ?? 100;
             return (
-              <div key={e.id} className="text-[10px]">
+              <div key={e.id} className="text-[11px]">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 truncate">{e.name} <span className="text-gray-600">• {e.role} Lv {e.level}</span></span>
-                  <span className={`text-[9px] ${fatigue >= 85 ? 'text-red-400 font-semibold' : fatigue >= 60 ? 'text-orange-400' : 'text-gray-500'}`}>{fatigueActive ? fatigueLabel(fatigue) : ''}</span>
+                  <span className={`text-[11px] ${fatigue >= 85 ? 'text-red-400 font-semibold' : fatigue >= 60 ? 'text-orange-400' : 'text-gray-500'}`}>{fatigueActive ? fatigueLabel(fatigue) : ''}</span>
                 </div>
                 <div className="mt-0.5 flex items-center gap-1.5">
                   <div className="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden" title={`Fatigue ${fatigue}%`}>
@@ -575,13 +575,13 @@ function CrewBlock({ station, unit, onOpenEmployees }: { station: Station | null
         </div>
       )}
       {readiness?.level === 'exhausted' && (
-        <p className="text-[9px] text-red-400/90 mt-1.5">⚠ Exhausted crew — response time and clear speed are reduced. Rest them in Personnel Command.</p>
+        <p className="text-[11px] text-red-400/90 mt-1.5">⚠ Exhausted crew — response time and clear speed are reduced. Rest them in Personnel Command.</p>
       )}
-      <p className="text-[10px] text-gray-600 mt-1">{crew.length}{max ? ` / ${max}` : ''} {short > 0 ? `(${short} open seat${short === 1 ? '' : 's'})` : ''}</p>
+      <p className="text-[11px] text-gray-600 mt-1">{crew.length}{max ? ` / ${max}` : ''} {short > 0 ? `(${short} open seat${short === 1 ? '' : 's'})` : ''}</p>
       {onOpenEmployees && (
         <button
           onClick={onOpenEmployees}
-          className="w-full text-[10px] py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 mt-1.5"
+          className="w-full text-[11px] py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 mt-1.5"
         >
           Manage Crew
         </button>

@@ -212,7 +212,7 @@ export function AllianceStations({ allianceLevel, memberRole }: AllianceStations
                     <span className="text-lg">{STATION_ICONS[s.type] ?? '🏢'}</span>
                     <div>
                       <div className="text-xs font-bold text-white">{s.name}</div>
-                      <div className="text-[10px] text-gray-400">
+                      <div className="text-[11px] text-gray-400">
                         L{s.level} · {s.type.replace('_', ' ')} · {s.unitCount}/{s.capacity} units
                       </div>
                     </div>
@@ -222,7 +222,7 @@ export function AllianceStations({ allianceLevel, memberRole }: AllianceStations
                       <button
                         onClick={() => handleUpgrade(s.id)}
                         disabled={building}
-                        className="text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
+                        className="text-[11px] bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
                       >
                         ⬆ {upgradeCost.toLocaleString()} 💰
                       </button>
@@ -230,7 +230,7 @@ export function AllianceStations({ allianceLevel, memberRole }: AllianceStations
                     <button
                       onClick={() => handleClaim(s.id)}
                       disabled={building}
-                      className="text-[10px] bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded transition-colors"
+                      className="text-[11px] bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded transition-colors"
                     >
                       Claim (pay {(STATION_COSTS[s.type] ?? 5000).toLocaleString()})
                     </button>

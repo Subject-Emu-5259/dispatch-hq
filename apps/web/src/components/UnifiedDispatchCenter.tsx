@@ -906,10 +906,10 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h4 className="text-[13px] font-bold text-white truncate leading-tight">{m.name}</h4>
-              <span className={`shrink-0 text-[9px] px-1.5 py-0.5 rounded font-bold border ${severityBadge(priority)}`}>{priority.toUpperCase()}</span>
+              <span className={`shrink-0 text-[11px] px-1.5 py-0.5 rounded font-bold border ${severityBadge(priority)}`}>{priority.toUpperCase()}</span>
             </div>
             <p className="text-[10.5px] leading-snug text-gray-400 mt-0.5 line-clamp-2">{m.description}</p>
-            <p className="flex items-center gap-1 text-[10px] text-gray-500 mt-1">
+            <p className="flex items-center gap-1 text-[11px] text-gray-500 mt-1">
               <MapPin className="w-3 h-3 shrink-0" /> {street} · <span className="capitalize">{zoneName}</span>
             </p>
           </div>
@@ -918,7 +918,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
               {formatTimer(m.timeRemaining)}
             </span>
             {isDispatched && (
-              <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+              <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold border ${
                 m.status === 'in_progress' || m.status === 'on_scene'
                   ? 'bg-dispatch-red/20 text-dispatch-red border-dispatch-red/30'
                   : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
@@ -931,23 +931,23 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
 
         {/* Meta chips — only what's relevant, no clutter. */}
         <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-          <span className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold border ${tierMeta.chipClass}`}>
+          <span className={`inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full font-bold border ${tierMeta.chipClass}`}>
             {tierMeta.icon} {tierMeta.label}
           </span>
           {isMutualAid && (
-            <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold border bg-blue-500/10 text-blue-300 border-blue-500/30" title="Belongs to another department — answering earns a +25% mutual aid bonus">
+            <span className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full font-bold border bg-blue-500/10 text-blue-300 border-blue-500/30" title="Belongs to another department — answering earns a +25% mutual aid bonus">
               <Handshake className="w-2.5 h-2.5" /> Mutual Aid · {SERVICE_LABEL[svc]}
             </span>
           )}
           {m.cpuHandled && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold border bg-gray-700/50 text-gray-200 border-gray-600/40">🏙️ City Responding</span>
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold border bg-gray-700/50 text-gray-200 border-gray-600/40">🏙️ City Responding</span>
           )}
           {m.chainId && m.chainStage && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
               🔗 Chain {m.chainStage}/{m.chainTotal}
             </span>
           )}
-          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-400 ml-auto">
+          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-amber-400 ml-auto">
             <Zap className="w-3 h-3" /> {m.creditsReward.toLocaleString()}
           </span>
         </div>
@@ -958,7 +958,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
             {[...reqCounts.entries()].map(([type, { required, selected }]) => {
               const met = selected >= required;
               return (
-                <span key={type} className={`text-[9px] px-1.5 py-0.5 rounded border font-medium ${
+                <span key={type} className={`text-[11px] px-1.5 py-0.5 rounded border font-medium ${
                   met ? 'bg-green-500/15 text-green-400 border-green-500/30' : 'bg-dispatch-red/15 text-dispatch-red border-dispatch-red/30'
                 }`}>
                   {selected}/{required}× {type.replace('_', ' ')}
@@ -970,14 +970,14 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
 
         {/* Body: assigned units / ready-unit picker / status notes */}
         {m.cpuHandled ? (
-          <div className="text-[10px] text-gray-400 mt-2 flex items-center gap-1.5">
+          <div className="text-[11px] text-gray-400 mt-2 flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5" /> The city is responding — {SERVICE_LABEL[svc]} dispatch is handling this call automatically.
           </div>
         ) : assigned.length > 0 ? (
           <>
           <div className="flex flex-wrap gap-1.5 mt-2">
             {assigned.map(u => (
-              <span key={u.id} className="inline-flex items-center gap-1.5 text-[9px] px-2 py-1 rounded-md bg-gray-800/80 text-gray-300 border border-gray-700/40">
+              <span key={u.id} className="inline-flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md bg-gray-800/80 text-gray-300 border border-gray-700/40">
                 <span className={`w-1.5 h-1.5 rounded-full ${
                   u.status === 'on_scene' || u.status === 'dispatched' ? 'bg-dispatch-red' : 'bg-amber-400 animate-pulse'
                 }`} />
@@ -1000,7 +1000,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
           {backupAssigned.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               <span
-                className="inline-flex items-center gap-1.5 text-[9px] px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/30"
+                className="inline-flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/30"
                 title="Backup units auto-dispatched from a patrol intercept — partner department responding to this call"
               >
                 <Handshake className="w-2.5 h-2.5 shrink-0" />
@@ -1011,7 +1011,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
           </>
         ) : m.assignedUnits.length === 0 && available.length > 0 ? (
           <div className="mt-2">
-            <p className="text-[9px] uppercase tracking-wider text-gray-500 mb-1">Ready units</p>
+            <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">Ready units</p>
             <div className="flex flex-wrap gap-1.5">
               {available.map(u => {
                 const isSelected = selected.includes(u.id);
@@ -1033,7 +1033,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       const next = ids.includes(u.id) ? ids.filter(id => id !== u.id) : [...ids, u.id];
                       return { ...prev, [m.id]: next };
                     })}
-                    className={`inline-flex items-center gap-1.5 text-[9px] px-2 py-1 rounded border transition-colors ${
+                    className={`inline-flex items-center gap-1.5 text-[11px] px-2 py-1 rounded border transition-colors ${
                       isSelected
                         ? 'bg-white/15 text-white border-white/30'
                         : 'bg-gray-800/60 text-gray-400 border-gray-700/40 hover:text-white hover:bg-white/5'
@@ -1041,7 +1041,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                   >
                     {u.name}
                     {crossService && (
-                      <span className={`px-1 rounded text-[8px] font-bold uppercase ${
+                      <span className={`px-1 rounded text-[11px] font-bold uppercase ${
                         unitSvc === 'fire' ? 'bg-red-500/20 text-red-400'
                         : unitSvc === 'ems' ? 'bg-emerald-500/20 text-emerald-400'
                         : 'bg-blue-500/20 text-blue-400'
@@ -1056,11 +1056,11 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
             </div>
           </div>
         ) : isMutualAid ? (
-          <div className="text-[10px] text-blue-300/80 mt-2 flex items-center gap-1.5">
+          <div className="text-[11px] text-blue-300/80 mt-2 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" /> No {SERVICE_LABEL[svc]} units in the city — request stays open until a partner station is built.
           </div>
         ) : (
-          <div className="text-[10px] text-amber-400/80 mt-2 flex items-center gap-1.5">
+          <div className="text-[11px] text-amber-400/80 mt-2 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" /> No ready units — build or recall units to respond.
           </div>
         )}
@@ -1071,7 +1071,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
             <button
               onClick={() => dispatchMissionMultiple(m, selected)}
               disabled={selected.length === 0 || routingUnitId === m.id}
-              className="px-3 py-1.5 rounded-lg bg-dispatch-red/20 text-dispatch-red text-[10px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40 flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40 flex items-center gap-1.5"
             >
               <Navigation className="w-3 h-3" />
               {routingUnitId === m.id
@@ -1083,7 +1083,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
           )}
           <button
             onClick={() => { removeMission(m.id); addComm('system', `Mission ${m.name} removed from board.`); }}
-            className="px-2.5 py-1.5 rounded-lg bg-gray-800/60 text-gray-400 text-[10px] hover:text-white hover:bg-gray-800 transition-colors"
+            className="px-2.5 py-1.5 rounded-lg bg-gray-800/60 text-gray-400 text-[11px] hover:text-white hover:bg-gray-800 transition-colors"
           >
             ARCHIVE
           </button>
@@ -1113,7 +1113,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                 />
                 <div className="min-w-0">
                   <h2 className="text-sm font-bold text-white truncate">Dispatch HQ Console</h2>
-                  <p className="text-[10px] text-gray-500 truncate">
+                  <p className="text-[11px] text-gray-500 truncate">
                     {selectedCity?.name ? selectedCity.name : 'No city selected'}
                     {selectedService ? ` · ${SERVICE_LABEL[selectedService] ?? selectedService}` : ''}
                   </p>
@@ -1137,16 +1137,16 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                 >
                   <TabIcon className="w-3.5 h-3.5" /> {meta.label}
                   {t === 'records' && criminalRecords && criminalRecords.length > 0 && (
-                    <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full ${activeTab === 'records' ? 'bg-dispatch-red/30 text-dispatch-red' : 'bg-gray-800 text-gray-500'}`}>{criminalRecords.length}</span>
+                    <span className={`ml-1 text-[11px] px-1.5 py-0.5 rounded-full ${activeTab === 'records' ? 'bg-dispatch-red/30 text-dispatch-red' : 'bg-gray-800 text-gray-500'}`}>{criminalRecords.length}</span>
                   )}
                   {t === 'jail' && inmates && inmates.length > 0 && (
-                    <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full ${activeTab === 'jail' ? 'bg-dispatch-red/30 text-dispatch-red' : 'bg-gray-800 text-gray-500'}`}>{inmates.length}</span>
+                    <span className={`ml-1 text-[11px] px-1.5 py-0.5 rounded-full ${activeTab === 'jail' ? 'bg-dispatch-red/30 text-dispatch-red' : 'bg-gray-800 text-gray-500'}`}>{inmates.length}</span>
                   )}
                   {t === 'hospital' && patients && patients.some((p) => p.status !== 'discharged') && (
-                    <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full ${activeTab === 'hospital' ? 'bg-dispatch-green/30 text-dispatch-green' : 'bg-gray-800 text-gray-500'}`}>{patients.filter((p) => p.status !== 'discharged').length}</span>
+                    <span className={`ml-1 text-[11px] px-1.5 py-0.5 rounded-full ${activeTab === 'hospital' ? 'bg-dispatch-green/30 text-dispatch-green' : 'bg-gray-800 text-gray-500'}`}>{patients.filter((p) => p.status !== 'discharged').length}</span>
                   )}
                   {t === 'marshal' && investigations && investigations.length > 0 && (
-                    <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full ${activeTab === 'marshal' ? 'bg-orange-500/30 text-orange-400' : 'bg-gray-800 text-gray-500'}`}>{investigations.length}</span>
+                    <span className={`ml-1 text-[11px] px-1.5 py-0.5 rounded-full ${activeTab === 'marshal' ? 'bg-orange-500/30 text-orange-400' : 'bg-gray-800 text-gray-500'}`}>{investigations.length}</span>
                   )}
                 </button>
                 );
@@ -1163,8 +1163,8 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-white flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> Incoming 911 Calls</h3>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gray-500">{incomingCalls.filter(c => c.status === 'ringing').length} ringing</span>
-                      <span className="text-[10px] text-gray-500">{activeCallId ? '1 selected' : ''}</span>
+                      <span className="text-[11px] text-gray-500">{incomingCalls.filter(c => c.status === 'ringing').length} ringing</span>
+                      <span className="text-[11px] text-gray-500">{activeCallId ? '1 selected' : ''}</span>
                     </div>
                   </div>
                   {incomingCalls.length === 0 && (
@@ -1178,25 +1178,25 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border shrink-0 ${severityBadge(call.severity)}`}>{call.severity.toUpperCase()}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold border shrink-0 ${severityBadge(call.severity)}`}>{call.severity.toUpperCase()}</span>
                             <span className="text-xs font-bold text-white truncate">{call.reportedType}</span>
-                            <span className="text-[10px] text-gray-500 shrink-0">{call.timestamp}</span>
+                            <span className="text-[11px] text-gray-500 shrink-0">{call.timestamp}</span>
                           </div>
-                          <p className="text-[10px] text-gray-400 mt-1">{call.callerName} • {call.callerNumber}</p>
-                          <p className="text-[10px] text-gray-300 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" /> {call.location}</p>
-                          <p className="text-[10px] text-gray-500 mt-1">{call.notes}</p>
+                          <p className="text-[11px] text-gray-400 mt-1">{call.callerName} • {call.callerNumber}</p>
+                          <p className="text-[11px] text-gray-300 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" /> {call.location}</p>
+                          <p className="text-[11px] text-gray-500 mt-1">{call.notes}</p>
                         </div>
                         <div className="flex flex-col gap-1.5">
                           {call.status === 'ringing' && (
-                            <button onClick={() => handleAcceptCall(call)} className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30 hover:bg-emerald-500/30">ACCEPT</button>
+                            <button onClick={() => handleAcceptCall(call)} className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-[11px] font-bold border border-emerald-500/30 hover:bg-emerald-500/30">ACCEPT</button>
                           )}
                           {call.status === 'active' && (
-                            <button onClick={() => handleDispatchCall(call)} disabled={dispatchableUnits.length === 0} className="px-2 py-1 rounded bg-dispatch-red/20 text-dispatch-red text-[10px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40">DISPATCH</button>
+                            <button onClick={() => handleDispatchCall(call)} disabled={dispatchableUnits.length === 0} className="px-2 py-1 rounded bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40">DISPATCH</button>
                           )}
                           {call.status === 'dispatched' && (
-                            <span className="px-2 py-1 rounded bg-gray-800 text-gray-400 text-[10px]">DISPATCHED</span>
+                            <span className="px-2 py-1 rounded bg-gray-800 text-gray-400 text-[11px]">DISPATCHED</span>
                           )}
-                          <button onClick={() => handleDeclineCall(call)} className="px-2 py-1 rounded bg-gray-800 text-gray-400 text-[10px] hover:text-white">CLOSE</button>
+                          <button onClick={() => handleDeclineCall(call)} className="px-2 py-1 rounded bg-gray-800 text-gray-400 text-[11px] hover:text-white">CLOSE</button>
                         </div>
                       </div>
                     </div>
@@ -1208,10 +1208,10 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-white flex items-center gap-2"><List className="w-3.5 h-3.5" /> Dispatch Board</h3>
-                    <button onClick={handleAutoDispatch} disabled={unassignedMissions.length === 0} className="px-3 py-1.5 rounded bg-dispatch-red/20 text-dispatch-red text-[10px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40 flex items-center gap-1"><Zap className="w-3 h-3" /> AUTO DISPATCH</button>
+                    <button onClick={handleAutoDispatch} disabled={unassignedMissions.length === 0} className="px-3 py-1.5 rounded bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40 flex items-center gap-1"><Zap className="w-3 h-3" /> AUTO DISPATCH</button>
                   </div>
                   {unassignedMissions.length > 0 && (
-                    <div className="p-2 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[10px] text-amber-200 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> {unassignedMissions.length} mission(s) need units.</div>
+                    <div className="p-2 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[11px] text-amber-200 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> {unassignedMissions.length} mission(s) need units.</div>
                   )}
                   {activeMissions.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-16 text-gray-600">
@@ -1227,7 +1227,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       {mainMissions.length > boardLimit && (
                         <button
                           onClick={() => setBoardLimit((l) => l + BOARD_PAGE)}
-                          className="w-full py-1.5 rounded-lg text-[10px] font-bold text-gray-400 bg-gray-800/40 border border-gray-700/40 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+                          className="w-full py-1.5 rounded-lg text-[11px] font-bold text-gray-400 bg-gray-800/40 border border-gray-700/40 hover:bg-gray-800 hover:text-gray-200 transition-colors"
                         >
                           Show {Math.min(BOARD_PAGE, mainMissions.length - boardLimit)} more of {mainMissions.length}
                         </button>
@@ -1242,7 +1242,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                         <Handshake className="w-4 h-4 text-blue-300 shrink-0" />
                         <div className="min-w-0">
                           <p className="text-[11px] font-bold text-blue-200">Mutual Aid — Partner Agency Requests</p>
-                          <p className="text-[9px] text-blue-300/70">These calls belong to another department. Route them to the nearest matching unit · <span className="text-blue-200 font-semibold">+25% bonus</span> on completion.</p>
+                          <p className="text-[11px] text-blue-300/70">These calls belong to another department. Route them to the nearest matching unit · <span className="text-blue-200 font-semibold">+25% bonus</span> on completion.</p>
                         </div>
                       </div>
                       <div className="p-3 space-y-3">
@@ -1250,7 +1250,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                         {mutualAidMissions.length > boardLimit && (
                           <button
                             onClick={() => setBoardLimit((l) => l + BOARD_PAGE)}
-                            className="w-full py-1.5 rounded-lg text-[10px] font-bold text-blue-300/80 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                            className="w-full py-1.5 rounded-lg text-[11px] font-bold text-blue-300/80 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
                           >
                             Show {Math.min(BOARD_PAGE, mutualAidMissions.length - boardLimit)} more
                           </button>
@@ -1269,7 +1269,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       <select
                         value={radioChannel}
                         onChange={e => setRadioChannel(e.target.value as 'all' | 'unit')}
-                        className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-300"
+                        className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-[11px] text-gray-300"
                       >
                         <option value="all">Broadcast All</option>
                         <option value="unit">Direct Unit</option>
@@ -1278,7 +1278,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                         <select
                           value={selectedUnitId || ''}
                           onChange={e => setSelectedUnitId(e.target.value || null)}
-                          className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-[10px] text-gray-300"
+                          className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-[11px] text-gray-300"
                         >
                           <option value="">Select unit</option>
                           {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -1291,9 +1291,9 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                     {radioMessages.length === 0 && <p className="text-xs text-gray-600 text-center mt-12">No radio traffic.</p>}
                     {radioMessages.map((msg) => (
                       <div key={msg.id} className="flex items-start gap-2 text-[11px]">
-                        <span className="text-[9px] text-gray-600 font-mono shrink-0 mt-0.5">{msg.timestamp}</span>
+                        <span className="text-[11px] text-gray-600 font-mono shrink-0 mt-0.5">{msg.timestamp}</span>
                         <div className={`px-2 py-1.5 rounded-lg border max-w-[80%] ${msg.from === 'Dispatch' ? 'bg-dispatch-red/10 border-dispatch-red/20 text-red-100 ml-auto' : 'bg-gray-800/60 border-gray-700/40 text-gray-200'}`}>
-                          <p className="font-bold text-[9px] text-gray-400 mb-0.5">{msg.from} → {msg.to}</p>
+                          <p className="font-bold text-[11px] text-gray-400 mb-0.5">{msg.from} → {msg.to}</p>
                           <p className="whitespace-pre-wrap">{msg.text}</p>
                         </div>
                       </div>
@@ -1325,7 +1325,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                         <button
                           key={f}
                           onClick={() => setServiceFilter(f)}
-                          className={`px-2 py-1 rounded text-[9px] font-bold border transition-colors ${serviceFilter === f ? 'bg-white/10 text-white border-white/20' : 'bg-gray-900 text-gray-500 border-transparent hover:text-gray-300'}`}
+                          className={`px-2 py-1 rounded text-[11px] font-bold border transition-colors ${serviceFilter === f ? 'bg-white/10 text-white border-white/20' : 'bg-gray-900 text-gray-500 border-transparent hover:text-gray-300'}`}
                         >
                           {f.toUpperCase()}
                         </button>
@@ -1344,12 +1344,12 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                               {serviceIcon(getUnitServiceType(unit.type))}
                               <div>
                                 <p className="text-xs font-bold text-white">{unit.name}</p>
-                                <p className="text-[9px] text-gray-500 capitalize">{unit.type.replace(/_/g, ' ')}</p>
+                                <p className="text-[11px] text-gray-500 capitalize">{unit.type.replace(/_/g, ' ')}</p>
                               </div>
                             </div>
-                            <span className={`text-[9px] font-bold uppercase ${statusClass}`}>{unit.status}</span>
+                            <span className={`text-[11px] font-bold uppercase ${statusClass}`}>{unit.status}</span>
                           </div>
-                          <div className="mt-2 text-[10px] text-gray-400 space-y-0.5">
+                          <div className="mt-2 text-[11px] text-gray-400 space-y-0.5">
                             <p>Station: {station?.name || '—'}</p>
                             {unit.status === 'en_route' && unit.eta != null && unit.eta > 0 && (
                               <p className="flex items-center gap-1">
@@ -1361,7 +1361,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                           </div>
                           <div className="mt-3 flex flex-wrap gap-1.5">
                             {unit.status === 'available' && unit.stationId && unitCanPatrol(unit.type, helipad) && (
-                              <button onClick={() => handleStartPatrol(unit)} className="px-2 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-[9px] font-bold hover:bg-cyan-500/20"><Navigation className="w-3 h-3 inline mr-1" /> PATROL</button>
+                              <button onClick={() => handleStartPatrol(unit)} className="px-2 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-[11px] font-bold hover:bg-cyan-500/20"><Navigation className="w-3 h-3 inline mr-1" /> PATROL</button>
                             )}
                             {unit.status === 'available' && (() => {
                               const aState = useGameStore.getState().myAlliance;
@@ -1374,17 +1374,17 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                                     setPrefillLoanUnitType(capitalizedType);
                                     setActiveTab('alliance');
                                   }}
-                                  className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/30 text-[9px] font-bold hover:bg-purple-500/20"
+                                  className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/30 text-[11px] font-bold hover:bg-purple-500/20"
                                 >
                                   🤝 LEND TO ALLY
                                 </button>
                               );
                             })()}
                             {unit.status === 'patrolling' && (
-                              <button onClick={() => handleStopPatrol(unit)} className="px-2 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[9px] font-bold hover:bg-amber-500/20"><Circle className="w-3 h-3 inline mr-1" /> END PATROL</button>
+                              <button onClick={() => handleStopPatrol(unit)} className="px-2 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[11px] font-bold hover:bg-amber-500/20"><Circle className="w-3 h-3 inline mr-1" /> END PATROL</button>
                             )}
                             {unit.status !== 'available' && unit.status !== 'patrolling' && (
-                              <button onClick={() => handleRecallUnit(unit)} className="px-2 py-1 rounded bg-dispatch-red/10 text-dispatch-red border border-dispatch-red/30 text-[9px] font-bold hover:bg-dispatch-red/20"><Crosshair className="w-3 h-3 inline mr-1" /> RECALL</button>
+                              <button onClick={() => handleRecallUnit(unit)} className="px-2 py-1 rounded bg-dispatch-red/10 text-dispatch-red border border-dispatch-red/30 text-[11px] font-bold hover:bg-dispatch-red/20"><Crosshair className="w-3 h-3 inline mr-1" /> RECALL</button>
                             )}
                           </div>
                         </div>
@@ -1405,7 +1405,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                         </div>
                       </div>
                     ))}
-                    {assistantLoading && <p className="text-[10px] text-gray-500">Assistant is thinking…</p>}
+                    {assistantLoading && <p className="text-[11px] text-gray-500">Assistant is thinking…</p>}
                     <div ref={assistantRef} />
                   </div>
                   <div className="flex gap-2 shrink-0">
@@ -1439,7 +1439,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       return (
                         <div className="text-center py-8 text-gray-500">
                           <p className="text-[11px]">Join an alliance to access the shared board.</p>
-                          <p className="text-[10px] mt-1 text-gray-600">Alliances let you coordinate with other commanders.</p>
+                          <p className="text-[11px] mt-1 text-gray-600">Alliances let you coordinate with other commanders.</p>
                         </div>
                       );
                     }
@@ -1448,7 +1448,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       return (
                         <div className="text-center py-8 text-gray-500">
                           <p className="text-[11px]">Alliance Level 2 required for shared board.</p>
-                          <p className="text-[10px] mt-1 text-gray-600">{nextXp > 0 ? `${nextXp} XP to Level 2` : 'Level up to unlock!'}</p>
+                          <p className="text-[11px] mt-1 text-gray-600">{nextXp > 0 ? `${nextXp} XP to Level 2` : 'Level up to unlock!'}</p>
                         </div>
                       );
                     }
@@ -1456,7 +1456,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       return (
                         <div className="text-center py-8 text-gray-500">
                           <p className="text-[11px]">No shared missions from alliance members yet.</p>
-                          <p className="text-[10px] mt-1 text-gray-600">Alliance members in the same city will appear here.</p>
+                          <p className="text-[11px] mt-1 text-gray-600">Alliance members in the same city will appear here.</p>
                         </div>
                       );
                     }
@@ -1470,7 +1470,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                     return (
                       <div className="space-y-3">
                         {/* Level status bar */}
-                        <div className="flex items-center gap-2 text-[10px] text-gray-500 pb-2 border-b border-gray-800/50">
+                        <div className="flex items-center gap-2 text-[11px] text-gray-500 pb-2 border-b border-gray-800/50">
                           <span className="text-purple-400 font-bold">L{allianceLevel}</span>
                           <span>•</span>
                           <span className={canDispatch ? 'text-emerald-400' : 'text-gray-600'}>Dispatch {canDispatch ? '✓' : 'L3+'}</span>
@@ -1496,22 +1496,22 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                                   <span className="text-sm">{m.icon}</span>
                                   <span className="text-xs font-bold text-white">{m.name}</span>
                                   {isCleared && (
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-300 font-bold">
+                                    <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-300 font-bold">
                                       ✅ CLEARED BY {(m as any).allianceClearedBy}
                                     </span>
                                   )}
                                   {!isCleared && isHandled && (
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
+                                    <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
                                       HANDLED
                                     </span>
                                   )}
                                 </div>
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${spawnerColor}/20 text-white/80`}>
+                                <span className={`text-[11px] px-2 py-0.5 rounded-full ${spawnerColor}/20 text-white/80`}>
                                   {m.allianceSpawnerName ?? 'Ally'}
                                 </span>
                               </div>
-                              <p className="text-[10px] text-gray-400 mt-1">{m.description}</p>
-                              <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-500">
+                              <p className="text-[11px] text-gray-400 mt-1">{m.description}</p>
+                              <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-500">
                                 <span className={`px-1.5 py-0.5 rounded ${priority === 'critical' ? 'bg-red-500/20 text-red-400' : priority === 'high' ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-700/40 text-gray-400'}`}>
                                   {priority.toUpperCase()}
                                 </span>
@@ -1524,12 +1524,12 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                                 <div className="mt-2 pt-2 border-t border-purple-500/10">
                                   <div className="flex items-center gap-2 mb-1">
                                     <Navigation className="w-3 h-3 text-green-400" />
-                                    <span className="text-[10px] font-bold text-green-400">
+                                    <span className="text-[11px] font-bold text-green-400">
                                       {totalUnitsEnRoute} unit{totalUnitsEnRoute !== 1 ? 's' : ''} en route
                                     </span>
                                   </div>
                                   {responders.map((r, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-[10px] text-gray-400 ml-5">
+                                    <div key={i} className="flex items-center gap-2 text-[11px] text-gray-400 ml-5">
                                       <span className="text-white/70">{r.playerName}</span>
                                       <span>•</span>
                                       <span>{r.unitCount} unit{r.unitCount !== 1 ? 's' : ''}</span>
@@ -1545,12 +1545,12 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                                 canDispatch ? (
                                   <button
                                     onClick={() => dispatchMission(m)}
-                                    className="mt-2 w-full py-1.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 text-[10px] font-bold flex items-center justify-center gap-1.5"
+                                    className="mt-2 w-full py-1.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 text-[11px] font-bold flex items-center justify-center gap-1.5"
                                   >
                                     <Send className="w-3 h-3" /> Respond to Call
                                   </button>
                                 ) : (
-                                  <div className="mt-2 text-[10px] text-gray-600 text-center py-1">
+                                  <div className="mt-2 text-[11px] text-gray-600 text-center py-1">
                                     Dispatch requires Alliance Level 3
                                   </div>
                                 )
@@ -1619,21 +1619,21 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
 
               {activeTab === 'records' && (
                 <div className="h-full min-w-0 overflow-hidden rounded-xl border border-white/5 bg-gray-950/40">
-                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[10px] text-gray-500">Loading records…</div>}>
+                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[11px] text-gray-500">Loading records…</div>}>
                     <CriminalRecordsPanel />
                   </Suspense>
                 </div>
               )}
               {activeTab === 'jail' && (
                 <div className="h-full min-w-0 overflow-hidden rounded-xl border border-white/5 bg-gray-950/40">
-                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[10px] text-gray-500">Loading jail…</div>}>
+                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[11px] text-gray-500">Loading jail…</div>}>
                     <CountyJailPanel />
                   </Suspense>
                 </div>
               )}
               {activeTab === 'hospital' && (
                 <div className="h-full min-w-0 overflow-hidden rounded-xl border border-white/5 bg-gray-950/40">
-                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[10px] text-gray-500">Loading hospital…</div>}>
+                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[11px] text-gray-500">Loading hospital…</div>}>
                     <CityHospitalPanel />
                   </Suspense>
                 </div>
@@ -1645,7 +1645,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
               )}
               {activeTab === 'districts' && (
                 <div className="h-full min-w-0 overflow-hidden rounded-xl border border-white/5 bg-gray-950/40">
-                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[10px] text-gray-500">Loading districts…</div>}>
+                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[11px] text-gray-500">Loading districts…</div>}>
                     <DistrictPanel />
                   </Suspense>
                 </div>
@@ -1659,9 +1659,9 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                 <span className="text-[11px] font-bold text-white">Comm Log</span>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-                {commLog.length === 0 && <p className="text-[10px] text-gray-600 text-center mt-8">No comm events.</p>}
+                {commLog.length === 0 && <p className="text-[11px] text-gray-600 text-center mt-8">No comm events.</p>}
                 {commLog.map((entry) => (
-                  <div key={entry.id} className="text-[10px] border-l-2 pl-2 py-0.5 border-gray-700">
+                  <div key={entry.id} className="text-[11px] border-l-2 pl-2 py-0.5 border-gray-700">
                     <span className="text-gray-600 font-mono">{entry.timestamp}</span>
                     <p className={` ${entry.priority === 'critical' ? 'text-red-400' : entry.priority === 'high' ? 'text-amber-400' : 'text-gray-300'}`}>{entry.text}</p>
                   </div>

@@ -32,7 +32,7 @@ const STATUS_META: Record<BugReportStatus, { label: string; chip: string }> = {
 function statusChip(status: BugReportStatus) {
   const meta = STATUS_META[status] ?? STATUS_META.new;
   return (
-    <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
+    <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
       {meta.label}
     </span>
   );
@@ -136,7 +136,7 @@ ${steps.trim()}` : ''].filter(Boolean).join('\n\n');
                 <Bug className="w-5 h-5 text-dispatch-red" />
                 <div>
                   <h2 className="text-sm font-bold text-white">Report a Bug</h2>
-                  <p className="text-[10px] text-gray-500">Help us improve Dispatch HQ</p>
+                  <p className="text-[11px] text-gray-500">Help us improve Dispatch HQ</p>
                 </div>
               </div>
               <button
@@ -151,19 +151,19 @@ ${steps.trim()}` : ''].filter(Boolean).join('\n\n');
             <div className="flex border-b border-gray-800">
               <button
                 onClick={() => setTab('report')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${tab === 'report' ? 'text-dispatch-red border-b-2 border-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${tab === 'report' ? 'text-dispatch-red border-b-2 border-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 <Bug className="w-3 h-3" /> Report
               </button>
               <button
                 onClick={() => setTab('known')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${tab === 'known' ? 'text-dispatch-red border-b-2 border-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${tab === 'known' ? 'text-dispatch-red border-b-2 border-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 <Wrench className="w-3 h-3" /> Known Issues
               </button>
               <button
                 onClick={() => setTab('mine')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${tab === 'mine' ? 'text-dispatch-red border-b-2 border-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${tab === 'mine' ? 'text-dispatch-red border-b-2 border-dispatch-red' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 <FileText className="w-3 h-3" /> My Reports
               </button>
@@ -178,25 +178,25 @@ ${steps.trim()}` : ''].filter(Boolean).join('\n\n');
                 {!mineLoading && mine.map((r) => (
                   <div key={r.id} className="bg-gray-800/40 border border-gray-700/30 rounded-lg p-2.5">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[9px] font-bold text-white uppercase">{r.category}</span>
+                      <span className="text-[11px] font-bold text-white uppercase">{r.category}</span>
                       {statusChip(r.status)}
-                      {r.assignee && <span className="text-[8px] text-gray-500 ml-auto">👤 {r.assignee}</span>}
+                      {r.assignee && <span className="text-[11px] text-gray-500 ml-auto">👤 {r.assignee}</span>}
                     </div>
                     <p className="text-[11px] text-gray-300 whitespace-pre-wrap break-words">{r.description}</p>
                     {r.notes ? (
                       <div className="mt-1.5 flex items-start gap-1.5 px-2 py-1.5 rounded bg-blue-500/10 border border-blue-500/25">
-                        <span className="text-[10px]">💬</span>
+                        <span className="text-[11px]">💬</span>
                         <div className="min-w-0">
-                          <p className="text-[8px] font-bold uppercase tracking-wider text-blue-300">Team Note</p>
-                          <p className="text-[10px] text-blue-200 whitespace-pre-wrap break-words">{r.notes}</p>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-300">Team Note</p>
+                          <p className="text-[11px] text-blue-200 whitespace-pre-wrap break-words">{r.notes}</p>
                         </div>
                       </div>
                     ) : (
-                      <p className="mt-1.5 text-[9px] text-gray-600">
+                      <p className="mt-1.5 text-[11px] text-gray-600">
                         Status: {STATUS_META[r.status]?.label ?? r.status} — check back for an update.
                       </p>
                     )}
-                    <p className="mt-1 text-[8px] text-gray-600">
+                    <p className="mt-1 text-[11px] text-gray-600">
                       Filed {new Date(r.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -215,9 +215,9 @@ ${steps.trim()}` : ''].filter(Boolean).join('\n\n');
                 {!knownLoading && known.map((issue) => (
                   <div key={issue.id} className="bg-gray-800/40 border border-gray-700/30 rounded-lg p-2.5">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[9px] font-bold text-white uppercase">{issue.category}</span>
+                      <span className="text-[11px] font-bold text-white uppercase">{issue.category}</span>
                       {statusChip(issue.status)}
-                      {issue.assignee && <span className="text-[8px] text-gray-500 ml-auto">👤 {issue.assignee}</span>}
+                      {issue.assignee && <span className="text-[11px] text-gray-500 ml-auto">👤 {issue.assignee}</span>}
                     </div>
                     <p className="text-[11px] text-gray-300 whitespace-pre-wrap break-words">{issue.description}</p>
                   </div>
@@ -240,7 +240,7 @@ ${steps.trim()}` : ''].filter(Boolean).join('\n\n');
                       <button
                         key={cat}
                         onClick={() => setCategory(cat)}
-                        className={`px-2 py-1.5 rounded-lg text-[10px] font-medium transition-all border ${
+                        className={`px-2 py-1.5 rounded-lg text-[11px] font-medium transition-all border ${
                           category === cat
                             ? 'bg-dispatch-red/20 text-dispatch-red border-dispatch-red/40'
                             : 'bg-gray-800/50 text-gray-400 border-gray-700/30 hover:border-gray-600'

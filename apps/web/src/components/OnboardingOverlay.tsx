@@ -497,7 +497,7 @@ export function OnboardingOverlay({ onComplete, initialStep }: OnboardingOverlay
                       <div className="inline-flex items-center gap-1.5 mt-1">
                         {/* Circular progress ring — % through the tour at a glance */}
                         <TourProgressRing step={currentStep} count={TUTORIAL_STEPS.length} />
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-dispatch-red/15 border border-dispatch-red/40 text-[10px] font-bold text-dispatch-red">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-dispatch-red/15 border border-dispatch-red/40 text-[11px] font-bold text-dispatch-red">
                           Step {currentStep + 1} of {TUTORIAL_STEPS.length} · {tourPercent(currentStep, TUTORIAL_STEPS.length)}%
                         </span>
                       </div>
@@ -546,7 +546,7 @@ export function OnboardingOverlay({ onComplete, initialStep }: OnboardingOverlay
                   {step.keys && step.keys.length > 0 && (
                     <div className="flex items-center gap-1 mt-3">
                       {step.keys.map((k) => (
-                        <kbd key={k} className="px-1.5 py-0.5 rounded bg-gray-700/80 text-gray-300 text-[9px] font-mono border border-gray-600/40">
+                        <kbd key={k} className="px-1.5 py-0.5 rounded bg-gray-700/80 text-gray-300 text-[11px] font-mono border border-gray-600/40">
                           {k}
                         </kbd>
                       ))}

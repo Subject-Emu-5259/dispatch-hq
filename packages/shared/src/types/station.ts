@@ -25,6 +25,10 @@ export interface Station {
   level: number;
   name: string;
   themeId?: string; // Urban | Suburban | County (see STATION_THEMES)
+  /** Batch 3d station livery: per-service paint scheme id (see LIVERIES). */
+  liveryId?: string;
+  /** Batch 3d station patch id (see STATION_PATCHES in lib/stationCustom). */
+  patch?: string;
   position: GeoPoint;
   capacity: number;
   unitCount: number;

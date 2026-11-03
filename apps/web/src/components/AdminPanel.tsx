@@ -58,7 +58,7 @@ const ORDER_STATUS_META: Record<ShopOrderStatus, { label: string; chip: string }
 function orderStatusChip(status: ShopOrderStatus) {
   const meta = ORDER_STATUS_META[status] ?? ORDER_STATUS_META.pending;
   return (
-    <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
+    <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
       {meta.label}
     </span>
   );
@@ -83,7 +83,7 @@ function coinReasonChip(reason: string) {
   const meta = COIN_REASON_META[reason as CoinTransactionReason]
     ?? { label: reason, chip: 'bg-gray-800 text-gray-400 border-gray-700' };
   return (
-    <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
+    <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
       {meta.label}
     </span>
   );
@@ -111,7 +111,7 @@ const TABS: { id: AdminTab; label: string; icon: React.ReactNode }[] = [
 function reportStatusChip(status: BugReportStatus) {
   const meta = STATUS_META[status] ?? STATUS_META.new;
   return (
-    <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
+    <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border ${meta.chip}`}>
       {meta.label}
     </span>
   );
@@ -760,18 +760,18 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                 <div className="min-w-0">
                   <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
                     Admin Console
-                    <span className="px-1 py-px rounded bg-dispatch-red/20 border border-dispatch-red/40 text-[8px] font-bold text-dispatch-red uppercase tracking-wider">Founder</span>
+                    <span className="px-1 py-px rounded bg-dispatch-red/20 border border-dispatch-red/40 text-[11px] font-bold text-dispatch-red uppercase tracking-wider">Founder</span>
                   </h2>
-                  <p className="text-[10px] text-gray-500 truncate">City-wide operations · {overview?.founderEmail ?? 'deandrewh26@gmail.com'}</p>
+                  <p className="text-[11px] text-gray-500 truncate">City-wide operations · {overview?.founderEmail ?? 'deandrewh26@gmail.com'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="hidden sm:flex items-center gap-1.5 text-[9px] text-gray-500">
+                <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-gray-500">
                   <span className={`w-1.5 h-1.5 rounded-full ${(overview?.connectedNow ?? 0) > 0 ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'}`} />
                   {overview?.connectedNow ?? 0} online
                 </span>
                 {lastRefreshed && (
-                  <span className="hidden md:block text-[9px] text-gray-600">
+                  <span className="hidden md:block text-[11px] text-gray-600">
                     {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 )}
@@ -823,7 +823,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         <button
                           key={t.id}
                           onClick={() => setTab(t.id)}
-                          className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all shrink-0 border ${
+                          className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all shrink-0 border ${
                             tab === t.id
                               ? 'bg-gradient-to-b from-dispatch-red/25 to-dispatch-red/10 text-dispatch-red border-dispatch-red/40 shadow-inner'
                               : 'bg-gray-800/50 text-gray-400 border-transparent hover:text-white hover:bg-gray-800'
@@ -832,7 +832,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           {t.icon}
                           {t.label}
                           {badge != null && (
-                            <span className="min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-gray-950 text-[8px] font-bold">
+                            <span className="min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-gray-950 text-[11px] font-bold">
                               {badge > 99 ? '99+' : badge}
                             </span>
                           )}
@@ -858,7 +858,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             <button
                               type="button"
                               onClick={() => downloadAnalyticsCsv(analytics)}
-                              className="flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-semibold border border-gray-600/50 bg-gray-800/60 text-gray-300 hover:text-white hover:border-gray-500 transition-colors shrink-0"
+                              className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold border border-gray-600/50 bg-gray-800/60 text-gray-300 hover:text-white hover:border-gray-500 transition-colors shrink-0"
                               title="Download the summary + per-type breakdown as CSV"
                             >
                               <Download className="w-3 h-3" /> CSV
@@ -866,19 +866,19 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           </div>
                           <div className="mt-2 grid grid-cols-4 gap-2">
                             <div className="bg-gray-900/50 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-gray-500">Sessions</p>
+                              <p className="text-[11px] uppercase tracking-wider text-gray-500">Sessions</p>
                               <p className="text-base font-bold text-white tabular-nums">{analytics.sessions.toLocaleString()}</p>
                             </div>
                             <div className="bg-gray-900/50 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-gray-500">Avg duration</p>
+                              <p className="text-[11px] uppercase tracking-wider text-gray-500">Avg duration</p>
                               <p className="text-base font-bold text-white tabular-nums">{formatSessionDuration(analytics.avgDurationSeconds)}</p>
                             </div>
                             <div className="bg-gray-900/50 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-gray-500">Missions cleared</p>
+                              <p className="text-[11px] uppercase tracking-wider text-gray-500">Missions cleared</p>
                               <p className="text-base font-bold text-white tabular-nums">{analytics.missionsCompleted.toLocaleString()}</p>
                             </div>
                             <div className="bg-gray-900/50 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-gray-500">Avg response</p>
+                              <p className="text-[11px] uppercase tracking-wider text-gray-500">Avg response</p>
                               <p className="text-base font-bold text-white tabular-nums">{formatSessionDuration(analytics.avgResponseTimeSeconds)}</p>
                             </div>
                           </div>
@@ -899,7 +899,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 <button
                                   type="button"
                                   onClick={() => setShowAllTypes((v) => !v)}
-                                  className="mt-1 inline-flex items-center gap-1 text-[10px] text-violet-300 hover:text-violet-200 transition-colors"
+                                  className="mt-1 inline-flex items-center gap-1 text-[11px] text-violet-300 hover:text-violet-200 transition-colors"
                                 >
                                   {showAllTypes ? 'Show fewer' : `Show all ${analytics.missionsByType.length} types`}
                                   <ChevronDown className={`w-3 h-3 transition-transform ${showAllTypes ? 'rotate-180' : ''}`} />
@@ -907,7 +907,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                               )}
                             </div>
                           ) : (
-                            <p className="mt-2 text-[10px] text-gray-600 border-t border-gray-800/50 pt-2">
+                            <p className="mt-2 text-[11px] text-gray-600 border-t border-gray-800/50 pt-2">
                               No mission activity recorded yet — clear a few calls and check back.
                             </p>
                           )}
@@ -919,7 +919,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
                           <div className="flex items-center justify-between gap-2">
                             <SectionTitle icon={<Zap className="w-3 h-3 text-amber-400" />} label="429 Throttles" sub="since server start" />
-                            <span className="text-[9px] font-bold text-amber-300 tabular-nums bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded shrink-0">
+                            <span className="text-[11px] font-bold text-amber-300 tabular-nums bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded shrink-0">
                               {rateLimit.routes.reduce((s, r) => s + (r.blocked || 0), 0)} blocked
                             </span>
                           </div>
@@ -940,7 +940,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             <div className="mt-2 border-t border-gray-800/50 pt-2 space-y-1">
                               {rateLimit.offenders.slice(0, 5).map((o) => (
                                 <div key={o.key} className="flex items-center justify-between gap-2 text-[11px]">
-                                  <span className="text-gray-400 truncate font-mono text-[10px]">{o.key}</span>
+                                  <span className="text-gray-400 truncate font-mono text-[11px]">{o.key}</span>
                                   <span className="text-gray-500 tabular-nums shrink-0 whitespace-nowrap">
                                     {o.blocked}× · {formatAgo(o.lastBlockedAt)}
                                   </span>
@@ -955,7 +955,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       <div className={`bg-gray-800/40 border rounded-xl overflow-hidden ${maintenance.maintenance ? 'border-amber-500/40' : 'border-gray-700/40'}`}>
                         <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-700/40">
                           <SectionTitle icon={<Wrench className={`w-3 h-3 ${maintenance.maintenance ? 'text-amber-400' : 'text-gray-400'}`} />} label="Maintenance Mode" sub={maintenance.maintenance ? 'online gameplay paused' : 'online gameplay live'} />
-                          <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border shrink-0 ${
+                          <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border shrink-0 ${
                             maintenance.maintenance
                               ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 animate-pulse'
                               : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
@@ -964,7 +964,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           </span>
                         </div>
                         <div className="p-3 space-y-2">
-                          <p className="text-[10px] text-gray-500">
+                          <p className="text-[11px] text-gray-500">
                             While active, the WebSocket rejects new connections and every connected player is told live — their online indicator flips to <span className="text-amber-300 font-semibold">Maintenance</span>. Offline single-player gameplay keeps working untouched.
                           </p>
                           <div className="flex items-center gap-2">
@@ -973,13 +973,13 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                               onChange={(e) => setMaintenanceReason(e.target.value)}
                               placeholder={maintenance.maintenance ? 'Reason (shown to players)…' : 'Reason (optional)…'}
                               maxLength={200}
-                              className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/60"
+                              className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/60"
                             />
                             <button
                               type="button"
                               onClick={() => void toggleMaintenance()}
                               disabled={maintenanceBusy}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors disabled:opacity-50 shrink-0 ${
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors disabled:opacity-50 shrink-0 ${
                                 maintenance.maintenance
                                   ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25'
                                   : 'bg-amber-500/15 border-amber-500/40 text-amber-300 hover:bg-amber-500/25'
@@ -990,7 +990,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             </button>
                           </div>
                           {maintenance.since && maintenance.maintenance && (
-                            <p className="text-[9px] text-amber-400/70">
+                            <p className="text-[11px] text-amber-400/70">
                               Paused since {new Date(maintenance.since).toLocaleString()}{maintenance.reason ? ` — “${maintenance.reason}”` : ''}
                             </p>
                           )}
@@ -998,7 +998,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           {/* Scheduled maintenance (v0.22.18): arm a window and let the server flip it. */}
                           {maintenance.scheduledAt ? (
                             <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg bg-amber-500/5 border border-amber-500/25">
-                              <p className="text-[9px] text-amber-300/90 min-w-0">
+                              <p className="text-[11px] text-amber-300/90 min-w-0">
                                 <CalendarClock className="w-3 h-3 inline mr-1 -mt-0.5 shrink-0" />
                                 <span className="font-semibold">Scheduled for {new Date(maintenance.scheduledAt).toLocaleString()}</span>
                                 {' '}— the server flips automatically and drops the inbox note.
@@ -1007,7 +1007,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 type="button"
                                 onClick={() => void cancelScheduledMaintenance()}
                                 disabled={scheduleBusy}
-                                className="flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold border border-gray-700 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors disabled:opacity-50 shrink-0"
+                                className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border border-gray-700 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors disabled:opacity-50 shrink-0"
                               >
                                 <XCircle className="w-3 h-3" />
                                 {scheduleBusy ? '…' : 'Cancel'}
@@ -1020,37 +1020,37 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   type="datetime-local"
                                   value={scheduleAtLocal}
                                   onChange={(e) => setScheduleAtLocal(e.target.value)}
-                                  className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/60 [color-scheme:dark]"
+                                  className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/60 [color-scheme:dark]"
                                 />
                                 <input
                                   value={scheduleReason}
                                   onChange={(e) => setScheduleReason(e.target.value)}
                                   placeholder="Reason (optional)…"
                                   maxLength={200}
-                                  className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/60"
+                                  className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/60"
                                 />
                                 <button
                                   type="button"
                                   onClick={() => void scheduleMaintenance()}
                                   disabled={scheduleBusy}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold border border-amber-500/40 text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 transition-colors disabled:opacity-50 shrink-0"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-amber-500/40 text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 transition-colors disabled:opacity-50 shrink-0"
                                 >
                                   <CalendarClock className="w-3 h-3" />
                                   {scheduleBusy ? '…' : 'Schedule'}
                                 </button>
                               </div>
-                              <p className="text-[8px] text-gray-600">
+                              <p className="text-[11px] text-gray-600">
                                 Plan a window — the server flips maintenance automatically at the start time and messages every player then. No 2am toggle.
                               </p>
                             </div>
                           )}
                           {scheduleMsg && (
-                            <p className={`text-[9px] ${scheduleMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <p className={`text-[11px] ${scheduleMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
                               {scheduleMsg.text}
                             </p>
                           )}
                           {maintenanceMsg && (
-                            <p className={`text-[9px] ${maintenanceMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <p className={`text-[11px] ${maintenanceMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
                               {maintenanceMsg.text}
                             </p>
                           )}
@@ -1061,7 +1061,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       <div className={`bg-gray-800/40 border rounded-xl overflow-hidden ${!signupGate.open ? 'border-red-500/40' : 'border-gray-700/40'}`}>
                         <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-700/40">
                           <SectionTitle icon={<UserRound className={`w-3 h-3 ${!signupGate.open ? 'text-red-400' : 'text-gray-400'}`} />} label="New Signups" sub={signupGate.open ? 'open — anyone can create an account' : 'paused — no new accounts'} />
-                          <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border shrink-0 ${
+                          <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border shrink-0 ${
                             signupGate.open
                               ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                               : 'bg-red-500/15 text-red-300 border-red-500/30 animate-pulse'
@@ -1070,7 +1070,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           </span>
                         </div>
                         <div className="p-3 space-y-2">
-                          <p className="text-[10px] text-gray-500">
+                          <p className="text-[11px] text-gray-500">
                             While paused, the <span className="text-gray-300 font-semibold">register</span> form and guest→account upgrades are rejected (403). Existing players can still <span className="text-gray-300 font-semibold">log in</span> and guests keep playing — only new account creation stops.
                           </p>
                           <div className="flex items-center gap-2">
@@ -1080,14 +1080,14 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 value={signupGateReopenAt}
                                 onChange={(e) => setSignupGateReopenAt(e.target.value)}
                                 title="Optional: auto-reopen at this time (players see a live countdown)"
-                                className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-red-500/60 [color-scheme:dark]"
+                                className="flex-1 min-w-0 px-2.5 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-red-500/60 [color-scheme:dark]"
                               />
                             )}
                             <button
                               type="button"
                               onClick={() => void toggleSignupGate()}
                               disabled={signupGateBusy}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors disabled:opacity-50 shrink-0 ${
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors disabled:opacity-50 shrink-0 ${
                                 signupGate.open
                                   ? 'bg-red-500/15 border-red-500/40 text-red-300 hover:bg-red-500/25'
                                   : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25'
@@ -1098,12 +1098,12 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             </button>
                           </div>
                           {signupGate.open && (
-                            <p className="text-[8px] text-gray-600">
+                            <p className="text-[11px] text-gray-600">
                               Optional: pick a reopen time when pausing — the gate flips itself open then and players see a live countdown. Leave empty to pause indefinitely.
                             </p>
                           )}
                           {signupGate.since && (
-                            <p className="text-[9px] text-gray-600">
+                            <p className="text-[11px] text-gray-600">
                               {signupGate.open ? 'Reopened' : 'Paused'} {new Date(signupGate.since).toLocaleString()}
                               {!signupGate.open && signupGate.reopensAt && (
                                 <> · auto-reopens {new Date(signupGate.reopensAt).toLocaleString()}</>
@@ -1111,7 +1111,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             </p>
                           )}
                           {signupGateMsg && (
-                            <p className={`text-[9px] ${signupGateMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <p className={`text-[11px] ${signupGateMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
                               {signupGateMsg.text}
                             </p>
                           )}
@@ -1121,35 +1121,35 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl overflow-hidden">
                         <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700/40">
                           <SectionTitle icon={<Wifi className="w-3 h-3 text-emerald-400" />} label={`Online Now${onlineNow.length > 0 ? ` (${onlineNow.length})` : ''}`} />
-                          <span className="flex items-center gap-1.5 text-[9px] text-gray-500">
+                          <span className="flex items-center gap-1.5 text-[11px] text-gray-500">
                             <span className={`w-1.5 h-1.5 rounded-full ${onlineNow.length > 0 ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'}`} />
                             live · 15s
                           </span>
                         </div>
                         <div className="p-2 space-y-1">
                           {onlineNow.length === 0 ? (
-                            <p className="text-[10px] text-gray-600 px-1 py-1">No commanders online right now.</p>
+                            <p className="text-[11px] text-gray-600 px-1 py-1">No commanders online right now.</p>
                           ) : (
                             onlineNow.map((o) => {
                               const act = PRESENCE_META[o.activity] ?? PRESENCE_META.idle;
                               return (
                                 <div key={o.playerId} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-950/50 border border-gray-800/50">
-                                  <span className="w-6 h-6 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[10px] font-bold text-emerald-300 shrink-0">
+                                  <span className="w-6 h-6 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[11px] font-bold text-emerald-300 shrink-0">
                                     {avatarInitials(o.username)}
                                   </span>
                                   <div className="min-w-0 flex-1">
                                     <span className="flex items-center gap-1.5 min-w-0">
                                       <span className="text-[11px] text-gray-200 truncate">{o.username}</span>
                                       {o.allianceId && (
-                                        <span className="text-[8px] px-1 py-px rounded bg-violet-500/15 text-violet-300 border border-violet-500/25 uppercase font-bold shrink-0">alliance</span>
+                                        <span className="text-[11px] px-1 py-px rounded bg-violet-500/15 text-violet-300 border border-violet-500/25 uppercase font-bold shrink-0">alliance</span>
                                       )}
                                     </span>
-                                    <p className="text-[9px] text-gray-500 truncate">{o.city ?? 'City unset'}</p>
+                                    <p className="text-[11px] text-gray-500 truncate">{o.city ?? 'City unset'}</p>
                                   </div>
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold shrink-0">
+                                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold shrink-0">
                                     Lv {o.level}
                                   </span>
-                                  <span className={`text-[9px] px-1.5 py-0.5 rounded border font-semibold shrink-0 whitespace-nowrap ${act.chip}`}>
+                                  <span className={`text-[11px] px-1.5 py-0.5 rounded border font-semibold shrink-0 whitespace-nowrap ${act.chip}`}>
                                     {act.icon} {act.label}
                                   </span>
                                 </div>
@@ -1166,7 +1166,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             <button
                               type="button"
                               onClick={() => setShowGuests((v) => !v)}
-                              className="text-[10px] px-2 py-1 rounded-md border border-gray-700/60 bg-gray-800/40 text-gray-400 hover:text-white hover:border-gray-500 transition-colors shrink-0"
+                              className="text-[11px] px-2 py-1 rounded-md border border-gray-700/60 bg-gray-800/40 text-gray-400 hover:text-white hover:border-gray-500 transition-colors shrink-0"
                             >
                               {showGuests ? 'Hide guests' : `Show guests (${guestCount} hidden)`}
                             </button>
@@ -1179,7 +1179,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                               value={playerSearch}
                               onChange={(e) => setPlayerSearch(e.target.value)}
                               placeholder="Filter by username…"
-                              className="w-full pl-7 pr-2 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/60"
+                              className="w-full pl-7 pr-2 py-1.5 bg-gray-950 border border-gray-700 rounded-lg text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/60"
                             />
                           </div>
                           {visiblePlayers.length === 0 && (
@@ -1188,23 +1188,23 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             </p>
                           )}
                           {visiblePlayers.length > 0 && filteredPlayers.length === 0 && (
-                            <p className="text-[10px] text-gray-600 px-1 pt-1">No players match “{playerSearch}”.</p>
+                            <p className="text-[11px] text-gray-600 px-1 pt-1">No players match “{playerSearch}”.</p>
                           )}
                           {filteredPlayers.map((p, i) => {
                             const isGuest = (p.email ?? '').toLowerCase().startsWith('guest_');
                             return (
                               <div key={i} className="group flex items-center justify-between gap-2 px-2 py-1.5 bg-gray-900/40 border border-gray-800/50 rounded-lg hover:border-gray-700 transition-colors">
                                 <span className="flex items-center gap-2 min-w-0">
-                                  <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 ${avatarColor(p.username ?? '', i)}`}>
+                                  <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] font-bold shrink-0 ${avatarColor(p.username ?? '', i)}`}>
                                     {avatarInitials(p.username)}
                                   </span>
                                   <span className="text-xs text-gray-200 truncate">{p.username ?? 'Unknown'}</span>
                                   {isGuest && (
-                                    <span className="text-[8px] px-1 py-px rounded bg-amber-500/15 text-amber-300 border border-amber-500/25 uppercase font-bold shrink-0">guest</span>
+                                    <span className="text-[11px] px-1 py-px rounded bg-amber-500/15 text-amber-300 border border-amber-500/25 uppercase font-bold shrink-0">guest</span>
                                   )}
                                 </span>
                                 <span className="flex items-center gap-2 shrink-0">
-                                  <span className="text-[10px] text-gray-500">Lv {p.level ?? 1} · {(p.xp ?? 0).toLocaleString()} XP</span>
+                                  <span className="text-[11px] text-gray-500">Lv {p.level ?? 1} · {(p.xp ?? 0).toLocaleString()} XP</span>
                                   <button
                                     onClick={() => quickGrant(p.username ?? '')}
                                     disabled={!p.username}
@@ -1228,7 +1228,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         <SectionTitle icon={<Megaphone className="w-3 h-3 text-dispatch-red" />} label="Message All Users" />
                       </div>
                       <div className="p-4">
-                      <p className="text-[9px] text-gray-600 mb-2">
+                      <p className="text-[11px] text-gray-600 mb-2">
                         Pick a kind, then it posts to Public Chat, toasts connected players, and stores a durable copy in every inbox (offline included).
                       </p>
                       <div className="flex gap-1.5 mb-2">
@@ -1240,7 +1240,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           <button
                             key={k.id}
                             onClick={() => { setBroadcastKind(k.id); setTitle(k.id === 'psa' ? 'Citywide PSA' : k.id === 'notice' ? 'Citywide Notice' : 'Message from HQ'); }}
-                            className={`flex-1 px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors ${k.cls} ${broadcastKind === k.id ? 'ring-1 ring-white/20' : 'opacity-60'}`}
+                            className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] font-bold transition-colors ${k.cls} ${broadcastKind === k.id ? 'ring-1 ring-white/20' : 'opacity-60'}`}
                           >
                             {k.label}
                           </button>
@@ -1266,7 +1266,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       >
                         {sending ? 'Sending…' : `Send ${broadcastKind === 'psa' ? 'PSA' : broadcastKind === 'notice' ? 'Notice' : 'Message'}`}
                       </button>
-                      {sentInfo && <p className="mt-2 text-[10px] text-gray-400">{sentInfo}</p>}
+                      {sentInfo && <p className="mt-2 text-[11px] text-gray-400">{sentInfo}</p>}
                       </div>
                     </div>
                   )}
@@ -1275,7 +1275,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                     <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
                       <button
                         onClick={() => setReportsOpen(!reportsOpen)}
-                        className="w-full flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500"
+                        className="w-full flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-500"
                       >
                         <span className="flex items-center gap-1.5">
                           <Bug className="w-3 h-3" /> Weekly Triage Digest
@@ -1285,24 +1285,24 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       {reportsOpen && (
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border bg-blue-500/15 text-blue-300 border-blue-500/30">New {reportCounts.new}</span>
-                            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border bg-amber-500/15 text-amber-300 border-amber-500/30">Investigating {reportCounts.investigating}</span>
-                            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Fixed {reportCounts.fixed}</span>
-                            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border bg-gray-800 text-gray-400 border-gray-700">+{newThisWeek} this week</span>
+                            <span className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border bg-blue-500/15 text-blue-300 border-blue-500/30">New {reportCounts.new}</span>
+                            <span className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border bg-amber-500/15 text-amber-300 border-amber-500/30">Investigating {reportCounts.investigating}</span>
+                            <span className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Fixed {reportCounts.fixed}</span>
+                            <span className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border bg-gray-800 text-gray-400 border-gray-700">+{newThisWeek} this week</span>
                           </div>
 
                           <div className="flex items-center gap-1.5">
                             <select
                               value={reportOrder}
                               onChange={(e) => setReportOrder(e.target.value as 'oldest' | 'newest')}
-                              className="px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[9px] text-gray-200 focus:outline-none focus:border-dispatch-red/50"
+                              className="px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[11px] text-gray-200 focus:outline-none focus:border-dispatch-red/50"
                             >
                               <option value="oldest">Oldest open first</option>
                               <option value="newest">Newest first</option>
                             </select>
                             <button
                               onClick={() => setReportFilter(reportFilter === 'unassigned' ? 'all' : 'unassigned')}
-                              className={`px-2 py-1 rounded text-[9px] font-medium border transition-colors ${
+                              className={`px-2 py-1 rounded text-[11px] font-medium border transition-colors ${
                                 reportFilter === 'unassigned'
                                   ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
                                   : 'bg-gray-900 text-gray-400 border-gray-700 hover:text-gray-200'
@@ -1313,30 +1313,30 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           </div>
 
                           <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                          {reportsLoading && <p className="text-[10px] text-gray-500 animate-pulse">Loading reports…</p>}
+                          {reportsLoading && <p className="text-[11px] text-gray-500 animate-pulse">Loading reports…</p>}
                           {!reportsLoading && bugReports.length === 0 && (
-                            <p className="text-[10px] text-gray-600">No bug reports yet.</p>
+                            <p className="text-[11px] text-gray-600">No bug reports yet.</p>
                           )}
                           {!reportsLoading && bugReports.map((r) => (
                             <div key={r.id} className="bg-gray-950/60 border border-gray-700/40 rounded-lg p-2.5 space-y-2">
                               <div className="flex items-center justify-between gap-2">
                                 <span className="flex items-center gap-1.5">
-                                  <span className="text-[9px] font-bold text-white uppercase">{r.category}</span>
+                                  <span className="text-[11px] font-bold text-white uppercase">{r.category}</span>
                                   {reportStatusChip(r.status ?? 'new')}
                                 </span>
-                                <span className="text-[9px] text-gray-500 shrink-0">
+                                <span className="text-[11px] text-gray-500 shrink-0">
                                   {r.username} · {new Date(r.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               </div>
-                              <p className="text-[10px] text-gray-300 whitespace-pre-wrap break-words">{r.description}</p>
+                              <p className="text-[11px] text-gray-300 whitespace-pre-wrap break-words">{r.description}</p>
 
                               {r.notes ? (
                                 <div className="flex items-start gap-1.5 px-2 py-1.5 rounded bg-blue-500/10 border border-blue-500/25">
                                   <MessageSquare className="w-3 h-3 text-blue-300 mt-0.5 shrink-0" />
-                                  <p className="text-[9px] text-blue-200 whitespace-pre-wrap break-words">{r.notes}</p>
+                                  <p className="text-[11px] text-blue-200 whitespace-pre-wrap break-words">{r.notes}</p>
                                 </div>
                               ) : (
-                                <p className="text-[8px] text-gray-600">No team note yet — write one so the player sees an update.</p>
+                                <p className="text-[11px] text-gray-600">No team note yet — write one so the player sees an update.</p>
                               )}
 
                               <div className="flex items-center gap-1.5">
@@ -1344,7 +1344,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   value={r.status ?? 'new'}
                                   onChange={(e) => triage(r.id, { status: e.target.value as BugReportStatus })}
                                   disabled={triageBusy === r.id}
-                                  className="px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[9px] text-gray-200 focus:outline-none focus:border-dispatch-red/50"
+                                  className="px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[11px] text-gray-200 focus:outline-none focus:border-dispatch-red/50"
                                 >
                                   {REPORT_STATUSES.map((s) => (
                                     <option key={s} value={s}>{STATUS_META[s].label}</option>
@@ -1356,13 +1356,13 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     value={assigneeDrafts[r.id] ?? r.assignee ?? ''}
                                     onChange={(e) => setAssigneeDrafts((d) => ({ ...d, [r.id]: e.target.value }))}
                                     placeholder="Assignee"
-                                    className="w-full px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[9px] text-gray-200 placeholder-gray-600 focus:outline-none focus:border-dispatch-red/50"
+                                    className="w-full px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[11px] text-gray-200 placeholder-gray-600 focus:outline-none focus:border-dispatch-red/50"
                                   />
                                 </div>
                                 <button
                                   onClick={() => triage(r.id, { assignee: (assigneeDrafts[r.id] ?? r.assignee ?? '').trim() || null })}
                                   disabled={triageBusy === r.id}
-                                  className="px-2 py-1 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 disabled:opacity-40 shrink-0"
+                                  className="px-2 py-1 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 disabled:opacity-40 shrink-0"
                                 >
                                   {triageBusy === r.id ? '…' : 'Set'}
                                 </button>
@@ -1370,7 +1370,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   <button
                                     onClick={() => triage(r.id, { status: 'fixed' })}
                                     disabled={triageBusy === r.id}
-                                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[9px] font-bold hover:bg-emerald-500/20 disabled:opacity-40 shrink-0"
+                                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/20 disabled:opacity-40 shrink-0"
                                   >
                                     <CheckCircle2 className="w-3 h-3" /> Resolve
                                   </button>
@@ -1383,19 +1383,19 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   onChange={(e) => setNoteDrafts((d) => ({ ...d, [r.id]: e.target.value }))}
                                   placeholder="Team note — shown to the player on My Reports"
                                   rows={2}
-                                  className="flex-1 px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[9px] text-gray-200 placeholder-gray-600 focus:outline-none focus:border-dispatch-red/50 resize-none"
+                                  className="flex-1 px-1.5 py-1 rounded bg-gray-900 border border-gray-700 text-[11px] text-gray-200 placeholder-gray-600 focus:outline-none focus:border-dispatch-red/50 resize-none"
                                 />
                                 <button
                                   onClick={() => triage(r.id, { notes: (noteDrafts[r.id] ?? r.notes ?? '').trim() || null })}
                                   disabled={triageBusy === r.id}
-                                  className="px-2 py-1 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 disabled:opacity-40 shrink-0"
+                                  className="px-2 py-1 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 disabled:opacity-40 shrink-0"
                                 >
                                   {triageBusy === r.id ? '…' : 'Note'}
                                 </button>
                               </div>
                             </div>
                           ))}
-                          {triageMsg && <p className="text-[10px] text-gray-400 pt-1">{triageMsg}</p>}
+                          {triageMsg && <p className="text-[11px] text-gray-400 pt-1">{triageMsg}</p>}
                           </div>
                         </div>
                       )}
@@ -1405,10 +1405,10 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   {tab === 'bonus' && (
                     <div className="space-y-4">
                       <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
                           <Gift className="w-3 h-3" /> Grant a Bonus
                         </p>
-                        <p className="text-[9px] text-gray-600 mb-3">Reward a player directly by username — for events, restitution, or community prizes.</p>
+                        <p className="text-[11px] text-gray-600 mb-3">Reward a player directly by username — for events, restitution, or community prizes.</p>
                         <input
                           value={bonusUsername}
                           onChange={(e) => setBonusUsername(e.target.value)}
@@ -1428,7 +1428,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         >
                           {bonusBusy ? 'Granting…' : 'Grant Bonus'}
                         </button>
-                        {bonusMsg && <p className={`mt-2 text-[10px] ${bonusMsg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>{bonusMsg.text}</p>}
+                        {bonusMsg && <p className={`mt-2 text-[11px] ${bonusMsg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>{bonusMsg.text}</p>}
                       </div>
                     </div>
                   )}
@@ -1436,10 +1436,10 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   {tab === 'promos' && (
                     <div className="space-y-4">
                       <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
                           <Ticket className="w-3 h-3" /> Create Promo Code
                         </p>
-                        <p className="text-[9px] text-gray-600 mb-3">Players redeem these in the profile panel. Leave the code blank to auto-generate.</p>
+                        <p className="text-[11px] text-gray-600 mb-3">Players redeem these in the profile panel. Leave the code blank to auto-generate.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
                           <input
                             value={newPromoCode}
@@ -1463,7 +1463,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           <RewardInput icon={<ShieldCheck className="w-3 h-3 text-green-400" />} placeholder="Levels" value={newPromoLevels} onChange={setNewPromoLevels} />
                         </div>
                         <div className="flex items-center gap-2 mb-3">
-                          <label className="text-[9px] text-gray-500 shrink-0">Max uses</label>
+                          <label className="text-[11px] text-gray-500 shrink-0">Max uses</label>
                           <input
                             type="number"
                             value={newPromoMaxUses}
@@ -1480,14 +1480,14 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         >
                           {creatingPromo ? 'Creating…' : 'Create Code'}
                         </button>
-                        {promoMsg && <p className={`mt-2 text-[10px] ${promoMsg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>{promoMsg.text}</p>}
+                        {promoMsg && <p className={`mt-2 text-[11px] ${promoMsg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>{promoMsg.text}</p>}
                       </div>
 
                       <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Active Codes ({promos.length})</p>
-                        {promoLoading && <p className="text-[10px] text-gray-500 animate-pulse">Loading…</p>}
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Active Codes ({promos.length})</p>
+                        {promoLoading && <p className="text-[11px] text-gray-500 animate-pulse">Loading…</p>}
                         {!promoLoading && promos.length === 0 && (
-                          <p className="text-[10px] text-gray-600">No promo codes yet.</p>
+                          <p className="text-[11px] text-gray-600">No promo codes yet.</p>
                         )}
                         <div className="space-y-2">
                           {!promoLoading && promos.map((p) => (
@@ -1502,19 +1502,19 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   {p.code}
                                 </button>
                                 <div className="flex items-center gap-1.5">
-                                  <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border ${p.active ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-gray-800 text-gray-400 border-gray-700'}`}>
+                                  <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border ${p.active ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-gray-800 text-gray-400 border-gray-700'}`}>
                                     {p.active ? 'Active' : 'Off'}
                                   </span>
-                                  <span className="text-[9px] text-gray-500">{p.usedCount}/{p.maxUses} used</span>
+                                  <span className="text-[11px] text-gray-500">{p.usedCount}/{p.maxUses} used</span>
                                   <button
                                     onClick={() => togglePromo(p)}
-                                    className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 transition-colors"
+                                    className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 transition-colors"
                                   >
                                     {p.active ? 'Deactivate' : 'Activate'}
                                   </button>
                                 </div>
                               </div>
-                              <p className="text-[9px] text-gray-500 mt-1">
+                              <p className="text-[11px] text-gray-500 mt-1">
                                 {p.label ? `${p.label} · ` : ''}{summarizeRewards(p.rewards)} {p.expiresAt ? `· expires ${new Date(p.expiresAt).toLocaleDateString()}` : ''}
                               </p>
                             </div>
@@ -1524,21 +1524,21 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
                       <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                             <History className="w-3 h-3" /> Redemption Log ({redemptions.length})
                           </p>
                           <button
                             onClick={() => void loadRedemptions()}
                             disabled={redemptionsLoading}
-                            className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                            className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                           >
                             {redemptionsLoading ? 'Loading…' : 'Refresh'}
                           </button>
                         </div>
-                        <p className="text-[9px] text-gray-600 mb-2">Who redeemed each code, when, and at what level (most recent 200).</p>
-                        {redemptionsLoading && <p className="text-[10px] text-gray-500 animate-pulse">Loading…</p>}
+                        <p className="text-[11px] text-gray-600 mb-2">Who redeemed each code, when, and at what level (most recent 200).</p>
+                        {redemptionsLoading && <p className="text-[11px] text-gray-500 animate-pulse">Loading…</p>}
                         {!redemptionsLoading && redemptions.length === 0 && (
-                          <p className="text-[10px] text-gray-600">No redemptions yet.</p>
+                          <p className="text-[11px] text-gray-600">No redemptions yet.</p>
                         )}
                         {!redemptionsLoading && redemptions.length > 0 && (
                           <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
@@ -1549,17 +1549,17 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 title={`${r.label ? `${r.label} · ` : ''}${r.code} grants ${summarizeRewards(r.rewards)}`}
                               >
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="text-[10px] font-mono font-bold text-white truncate">{r.code}</span>
-                                  <span className="text-[10px] text-gray-300 truncate">{r.username}</span>
+                                  <span className="text-[11px] font-mono font-bold text-white truncate">{r.code}</span>
+                                  <span className="text-[11px] text-gray-300 truncate">{r.username}</span>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <span
-                                    className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                                    className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
                                     title="Level at redemption time (legacy redemptions before this log existed read Lv 1)"
                                   >
                                     Lv {r.levelAtRedemption}
                                   </span>
-                                  <span className="text-[9px] text-gray-500">{new Date(r.redeemedAt).toLocaleString()}</span>
+                                  <span className="text-[11px] text-gray-500">{new Date(r.redeemedAt).toLocaleString()}</span>
                                 </div>
                               </div>
                             ))}
@@ -1572,23 +1572,23 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   {tab === 'upgrades' && (
                     <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                           <History className="w-3 h-3" /> Guest Upgrade Audit ({upgrades.length})
                         </p>
                         <button
                           onClick={() => void loadUpgrades()}
                           disabled={upgradesLoading}
-                          className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                          className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                         >
                           {upgradesLoading ? 'Loading…' : 'Refresh'}
                         </button>
                       </div>
-                      <p className="text-[9px] text-gray-600 mb-2">
+                      <p className="text-[11px] text-gray-600 mb-2">
                         Every guest→account upgrade — whether the campaign was merged or the account started fresh — so an accidental merge is traceable (most recent 100).
                       </p>
-                      {upgradesLoading && <p className="text-[10px] text-gray-500 animate-pulse">Loading…</p>}
+                      {upgradesLoading && <p className="text-[11px] text-gray-500 animate-pulse">Loading…</p>}
                       {!upgradesLoading && upgrades.length === 0 && (
-                        <p className="text-[10px] text-gray-600">No upgrades yet.</p>
+                        <p className="text-[11px] text-gray-600">No upgrades yet.</p>
                       )}
                       {!upgradesLoading && upgrades.length > 0 && (
                         <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
@@ -1598,14 +1598,14 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                               className="flex items-center justify-between gap-2 bg-gray-950/60 border border-gray-700/40 rounded-lg px-2.5 py-1.5"
                             >
                               <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-[10px] text-gray-300 truncate">
+                                <span className="text-[11px] text-gray-300 truncate">
                                   {u.guestUsername ?? 'guest (zeroed)'} <span className="text-gray-600">→</span>{' '}
                                   <span className="text-white font-semibold">{u.accountUsername ?? 'unknown'}</span>
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 <span
-                                  className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border ${
+                                  className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border ${
                                     u.merged
                                       ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
                                       : 'bg-gray-800 text-gray-400 border-gray-700'
@@ -1613,7 +1613,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 >
                                   {u.merged ? 'Merged' : 'Fresh start'}
                                 </span>
-                                <span className="text-[9px] text-gray-500">{new Date(u.upgradedAt).toLocaleString()}</span>
+                                <span className="text-[11px] text-gray-500">{new Date(u.upgradedAt).toLocaleString()}</span>
                               </div>
                             </div>
                           ))}
@@ -1630,7 +1630,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           <button
                             onClick={() => void loadOrders()}
                             disabled={ordersLoading}
-                            className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                            className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                           >
                             {ordersLoading ? 'Loading…' : 'Refresh'}
                           </button>
@@ -1638,32 +1638,32 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         <div className="p-3 space-y-3">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-emerald-400/80">Revenue</p>
+                              <p className="text-[11px] uppercase tracking-wider text-emerald-400/80">Revenue</p>
                               <p className="text-base font-bold text-emerald-300 tabular-nums">{formatCents(shopSummary?.revenueCents ?? 0)}</p>
                             </div>
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-amber-400/80">Pending</p>
+                              <p className="text-[11px] uppercase tracking-wider text-amber-400/80">Pending</p>
                               <p className="text-base font-bold text-amber-300 tabular-nums">{formatCents(shopSummary?.pendingCents ?? 0)}</p>
                             </div>
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-blue-400/80">Orders</p>
+                              <p className="text-[11px] uppercase tracking-wider text-blue-400/80">Orders</p>
                               <p className="text-base font-bold text-white tabular-nums">{(shopSummary?.totalOrders ?? 0).toLocaleString()}</p>
                             </div>
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-gray-500">Fulfilled</p>
+                              <p className="text-[11px] uppercase tracking-wider text-gray-500">Fulfilled</p>
                               <p className="text-base font-bold text-white tabular-nums">{(shopSummary?.fulfilledCount ?? 0).toLocaleString()}</p>
                             </div>
                           </div>
 
                           {shopMsg && (
-                            <p className={`text-[9px] font-medium ${shopMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <p className={`text-[11px] font-medium ${shopMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
                               {shopMsg.text}
                             </p>
                           )}
 
-                          {ordersLoading && <p className="text-[10px] text-gray-500 animate-pulse">Loading orders…</p>}
+                          {ordersLoading && <p className="text-[11px] text-gray-500 animate-pulse">Loading orders…</p>}
                           {!ordersLoading && orders.length === 0 && (
-                            <p className="text-[10px] text-gray-600">No orders yet — the first checkout lands here.</p>
+                            <p className="text-[11px] text-gray-600">No orders yet — the first checkout lands here.</p>
                           )}
                           {!ordersLoading && orders.length > 0 && (
                             <div className="max-h-72 overflow-y-auto space-y-1.5 pr-1">
@@ -1672,7 +1672,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   <div className="flex items-center justify-between gap-2">
                                     <span className="flex items-center gap-1.5 min-w-0">
                                       <span className="text-[11px] text-gray-200 truncate">{o.username ?? 'unknown'}</span>
-                                      <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border shrink-0 ${o.kind === 'membership' ? 'bg-violet-500/15 text-violet-300 border-violet-500/30' : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'}`}>
+                                      <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border shrink-0 ${o.kind === 'membership' ? 'bg-violet-500/15 text-violet-300 border-violet-500/30' : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'}`}>
                                         {o.kind === 'membership' ? 'Membership' : 'Coins'}
                                       </span>
                                       {orderStatusChip(o.status)}
@@ -1680,7 +1680,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     <span className="text-[11px] font-bold text-emerald-300 tabular-nums shrink-0">{formatCents(o.priceCents)}</span>
                                   </div>
                                   <div className="mt-1.5 flex items-center justify-between gap-2">
-                                    <span className="text-[9px] text-gray-500 truncate">
+                                    <span className="text-[11px] text-gray-500 truncate">
                                       {o.itemName ?? 'item'} · {new Date(o.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                       {o.provider === 'manual' && <span className="text-gray-600"> · manual</span>}
                                     </span>
@@ -1688,7 +1688,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                       <button
                                         onClick={() => void fulfillShopOrder(o.id)}
                                         disabled={fulfillBusy === o.id}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[9px] font-bold hover:bg-emerald-500/20 disabled:opacity-50 shrink-0"
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/20 disabled:opacity-50 shrink-0"
                                       >
                                         <CheckCircle2 className="w-3 h-3" />
                                         {fulfillBusy === o.id ? '…' : 'Fulfill'}
@@ -1708,7 +1708,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                           <button
                             onClick={() => void loadCoinTransactions()}
                             disabled={coinTxLoading}
-                            className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                            className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                           >
                             {coinTxLoading ? 'Loading…' : 'Refresh'}
                           </button>
@@ -1716,28 +1716,28 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         <div className="p-3 space-y-3">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-emerald-400/80">Credited</p>
+                              <p className="text-[11px] uppercase tracking-wider text-emerald-400/80">Credited</p>
                               <p className="text-base font-bold text-emerald-300 tabular-nums">+{(coinSummary?.credited ?? 0).toLocaleString()}</p>
                             </div>
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-red-400/80">Debited</p>
+                              <p className="text-[11px] uppercase tracking-wider text-red-400/80">Debited</p>
                               <p className="text-base font-bold text-red-300 tabular-nums">-{(coinSummary?.debited ?? 0).toLocaleString()}</p>
                             </div>
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-blue-400/80">Moves</p>
+                              <p className="text-[11px] uppercase tracking-wider text-blue-400/80">Moves</p>
                               <p className="text-base font-bold text-white tabular-nums">{(coinSummary?.totalTransactions ?? 0).toLocaleString()}</p>
                             </div>
                             <div className="bg-gray-950/60 rounded-lg px-2.5 py-2">
-                              <p className="text-[9px] uppercase tracking-wider text-gray-500">Net</p>
+                              <p className="text-[11px] uppercase tracking-wider text-gray-500">Net</p>
                               <p className={`text-base font-bold tabular-nums ${(coinSummary?.netDelta ?? 0) >= 0 ? 'text-white' : 'text-red-300'}`}>
                                 {((coinSummary?.netDelta ?? 0) >= 0 ? '+' : '-') + Math.abs(coinSummary?.netDelta ?? 0).toLocaleString()}
                               </p>
                             </div>
                           </div>
 
-                          {coinTxLoading && <p className="text-[10px] text-gray-500 animate-pulse">Loading coin ledger…</p>}
+                          {coinTxLoading && <p className="text-[11px] text-gray-500 animate-pulse">Loading coin ledger…</p>}
                           {!coinTxLoading && coinTx.length === 0 && (
-                            <p className="text-[10px] text-gray-600">No coin transactions yet — the first spend or pack purchase lands here.</p>
+                            <p className="text-[11px] text-gray-600">No coin transactions yet — the first spend or pack purchase lands here.</p>
                           )}
                           {!coinTxLoading && coinTx.length > 0 && (
                             <div className="max-h-72 overflow-y-auto space-y-1.5 pr-1">
@@ -1754,7 +1754,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                         {pos ? '+' : '-'}{Math.abs(t.delta).toLocaleString()}
                                       </span>
                                     </div>
-                                    <div className="mt-1 text-[9px] text-gray-500 truncate">
+                                    <div className="mt-1 text-[11px] text-gray-500 truncate">
                                       balance {(t.balanceAfter ?? 0).toLocaleString()} · {new Date(t.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                       {t.refId && <span className="text-gray-600"> · ref {t.refId.slice(0, 8)}</span>}
                                     </div>
@@ -1771,28 +1771,28 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   {tab === 'contests' && (
                     <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                           <Trophy className="w-3 h-3" /> Seasonal Contests ({contests.length})
                         </p>
                         <button
                           onClick={() => void loadContests()}
                           disabled={contestsLoading}
-                          className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[9px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                          className="px-2 py-0.5 rounded bg-gray-800 text-gray-300 text-[11px] font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                         >
                           {contestsLoading ? 'Loading…' : 'Refresh'}
                         </button>
                       </div>
-                      <p className="text-[9px] text-gray-600 mb-2">
+                      <p className="text-[11px] text-gray-600 mb-2">
                         Live standings per holiday window. Award or override the winner for edge cases — the winner badge (+1,000 XP) goes out instantly.
                       </p>
                       {contestMsg && (
-                        <p className={`text-[9px] mb-2 font-medium ${contestMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <p className={`text-[11px] mb-2 font-medium ${contestMsg.ok ? 'text-emerald-400' : 'text-red-400'}`}>
                           {contestMsg.text}
                         </p>
                       )}
-                      {contestsLoading && <p className="text-[10px] text-gray-500 animate-pulse">Loading…</p>}
+                      {contestsLoading && <p className="text-[11px] text-gray-500 animate-pulse">Loading…</p>}
                       {!contestsLoading && contests.length === 0 && (
-                        <p className="text-[10px] text-gray-600">No seasonal contests found.</p>
+                        <p className="text-[11px] text-gray-600">No seasonal contests found.</p>
                       )}
                       {!contestsLoading && contests.length > 0 && (
                         <div className="max-h-72 overflow-y-auto space-y-3 pr-1">
@@ -1803,7 +1803,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   {c.label} {c.active ? '🎆' : c.ended ? '🏁' : '🔒'}
                                 </p>
                                 <span
-                                  className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase border ${
+                                  className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase border ${
                                     c.active
                                       ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                                       : c.ended
@@ -1814,7 +1814,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   {c.active ? 'Live' : c.ended ? 'Ended' : 'Upcoming'}
                                 </span>
                               </div>
-                              <p className="text-[9px] text-gray-500 mt-0.5">
+                              <p className="text-[11px] text-gray-500 mt-0.5">
                                 {seasonalWindowLabel(c)} · {c.entryCount} entrant{c.entryCount === 1 ? '' : 's'} · {c.totalClears} call{c.totalClears === 1 ? '' : 's'} cleared
                                 {(c.totalCityClears ?? 0) > 0 && (
                                   <span className="text-sky-400/80"> · {c.totalCityClears} by city</span>
@@ -1822,14 +1822,14 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                               </p>
 
                               {c.winner ? (
-                                <div className="mt-1.5 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-2 py-1 text-[9px] text-emerald-300">
+                                <div className="mt-1.5 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-2 py-1 text-[11px] text-emerald-300">
                                   <span>🏆</span>
                                   <span className="font-semibold">{c.winner.username}</span>
                                   <span className="text-emerald-400/70">· {c.winner.calls} calls</span>
                                 </div>
                               ) : (
                                 c.ended && (
-                                  <p className="mt-1.5 text-[9px] text-gray-600">No winner yet — no entries for this window.</p>
+                                  <p className="mt-1.5 text-[11px] text-gray-600">No winner yet — no entries for this window.</p>
                                 )
                               )}
 
@@ -1840,14 +1840,14 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                       key={e.playerId}
                                       className="flex items-center justify-between gap-2 rounded px-1.5 py-0.5 bg-gray-900/50"
                                     >
-                                      <span className="text-[9px] text-gray-300 flex items-center gap-1.5 min-w-0">
+                                      <span className="text-[11px] text-gray-300 flex items-center gap-1.5 min-w-0">
                                         <span className="w-4 text-center shrink-0">
                                           {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : <span className="text-gray-600">{e.rank}</span>}
                                         </span>
                                         <span className="truncate">{e.username}</span>
                                         <span className="text-gray-600 shrink-0">Lv {e.level}</span>
                                       </span>
-                                      <span className="text-[9px] text-white font-semibold shrink-0">
+                                      <span className="text-[11px] text-white font-semibold shrink-0">
                                         {e.callsCleared} calls
                                         {(e.cityClears ?? 0) > 0 && (
                                           <span className="text-sky-400/90 font-normal"> · {e.cityClears} city</span>
@@ -1864,7 +1864,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   onChange={(e) =>
                                     setContestSelections((prev) => ({ ...prev, [c.eventId]: e.target.value }))
                                   }
-                                  className="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2 py-1 text-[9px] text-gray-300 focus:outline-none focus:border-dispatch-red/60"
+                                  className="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-dispatch-red/60"
                                 >
                                   <option value="">Top clearer (auto)</option>
                                   {c.entries.map((e) => (
@@ -1876,7 +1876,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 <button
                                   onClick={() => void awardContestWinner(c.eventId)}
                                   disabled={contestAwardBusy === c.eventId}
-                                  className={`px-2 py-1 rounded text-[9px] font-semibold transition-colors disabled:opacity-50 ${
+                                  className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors disabled:opacity-50 ${
                                     contestArmed === c.eventId
                                       ? 'bg-red-600 text-white hover:bg-red-500'
                                       : 'bg-dispatch-red text-white hover:bg-dispatch-red/80'
@@ -1963,12 +1963,12 @@ function Tile({ icon, label, value, accent }: {
     <div className="group bg-gray-800/40 border border-gray-700/40 rounded-xl p-3 hover:border-gray-600/60 hover:bg-gray-800/60 transition-colors">
       <div className={`flex items-center justify-between mb-1.5 ${accent ? '' : 'text-gray-400'}`}>
         {accent ? (
-          <span className={`flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider ${accent.split(' ')[0]}`}>
+          <span className={`flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider ${accent.split(' ')[0]}`}>
             {icon}
             {label}
           </span>
         ) : (
-          <span className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider">
+          <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider">
             {icon}
             {label}
           </span>
@@ -1986,8 +1986,8 @@ function SectionTitle({ icon, label, sub }: { icon: React.ReactNode; label: stri
       <span className="w-5 h-5 rounded-md bg-gray-900/70 border border-gray-700/60 flex items-center justify-center shrink-0">
         {icon}
       </span>
-      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">{label}</span>
-      {sub && <span className="text-[9px] text-gray-600 shrink-0">{sub}</span>}
+      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 truncate">{label}</span>
+      {sub && <span className="text-[11px] text-gray-600 shrink-0">{sub}</span>}
     </span>
   );
 }

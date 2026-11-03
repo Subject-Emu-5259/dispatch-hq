@@ -267,7 +267,7 @@ export function BuildStationModal({ isOpen, onClose, pendingLocation }: BuildSta
                                 <h3 className="font-semibold text-white">{cfg.name}</h3>
                                 <p className="text-sm text-gray-400">{cfg.description}</p>
                                 {typeIsPartner && (
-                                  <p className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-[9px] font-bold text-blue-300">
+                                  <p className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-[11px] font-bold text-blue-300">
                                     🤝 PARTNER · {DEPARTMENT_LABEL[stationServiceFor(typeKey)]}
                                     {typeDiscount > 0 ? ` · −${Math.round(typeDiscount * 100)}% Mutual Aid discount (Lv ${player?.level ?? 1}+)` : ' · answers Mutual Aid calls (+25%)'}
                                   </p>
@@ -313,7 +313,7 @@ export function BuildStationModal({ isOpen, onClose, pendingLocation }: BuildSta
                         <h3 className="font-semibold text-white">{stationName || config.name}</h3>
                         <p className="text-sm text-gray-400">{config.name}</p>
                         {isPartner && (
-                          <p className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-[10px] font-bold text-blue-300">
+                          <p className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-[11px] font-bold text-blue-300">
                             🤝 Partner station — unlocks answering {DEPARTMENT_LABEL[stationServiceFor(selectedType)]} Mutual Aid calls
                             {partnerDiscount > 0 && ` · −${Math.round(partnerDiscount * 100)}% level discount applied`}
                           </p>

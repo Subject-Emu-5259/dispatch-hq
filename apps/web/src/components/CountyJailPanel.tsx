@@ -62,8 +62,8 @@ export default function CountyJailPanel() {
             <Building2 className="w-4 h-4 text-dispatch-red" />
             County Jail Roster
           </div>
-          <div className="text-[10px] text-gray-500">{jailOccupancy(inmates)} / {jailCapacity(stations)} housed</div>
-          <div className="text-[10px] text-gray-400 mt-0.5">
+          <div className="text-[11px] text-gray-500">{jailOccupancy(inmates)} / {jailCapacity(stations)} housed</div>
+          <div className="text-[11px] text-gray-400 mt-0.5">
             {(() => { const d = decideJailBooking(jailOccupancy(inmates), jailCapacity(stations)); return d.action === 'transfer' ? '⚠️ Jail full — next booking transfers out-of-county (half progression credit).' : `Next booking housed · ${d.cellsFree} cells free`; })()}
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function CountyJailPanel() {
             <button
               key={k}
               onClick={() => setView(k as 'current' | 'released')}
-              className={`text-[10px] px-2 py-1.5 rounded-lg border transition-colors ${
+              className={`text-[11px] px-2 py-1.5 rounded-lg border transition-colors ${
                 view === k ? 'bg-dispatch-red text-white border-dispatch-red' : 'bg-gray-900/50 text-gray-400 border-white/10 hover:bg-gray-800'
               }`}
             >
@@ -99,7 +99,7 @@ export default function CountyJailPanel() {
           <div className="text-center py-10 text-gray-500">
             <DoorOpen className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <div className="text-sm">No inmates currently housed.</div>
-            <div className="text-[10px] mt-1">Book subjects from the Criminal Records tab or officer actions.</div>
+            <div className="text-[11px] mt-1">Book subjects from the Criminal Records tab or officer actions.</div>
           </div>
         )}
         {filtered.map((inmate) => (
@@ -125,20 +125,20 @@ export default function CountyJailPanel() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="text-base font-bold text-white">{selected.lastName}, {selected.firstName}</h3>
-                <p className="text-[10px] text-gray-500">Booking #{selected.bookingNumber}</p>
+                <p className="text-[11px] text-gray-500">Booking #{selected.bookingNumber}</p>
               </div>
               <button onClick={() => setSelected(null)} className="p-1 rounded hover:bg-gray-800 text-gray-400"><X className="w-4 h-4" /></button>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[10px] text-gray-500">DOB</div><div className="text-gray-200">{selected.dateOfBirth}</div></div>
-              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[10px] text-gray-500">Bail</div><div className="text-gray-200">${selected.bailAmount.toLocaleString()}</div></div>
-              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[10px] text-gray-500">Sentence</div><div className="text-gray-200">{selected.sentenceDays} days</div></div>
-              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[10px] text-gray-500">Cell Block</div><div className="text-gray-200">{selected.cellBlock}</div></div>
+              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">DOB</div><div className="text-gray-200">{selected.dateOfBirth}</div></div>
+              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">Bail</div><div className="text-gray-200">${selected.bailAmount.toLocaleString()}</div></div>
+              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">Sentence</div><div className="text-gray-200">{selected.sentenceDays} days</div></div>
+              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">Cell Block</div><div className="text-gray-200">{selected.cellBlock}</div></div>
             </div>
             <div className="text-xs text-gray-500 mb-1">Charges</div>
             <div className="flex flex-wrap gap-1 mb-4">
               {selected.charges.map((c, i) => (
-                <span key={i} className="text-[10px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">{c}</span>
+                <span key={i} className="text-[11px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">{c}</span>
               ))}
             </div>
             {selected.status !== 'released' && (
@@ -158,7 +158,7 @@ export default function CountyJailPanel() {
 
 function CardBadge({ text, cls }: { text: string; cls: string }) {
   return (
-    <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${cls}`}>
+    <span className={`text-[11px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${cls}`}>
       {text}
     </span>
   );
@@ -186,31 +186,31 @@ function InmateCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold text-white truncate">{inmate.lastName}, {inmate.firstName}</span>
-            <span className="text-[9px] text-gray-500">Booking #{inmate.bookingNumber}</span>
+            <span className="text-[11px] text-gray-500">Booking #{inmate.bookingNumber}</span>
           </div>
           <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1"><Calendar className="w-2.5 h-2.5" /> DOB</div>
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1"><Calendar className="w-2.5 h-2.5" /> DOB</div>
               <div className="text-gray-200">{inmate.dateOfBirth}</div>
             </div>
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1"><Scale className="w-2.5 h-2.5" /> Bail</div>
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1"><Scale className="w-2.5 h-2.5" /> Bail</div>
               <div className="text-gray-200">${inmate.bailAmount.toLocaleString()}</div>
             </div>
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Served</div>
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Served</div>
               <div className="text-gray-200">{formatDuration(Date.now() - inmate.bookingTime)}</div>
             </div>
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1"><UserX className="w-2.5 h-2.5" /> Sentence</div>
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1"><UserX className="w-2.5 h-2.5" /> Sentence</div>
               <div className="text-gray-200">{inmate.sentenceDays} days</div>
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-[10px] text-gray-500 mb-1 flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Charges</div>
+            <div className="text-[11px] text-gray-500 mb-1 flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Charges</div>
             <div className="flex flex-wrap gap-1">
               {inmate.charges.map((c, i) => (
-                <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 border border-white/10">{c}</span>
+                <span key={i} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 border border-white/10">{c}</span>
               ))}
             </div>
           </div>
@@ -218,12 +218,12 @@ function InmateCard({
         <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
           <CardBadge text={inmate.status} cls={statusBadge[inmate.status]} />
           {inmate.status === 'released' && (
-            <span className="text-[9px] text-gray-500">{formatDuration(Date.now() - (inmate.bookingTime || Date.now()))} ago</span>
+            <span className="text-[11px] text-gray-500">{formatDuration(Date.now() - (inmate.bookingTime || Date.now()))} ago</span>
           )}
           {inmate.status !== 'released' && (
             <button
               onClick={(e) => { e.stopPropagation(); onRelease(); }}
-              className="text-[10px] mt-0.5 px-2 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-white/10 transition-colors"
+              className="text-[11px] mt-0.5 px-2 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-white/10 transition-colors"
             >
               Release
             </button>

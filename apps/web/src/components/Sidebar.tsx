@@ -955,7 +955,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                             <div className="rounded-lg border border-blue-500/25 bg-blue-500/5 overflow-hidden">
                               <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-500/10 border-b border-blue-500/20">
                                 <Handshake className="w-3 h-3 text-blue-300 shrink-0" />
-                                <p className="text-[10px] font-bold text-blue-200">
+                                <p className="text-[11px] font-bold text-blue-200">
                                   Mutual Aid — {mutualAidMissions.length} partner request{mutualAidMissions.length > 1 ? 's' : ''}
                                 </p>
                               </div>
@@ -1023,7 +1023,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                                           style={{ width: `${((station.unitCount || 0) / station.capacity) * 100}%` }}
                                         />
                                       </div>
-                                      <span className="text-[10px] text-gray-500">
+                                      <span className="text-[11px] text-gray-500">
                                         {station.unitCount || 0}/{station.capacity}
                                       </span>
                                     </div>
@@ -1064,9 +1064,9 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                                             <span className="text-sm">⬆️</span>
                                             <div className="flex-1 min-w-0">
                                               <p className="text-[11px] text-purple-300 font-medium">Upgrade to Level {nextLevel.level}</p>
-                                              <p className="text-[9px] text-gray-500">Capacity: {station.capacity} → {nextLevel.capacity} units</p>
+                                              <p className="text-[11px] text-gray-500">Capacity: {station.capacity} → {nextLevel.capacity} units</p>
                                             </div>
-                                            <span className="text-[10px] text-purple-400 font-mono shrink-0">
+                                            <span className="text-[11px] text-purple-400 font-mono shrink-0">
                                               💰{nextLevel.cost.toLocaleString()}
                                             </span>
                                           </button>
@@ -1075,7 +1075,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                                       {isFull && (
                                         <div className="flex items-center gap-1.5 px-2 py-1.5 bg-amber-500/10 rounded-md">
                                           <AlertTriangle className="w-3 h-3 text-amber-400" />
-                                          <p className="text-[10px] text-amber-400">Station at capacity</p>
+                                          <p className="text-[11px] text-amber-400">Station at capacity</p>
                                         </div>
                                       )}
                                       {(STATION_UNITS[station.type] || []).map((unitTypeKey) => {
@@ -1096,9 +1096,9 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                                             <Truck className="w-3.5 h-3.5 text-gray-400" />
                                             <div className="flex-1 min-w-0">
                                               <p className="text-[11px] text-gray-300 font-medium">{unitConfig.name}</p>
-                                              <p className="text-[9px] text-gray-600">Max: {getUnitMaxSpeedMph(unitConfig.speed)} mph</p>
+                                              <p className="text-[11px] text-gray-600">Max: {getUnitMaxSpeedMph(unitConfig.speed)} mph</p>
                                             </div>
-                                            <span className="text-[10px] text-amber-400 font-mono shrink-0">
+                                            <span className="text-[11px] text-amber-400 font-mono shrink-0">
                                               💰{unitConfig.cost.toLocaleString()}
                                             </span>
                                           </button>
@@ -1174,7 +1174,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                           <button
                             key={tab}
                             onClick={() => setLeaderboardTab(tab)}
-                            className={`px-2.5 py-1 rounded text-[10px] font-semibold capitalize transition-colors ${
+                            className={`px-2.5 py-1 rounded text-[11px] font-semibold capitalize transition-colors ${
                               leaderboardTab === tab
                                 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                                 : 'bg-gray-800/50 text-gray-500 hover:text-gray-300 border border-transparent'
@@ -1222,7 +1222,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                               <button
                                 key={sort}
                                 onClick={() => setLeaderboardSort(sort)}
-                                className={`px-2 py-0.5 rounded text-[10px] font-medium capitalize transition-colors ${
+                                className={`px-2 py-0.5 rounded text-[11px] font-medium capitalize transition-colors ${
                                   leaderboardSort === sort ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800/50 text-gray-500 hover:text-gray-300'
                                 }`}
                               >
@@ -1236,9 +1236,9 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-white truncate">
                                 {player?.username || 'Commander'}
-                                <span className="ml-1.5 text-[9px] px-1.5 py-px rounded-full bg-amber-500/25 text-amber-300 font-bold align-middle">You</span>
+                                <span className="ml-1.5 text-[11px] px-1.5 py-px rounded-full bg-amber-500/25 text-amber-300 font-bold align-middle">You</span>
                               </p>
-                              <p className="text-[10px] text-gray-400">
+                              <p className="text-[11px] text-gray-400">
                                 Level {player?.level || 1} • {missions.filter((m) => m.status === 'completed').length} missions completed
                               </p>
                             </div>
@@ -1249,7 +1249,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                                   : leaderboardSort === 'mutual_aid' ? `${leaderboardEntries.find((e) => e.playerId === player?.id)?.mutualAidAnswered ?? 0} aid`
                                   : `${lifetimeXpOf(player).toLocaleString()} XP`}
                               </p>
-                              <p className="text-[8px] text-gray-500">
+                              <p className="text-[11px] text-gray-500">
                                 {atMaxLevel ? 'max level' : `${levelXp.toLocaleString()} / ${xpForNext.toLocaleString()} into Lv ${player?.level || 1}`}
                               </p>
                             </div>
@@ -1272,19 +1272,19 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                                 }`}
                               >
                                 <span className="w-5 text-center text-xs">
-                                  {medalIcon || <span className="text-[10px] text-gray-500 font-mono">#{entry.rank}</span>}
+                                  {medalIcon || <span className="text-[11px] text-gray-500 font-mono">#{entry.rank}</span>}
                                 </span>
                                 <span className="text-sm">{leaderboardAvatar(entry.playerId, entry.rank - 1)}</span>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-[11px] text-gray-300 font-medium truncate">
                                     {entry.username}
                                     {isMe && (
-                                      <span className="ml-1.5 text-[9px] px-1.5 py-px rounded-full bg-amber-500/25 text-amber-300 font-bold align-middle">You</span>
+                                      <span className="ml-1.5 text-[11px] px-1.5 py-px rounded-full bg-amber-500/25 text-amber-300 font-bold align-middle">You</span>
                                     )}
                                   </p>
-                                  <p className="text-[9px] text-gray-600">Lv.{entry.level} • {entry.missionsCompleted ?? 0} missions</p>
+                                  <p className="text-[11px] text-gray-600">Lv.{entry.level} • {entry.missionsCompleted ?? 0} missions</p>
                                 </div>
-                                <span className="text-[10px] text-amber-400 font-mono shrink-0">
+                                <span className="text-[11px] text-amber-400 font-mono shrink-0">
                                   {sortValue}
                                 </span>
                               </div>
@@ -1318,7 +1318,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                   >
                     <div className="px-3 pb-3 space-y-2">
                       {allianceError && (
-                        <div className="px-2 py-1.5 bg-red-500/10 border border-red-500/30 rounded-md text-[10px] text-red-400">
+                        <div className="px-2 py-1.5 bg-red-500/10 border border-red-500/30 rounded-md text-[11px] text-red-400">
                           {allianceError}
                         </div>
                       )}
@@ -1402,7 +1402,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                     className="overflow-hidden"
                   >
                     <div className="px-3 pb-3 flex flex-col h-72">
-                      <div className="flex items-center gap-1.5 mb-2 text-[9px] text-gray-500">
+                      <div className="flex items-center gap-1.5 mb-2 text-[11px] text-gray-500">
                         <span className={`w-1.5 h-1.5 rounded-full ${onlineCount > 0 ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'}`} />
                         <span className="font-semibold uppercase tracking-wider">
                           {onlineCount > 0 ? `${onlineCount} commander${onlineCount === 1 ? '' : 's'} online` : 'Public chat'}
@@ -1426,7 +1426,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                             onClick={() => setChatFilter(opt.id)}
                             title={opt.title}
                             aria-pressed={chatFilter === opt.id}
-                            className={`flex-1 rounded-md px-2 py-1 text-[9px] font-semibold uppercase tracking-wider border transition-colors ${
+                            className={`flex-1 rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-wider border transition-colors ${
                               chatFilter === opt.id
                                 ? 'bg-blue-500/20 border-blue-500/40 text-blue-300'
                                 : 'bg-gray-800/40 border-gray-700/40 text-gray-500 hover:bg-gray-800/70 hover:text-gray-300'
@@ -1438,7 +1438,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                       </div>
                       <div className="flex-1 overflow-y-auto space-y-2 mb-2 pr-1">
                         {visibleChat.length === 0 ? (
-                          <p className="text-center text-[10px] text-gray-600 py-8">
+                          <p className="text-center text-[11px] text-gray-600 py-8">
                             {chatFilter === 'players'
                               ? 'No player messages yet — be the first to talk'
                               : chatFilter === 'hq'
@@ -1463,13 +1463,13 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                           return (
                             <div key={msg.id} className={`flex flex-col ${own ? 'items-end' : 'items-start'}`}>
                               <div className={`max-w-[92%] px-2.5 py-1.5 rounded-lg text-xs ${bubble}`}>
-                                <p className="text-[10px] font-semibold text-gray-400 mb-0.5">
+                                <p className="text-[11px] font-semibold text-gray-400 mb-0.5">
                                   {label ? <span className="mr-1">{label}</span> : null}
                                   {msg.sender}
                                 </p>
                                 <p>{msg.text}</p>
                               </div>
-                              <span className="text-[9px] text-gray-600 mt-0.5">
+                              <span className="text-[11px] text-gray-600 mt-0.5">
                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
@@ -1508,13 +1508,13 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-white truncate">{player?.username || 'Commander'}</p>
-                  <p className="text-[10px] text-gray-500">Level {player?.level || 1}</p>
+                  <p className="text-[11px] text-gray-500">Level {player?.level || 1}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-amber-400 font-mono">
                     {(player?.credits || 0).toLocaleString()}
                   </p>
-                  <p className="text-[10px] text-gray-500">credits</p>
+                  <p className="text-[11px] text-gray-500">credits</p>
                 </div>
               </div>
             </div>
@@ -1562,11 +1562,11 @@ function SectionHeader({
       <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex-1 text-left">
         {title}
       </span>
-      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500 font-mono">
+      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500 font-mono">
         {count}
       </span>
       {badge ? (
-        <span className="min-w-4 h-4 px-1 rounded-full bg-dispatch-red text-white text-[9px] font-bold flex items-center justify-center">
+        <span className="min-w-4 h-4 px-1 rounded-full bg-dispatch-red text-white text-[11px] font-bold flex items-center justify-center">
           {badge > 99 ? '99+' : badge}
         </span>
       ) : null}
@@ -1597,7 +1597,7 @@ function FriendComparison({ me, friends, loading, error, onRetry }: {
         <p className="text-xs font-medium">Couldn't load friends</p>
         <button
           onClick={onRetry}
-          className="mt-2 text-[10px] text-amber-400 hover:text-amber-300 underline"
+          className="mt-2 text-[11px] text-amber-400 hover:text-amber-300 underline"
         >
           Try again
         </button>
@@ -1618,7 +1618,7 @@ function FriendComparison({ me, friends, loading, error, onRetry }: {
       <div className="text-center py-6 text-gray-600">
         <div className="mx-auto mb-2 opacity-40 text-xl">👥</div>
         <p className="text-xs font-medium">No friends yet</p>
-        <p className="text-[10px] text-gray-700 mt-0.5">
+        <p className="text-[11px] text-gray-700 mt-0.5">
           Add friends from your profile to compare shift stats
         </p>
       </div>
@@ -1633,7 +1633,7 @@ function FriendComparison({ me, friends, loading, error, onRetry }: {
 
   return (
     <div className="space-y-1">
-      <div className="px-3 pb-1 text-[9px] text-gray-600 uppercase tracking-wider">
+      <div className="px-3 pb-1 text-[11px] text-gray-600 uppercase tracking-wider">
         This week — who's ahead
       </div>
       {all.map((entry) => {
@@ -1649,25 +1649,25 @@ function FriendComparison({ me, friends, loading, error, onRetry }: {
                 : 'hover:bg-gray-800/60'
             }`}
           >
-            <span className="w-5 text-center text-[10px] text-gray-500 font-mono">#{entry.rank}</span>
+            <span className="w-5 text-center text-[11px] text-gray-500 font-mono">#{entry.rank}</span>
             <span className="text-sm">{leaderboardAvatar(entry.playerId, entry.rank - 1)}</span>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-gray-300 font-medium truncate">
                 {entry.username}
-                {entry.isMe && <span className="ml-1 text-[9px] text-amber-400 font-semibold">(You)</span>}
+                {entry.isMe && <span className="ml-1 text-[11px] text-amber-400 font-semibold">(You)</span>}
               </p>
-              <p className="text-[9px] text-gray-600">
+              <p className="text-[11px] text-gray-600">
                 {entry.callsRun} calls • {entry.clearanceRate}% clear
               </p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-[10px] text-amber-400 font-mono">
-                {entry.weekly.cleared} <span className="text-[8px] text-gray-600">wk</span>
+              <p className="text-[11px] text-amber-400 font-mono">
+                {entry.weekly.cleared} <span className="text-[11px] text-gray-600">wk</span>
               </p>
               {entry.isMe ? (
-                <p className="text-[8px] text-gray-600">this week</p>
+                <p className="text-[11px] text-gray-600">this week</p>
               ) : (
-                <p className={`text-[9px] font-semibold ${ahead ? 'text-emerald-400' : behind ? 'text-gray-600' : 'text-gray-500'}`}>
+                <p className={`text-[11px] font-semibold ${ahead ? 'text-emerald-400' : behind ? 'text-gray-600' : 'text-gray-500'}`}>
                   {ahead ? `▲ +${delta}` : behind ? `▼ ${delta}` : '— tied'}
                 </p>
               )}
@@ -1700,7 +1700,7 @@ function AllianceBoard({ data, loading, error, sort, setSort, myAllianceId, expa
     return (
       <div className="text-center py-6 text-gray-600">
         <p className="text-xs font-medium">Couldn't load alliances</p>
-        <p className="text-[10px] text-gray-700 mt-0.5">Try again in a moment</p>
+        <p className="text-[11px] text-gray-700 mt-0.5">Try again in a moment</p>
       </div>
     );
   }
@@ -1718,7 +1718,7 @@ function AllianceBoard({ data, loading, error, sort, setSort, myAllianceId, expa
       <div className="text-center py-6 text-gray-600">
         <div className="mx-auto mb-2 opacity-40 text-xl">⚔️</div>
         <p className="text-xs font-medium">No alliances yet</p>
-        <p className="text-[10px] text-gray-700 mt-0.5">
+        <p className="text-[11px] text-gray-700 mt-0.5">
           Be the first to found one from the Alliance section
         </p>
       </div>
@@ -1732,7 +1732,7 @@ function AllianceBoard({ data, loading, error, sort, setSort, myAllianceId, expa
           <button
             key={s}
             onClick={() => setSort(s)}
-            className={`px-2.5 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+            className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition-colors ${
               sort === s
                 ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                 : 'bg-gray-800/50 text-gray-500 hover:text-gray-300 border border-transparent'
@@ -1742,7 +1742,7 @@ function AllianceBoard({ data, loading, error, sort, setSort, myAllianceId, expa
           </button>
         ))}
       </div>
-      <div className="px-3 pb-1 text-[9px] text-gray-600 uppercase tracking-wider">
+      <div className="px-3 pb-1 text-[11px] text-gray-600 uppercase tracking-wider">
         Top alliances · week {data.weekKey}
       </div>
       {data.alliances.map((a) => {
@@ -1764,26 +1764,26 @@ function AllianceBoard({ data, loading, error, sort, setSort, myAllianceId, expa
             >
               <span className="w-5 text-center text-xs">
                 {a.rank === 1 ? '🥇' : a.rank === 2 ? '🥈' : a.rank === 3 ? '🥉' : (
-                  <span className="text-[10px] text-gray-500 font-mono">#{a.rank}</span>
+                  <span className="text-[11px] text-gray-500 font-mono">#{a.rank}</span>
                 )}
               </span>
               <span className="text-sm">⚔️</span>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] text-gray-300 font-medium truncate">
                   {a.name}
-                  {mine && <span className="ml-1 text-[9px] text-purple-400 font-semibold">(You)</span>}
+                  {mine && <span className="ml-1 text-[11px] text-purple-400 font-semibold">(You)</span>}
                 </p>
-                <p className="text-[9px] text-gray-600">
+                <p className="text-[11px] text-gray-600">
                   {a.tag ? `${a.tag} · ` : ''}{a.memberCount}/{a.memberCap} members · Lv {a.level}
                   {a.recruiting && <span className="text-emerald-400"> · ● recruiting</span>}
                   {topContributor && <span className="text-gray-600"> · 🔥 {topContributor}</span>}
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-[10px] text-purple-300 font-mono">
+                <p className="text-[11px] text-purple-300 font-mono">
                   {sort === 'weekly' ? `${a.weeklyCleared} cleared` : `${a.xp.toLocaleString()} XP`}
                 </p>
-                <p className="text-[8px] text-gray-600">
+                <p className="text-[11px] text-gray-600">
                   {sort === 'weekly' ? `${a.weeklyCallsRun} calls this week` : `${a.weeklyCleared} cleared this week`}
                 </p>
               </div>
@@ -1793,10 +1793,10 @@ function AllianceBoard({ data, loading, error, sort, setSort, myAllianceId, expa
             {expanded && (
               <div className="px-2 pb-2 pt-1 border-t border-gray-700/30 space-y-1">
                 {detailLoading ? (
-                  <p className="text-[9px] text-gray-600 px-1">Loading contributions…</p>
+                  <p className="text-[11px] text-gray-600 px-1">Loading contributions…</p>
                 ) : detail ? (
                   <>
-                    <p className="text-[9px] text-gray-500 px-1 pb-0.5">
+                    <p className="text-[11px] text-gray-500 px-1 pb-0.5">
                       👑 Led by {detail.alliance.leaderName} — member contributions this week
                     </p>
                     {detail.members.map((m) => (
@@ -1812,13 +1812,13 @@ function AllianceBoard({ data, loading, error, sort, setSort, myAllianceId, expa
                         <div className="flex-1 min-w-0">
                           <p className="text-[11px] text-gray-300 font-medium truncate">
                             {m.username}
-                            {m.playerId === playerId && <span className="ml-1 text-[9px] text-purple-400 font-semibold">(You)</span>}
+                            {m.playerId === playerId && <span className="ml-1 text-[11px] text-purple-400 font-semibold">(You)</span>}
                           </p>
-                          <p className="text-[9px] text-gray-600">Lv {m.level} · {m.missionsCompleted} missions</p>
+                          <p className="text-[11px] text-gray-600">Lv {m.level} · {m.missionsCompleted} missions</p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-[10px] text-emerald-400 font-mono">{m.weeklyCleared} cleared</p>
-                          <p className="text-[8px] text-gray-600">{m.weeklyCallsRun} calls</p>
+                          <p className="text-[11px] text-emerald-400 font-mono">{m.weeklyCleared} cleared</p>
+                          <p className="text-[11px] text-gray-600">{m.weeklyCallsRun} calls</p>
                         </div>
                       </div>
                     ))}
@@ -1841,7 +1841,7 @@ function AllianceLocked({ level, isFounder }: { level: number; isFounder: boolea
         <Lock className="w-4 h-4 text-amber-400" />
       </div>
       <p className="text-xs font-bold text-white">Alliances locked</p>
-      <p className="text-[10px] text-gray-400 leading-relaxed">
+      <p className="text-[11px] text-gray-400 leading-relaxed">
         {isFounder
           ? 'You are the founder — alliances are unlocked for your account at any level.'
           : `Unlock at Level ${ALLIANCE_MIN_LEVEL}. ${remaining > 0 ? `${remaining} level${remaining === 1 ? '' : 's'} to go — keep responding to calls to rank up.` : ''}`}
@@ -1855,7 +1855,7 @@ function AllianceLocked({ level, isFounder }: { level: number; isFounder: boolea
           />
         ))}
       </div>
-      <p className="text-[8px] text-gray-600">
+      <p className="text-[11px] text-gray-600">
         Alliances bring shared XP, member caps, map reveal, and reward bonuses.
       </p>
     </div>
@@ -1870,10 +1870,10 @@ function AllianceXpPanel({ alliance }: { alliance: AllianceSummary }) {
   return (
     <div className="bg-gray-800/60 border border-gray-700/50 rounded-lg p-2.5 space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-[9px] text-gray-500 uppercase tracking-wider">
+        <p className="text-[11px] text-gray-500 uppercase tracking-wider">
           {current.icon} Level {current.level} — Shared XP
         </p>
-        <span className="text-[10px] text-purple-300 font-mono">
+        <span className="text-[11px] text-purple-300 font-mono">
           {xp.toLocaleString()} XP
         </span>
       </div>
@@ -1883,7 +1883,7 @@ function AllianceXpPanel({ alliance }: { alliance: AllianceSummary }) {
           style={{ width: `${Math.round(progress * 100)}%` }}
         />
       </div>
-      <p className="text-[9px] text-gray-600">
+      <p className="text-[11px] text-gray-600">
         {next
           ? `${(next.xpThreshold - xp).toLocaleString()} XP to Level ${next.level}`
           : 'Max level reached'}
@@ -1900,15 +1900,15 @@ function AllianceXpPanel({ alliance }: { alliance: AllianceSummary }) {
                   : 'bg-gray-800/40 border-gray-700/40 opacity-60'
               }`}
             >
-              <p className="text-[9px] font-bold text-white">{l.icon} Lv {l.level}</p>
-              <p className="text-[8px] text-gray-500 leading-tight">
+              <p className="text-[11px] font-bold text-white">{l.icon} Lv {l.level}</p>
+              <p className="text-[11px] text-gray-500 leading-tight">
                 {l.memberCap} members • {l.revealKm}km map reveal • +{Math.round((l.commanderBonus - 1) * 100)}% rewards
               </p>
             </div>
           );
         })}
       </div>
-      <p className="text-[8px] text-gray-600">
+      <p className="text-[11px] text-gray-600">
         Missions completed by members feed shared XP — 25% of each mission's XP goes to the alliance.
       </p>
     </div>
@@ -1996,19 +1996,19 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
           <Crown className="w-4 h-4 text-purple-400" />
           <p className="text-sm font-bold text-white truncate">{alliance.name}</p>
           {alliance.tag && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">
+            <span className="text-[11px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">
               {alliance.tag}
             </span>
           )}
-          <span className="ml-auto text-[10px] text-purple-300 font-mono">LVL {alliance.level}</span>
+          <span className="ml-auto text-[11px] text-purple-300 font-mono">LVL {alliance.level}</span>
         </div>
-        <p className="text-[10px] text-gray-500 mt-1">
+        <p className="text-[11px] text-gray-500 mt-1">
           Led by {alliance.leaderName} • {alliance.memberCount} member{alliance.memberCount === 1 ? '' : 's'}
         </p>
         <div className="flex items-center gap-1.5 mt-2">
           <button
             onClick={() => setShowAlliesOnMap(!showAlliesOnMap)}
-            className={`flex-1 px-2 py-1.5 rounded-md text-[10px] font-semibold transition-colors ${
+            className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-semibold transition-colors ${
               showAlliesOnMap
                 ? 'bg-purple-500/25 text-purple-300 border border-purple-500/40'
                 : 'bg-gray-800/60 text-gray-400 border border-gray-700/50 hover:text-gray-200'
@@ -2019,7 +2019,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
           <button
             onClick={onLeave}
             disabled={busy}
-            className="px-2 py-1.5 rounded-md text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-40 transition-colors"
+            className="px-2 py-1.5 rounded-md text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-40 transition-colors"
           >
             Leave
           </button>
@@ -2028,7 +2028,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
 
       {/* Invite code — shareable, leader can rotate it */}
       <div className="bg-gray-800/60 border border-gray-700/50 rounded-lg p-2.5">
-        <p className="text-[9px] text-gray-500 uppercase tracking-wider mb-1.5">
+        <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-1.5">
           Invite Code — share this to recruit
         </p>
         {inviteCode ? (
@@ -2055,10 +2055,10 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
             )}
           </div>
         ) : (
-          <p className="text-[10px] text-gray-600">Loading invite code…</p>
+          <p className="text-[11px] text-gray-600">Loading invite code…</p>
         )}
         {!isLeader && (
-          <p className="text-[9px] text-gray-600 mt-1">Only the leader can rotate the code.</p>
+          <p className="text-[11px] text-gray-600 mt-1">Only the leader can rotate the code.</p>
         )}
       </div>
 
@@ -2068,27 +2068,27 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
       {/* Recruitment listing — leader manages what the board shows */}
       {isLeader && (
         <div className="bg-gray-800/60 border border-gray-700/50 rounded-lg p-2.5 space-y-2">
-          <p className="text-[9px] text-gray-500 uppercase tracking-wider">📣 Recruitment Listing</p>
+          <p className="text-[11px] text-gray-500 uppercase tracking-wider">📣 Recruitment Listing</p>
           <textarea
             value={listingDesc}
             onChange={(e) => setListingDesc(e.target.value.slice(0, 500))}
             placeholder="Describe your alliance — focus, activity, vibe (max 500)"
             rows={2}
-            className="w-full bg-gray-800/80 border border-gray-700/50 rounded-md px-2 py-1.5 text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 resize-none"
+            className="w-full bg-gray-800/80 border border-gray-700/50 rounded-md px-2 py-1.5 text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 resize-none"
           />
           <div className="flex items-center gap-2">
-            <label className="text-[10px] text-gray-400">Min level</label>
+            <label className="text-[11px] text-gray-400">Min level</label>
             <input
               type="number"
               min={1}
               max={50}
               value={listingMinLevel}
               onChange={(e) => setListingMinLevel(Math.min(50, Math.max(1, Math.round(Number(e.target.value) || 1))))}
-              className="w-16 bg-gray-800/80 border border-gray-700/50 rounded-md px-2 py-1 text-[10px] text-white focus:outline-none focus:border-purple-500/50"
+              className="w-16 bg-gray-800/80 border border-gray-700/50 rounded-md px-2 py-1 text-[11px] text-white focus:outline-none focus:border-purple-500/50"
             />
             <button
               onClick={() => setListingRecruiting(!listingRecruiting)}
-              className={`ml-auto px-2 py-1 rounded-md text-[10px] font-semibold border transition-colors ${
+              className={`ml-auto px-2 py-1 rounded-md text-[11px] font-semibold border transition-colors ${
                 listingRecruiting
                   ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
                   : 'bg-gray-800/60 text-gray-500 border-gray-700/50 hover:text-gray-300'
@@ -2100,7 +2100,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
           <button
             onClick={onUpdateListing}
             disabled={listingBusy}
-            className="w-full px-2 py-1.5 rounded-md text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
+            className="w-full px-2 py-1.5 rounded-md text-[11px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
           >
             {listingBusy ? 'Saving…' : 'Save listing'}
           </button>
@@ -2110,11 +2110,11 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
       {/* Join requests — leader approves/declines, officers can view */}
       {(isLeader || isOfficer) && (
         <div className="bg-gray-800/40 border border-gray-700/30 rounded-lg p-2">
-          <p className="text-[9px] text-gray-500 uppercase tracking-wider px-1 pb-1">
+          <p className="text-[11px] text-gray-500 uppercase tracking-wider px-1 pb-1">
             Join Requests — {requests.length}
           </p>
           {requests.length === 0 ? (
-            <p className="text-[9px] text-gray-600 px-1 pb-0.5">No pending requests right now.</p>
+            <p className="text-[11px] text-gray-600 px-1 pb-0.5">No pending requests right now.</p>
           ) : (
             <div className="space-y-1">
               {requests.map((r) => (
@@ -2122,7 +2122,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
                   <span className="text-sm">👤</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] text-gray-300 font-medium truncate">{r.username}</p>
-                    <p className="text-[9px] text-gray-600">Level {r.level}</p>
+                    <p className="text-[11px] text-gray-600">Level {r.level}</p>
                   </div>
                   {isLeader && (
                     <>
@@ -2130,7 +2130,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
                         onClick={() => onApprove(r.id)}
                         disabled={listingBusy}
                         title="Approve request"
-                        className="px-2 py-1 rounded-md text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 disabled:opacity-30 transition-colors"
+                        className="px-2 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 disabled:opacity-30 transition-colors"
                       >
                         Accept
                       </button>
@@ -2138,7 +2138,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
                         onClick={() => onReject(r.id)}
                         disabled={listingBusy}
                         title="Decline request"
-                        className="px-2 py-1 rounded-md text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-30 transition-colors"
+                        className="px-2 py-1 rounded-md text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-30 transition-colors"
                       >
                         Decline
                       </button>
@@ -2153,7 +2153,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
 
       {/* Roster with role badges + management controls (leader/officer) */}
       <div className="bg-gray-800/40 border border-gray-700/30 rounded-lg p-2">
-        <p className="text-[9px] text-gray-500 uppercase tracking-wider px-1 pb-1">
+        <p className="text-[11px] text-gray-500 uppercase tracking-wider px-1 pb-1">
           Members — {alliance.memberCount}
         </p>
         <div className="space-y-1">
@@ -2168,9 +2168,9 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] text-gray-300 font-medium truncate">
                     {m.username}
-                    {isMe && <span className="ml-1 text-[9px] text-purple-400 font-semibold">(You)</span>}
+                    {isMe && <span className="ml-1 text-[11px] text-purple-400 font-semibold">(You)</span>}
                   </p>
-                  <p className="text-[9px] text-gray-600">
+                  <p className="text-[11px] text-gray-600">
                     {m.role} • Lv{m.level}
                   </p>
                 </div>
@@ -2189,7 +2189,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
                     onClick={() => onSetRole(m.playerId, m.role === 'officer' ? 'member' : 'officer')}
                     disabled={busy}
                     title={m.role === 'officer' ? 'Demote to member' : 'Promote to officer'}
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border transition-colors disabled:opacity-30 ${
+                    className={`px-1.5 py-0.5 rounded text-[11px] font-semibold border transition-colors disabled:opacity-30 ${
                       m.role === 'officer'
                         ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
                         : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
@@ -2215,7 +2215,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
       </div>
 
       <div className="relative bg-gray-800/60 border border-gray-700/50 rounded-lg p-2 flex flex-col h-48">
-        <p className="text-[9px] text-gray-500 uppercase tracking-wider px-1 pb-1">Alliance Chat</p>
+        <p className="text-[11px] text-gray-500 uppercase tracking-wider px-1 pb-1">Alliance Chat</p>
         <div
           className="flex-1 overflow-y-auto space-y-1.5 mb-1.5 pr-1"
           onScroll={(e) => {
@@ -2224,12 +2224,12 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
           }}
         >
           {chat.length === 0 ? (
-            <p className="text-[10px] text-gray-600 px-1">No messages yet — say hello to your squad.</p>
+            <p className="text-[11px] text-gray-600 px-1">No messages yet — say hello to your squad.</p>
           ) : (
             chat.slice(-30).map((m) => {
               const confirmed = (chatReceipts.get(m.id)?.size ?? 0) > 0;
               return (
-                <div key={m.id} className="text-[10px]">
+                <div key={m.id} className="text-[11px]">
                   <span className="text-purple-300 font-semibold">{m.senderName}: </span>
                   <span className="text-gray-300">{m.text}</span>
                   {m.senderName === myUsername && (
@@ -2256,7 +2256,7 @@ function AllianceDetail({ alliance, chat, chatInput, setChatInput, onSend, onLea
           </button>
         )}
         {typerNames.length > 0 && (
-          <p className="text-[9px] text-purple-300/80 italic px-1 pb-1 select-none">
+          <p className="text-[11px] text-purple-300/80 italic px-1 pb-1 select-none">
             {typerNames.slice(0, 2).join(', ')}{typerNames.length > 2 ? ` +${typerNames.length - 2} more` : ''}
             {' '}{typerNames.length === 1 ? 'is' : 'are'} typing…
           </p>
@@ -2303,7 +2303,7 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
   return (
     <div className="space-y-2">
       <div className="bg-gray-800/60 border border-gray-700/50 rounded-lg p-2.5">
-        <p className="text-[10px] font-semibold text-gray-300 mb-1.5">⚔️ Found an alliance</p>
+        <p className="text-[11px] font-semibold text-gray-300 mb-1.5">⚔️ Found an alliance</p>
         <input
           type="text"
           value={nameInput}
@@ -2321,7 +2321,7 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
         <button
           onClick={onCreate}
           disabled={!nameInput.trim() || busy}
-          className="w-full px-2 py-1.5 rounded-md text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
+          className="w-full px-2 py-1.5 rounded-md text-[11px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
         >
           {busy ? 'Creating...' : 'Create alliance'}
         </button>
@@ -2329,7 +2329,7 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
 
       <div className="bg-gray-800/60 border border-gray-700/50 rounded-lg p-2.5 space-y-2">
         <div>
-          <p className="text-[10px] font-semibold text-gray-300 mb-1.5">🎟️ Join with an invite code</p>
+          <p className="text-[11px] font-semibold text-gray-300 mb-1.5">🎟️ Join with an invite code</p>
           <div className="flex items-center gap-1.5">
             <input
               type="text"
@@ -2342,14 +2342,14 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
             <button
               onClick={onJoinByCode}
               disabled={!codeInput.trim() || busy}
-              className="px-2 py-1.5 rounded-md text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
+              className="px-2 py-1.5 rounded-md text-[11px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
             >
               Join with code
             </button>
           </div>
         </div>
         <div className="border-t border-gray-700/40 pt-2">
-          <p className="text-[10px] font-semibold text-gray-300 mb-1.5">🤝 …or join by name</p>
+          <p className="text-[11px] font-semibold text-gray-300 mb-1.5">🤝 …or join by name</p>
           <div className="flex items-center gap-1.5">
             <input
               type="text"
@@ -2362,7 +2362,7 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
             <button
               onClick={onJoin}
               disabled={!joinInput.trim() || busy}
-              className="px-2 py-1.5 rounded-md text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
+              className="px-2 py-1.5 rounded-md text-[11px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 disabled:opacity-40 transition-colors"
             >
               Join
             </button>
@@ -2372,7 +2372,7 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
 
       {directory.length > 0 && (
         <div className="bg-gray-800/40 border border-gray-700/30 rounded-lg p-2">
-          <p className="text-[9px] text-gray-500 uppercase tracking-wider px-1 pb-1.5">
+          <p className="text-[11px] text-gray-500 uppercase tracking-wider px-1 pb-1.5">
             📣 Recruitment Board — request to join
           </p>
           <div className="space-y-1.5">
@@ -2390,13 +2390,13 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs">⚔️</span>
                     <p className="text-[11px] text-gray-200 font-semibold truncate flex-1">{a.name}</p>
-                    {a.tag && <span className="text-[9px] text-purple-300 font-mono">{a.tag}</span>}
-                    <span className="text-[9px] text-gray-500">LVL {a.level}</span>
+                    {a.tag && <span className="text-[11px] text-purple-300 font-mono">{a.tag}</span>}
+                    <span className="text-[11px] text-gray-500">LVL {a.level}</span>
                   </div>
                   {a.description && (
-                    <p className="text-[9px] text-gray-500 leading-snug">{a.description}</p>
+                    <p className="text-[11px] text-gray-500 leading-snug">{a.description}</p>
                   )}
-                  <div className="flex items-center gap-1.5 text-[9px]">
+                  <div className="flex items-center gap-1.5 text-[11px]">
                     <span className="text-gray-500">
                       {a.memberCount}/{a.memberCap} members
                     </span>
@@ -2408,7 +2408,7 @@ function AllianceJoin({ nameInput, setNameInput, tagInput, setTagInput, joinInpu
                   <button
                     onClick={() => onRequestJoin(a.id)}
                     disabled={busy || a.requested || tooLow || !a.recruiting}
-                    className={`w-full px-2 py-1.5 rounded-md text-[10px] font-semibold border transition-colors disabled:opacity-40 ${
+                    className={`w-full px-2 py-1.5 rounded-md text-[11px] font-semibold border transition-colors disabled:opacity-40 ${
                       a.requested
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                         : 'bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/30'
@@ -2445,7 +2445,7 @@ function EmptyState({
     <div className="text-center py-5 text-gray-600">
       <div className="mx-auto mb-2 opacity-40">{icon}</div>
       <p className="text-xs font-medium">{title}</p>
-      <p className="text-[10px] text-gray-700 mt-0.5">{subtitle}</p>
+      <p className="text-[11px] text-gray-700 mt-0.5">{subtitle}</p>
     </div>
   );
 }
@@ -2478,7 +2478,7 @@ function SeasonalBoard({ event, data, loading, error, onRetry }: {
       <div className="text-center py-6 text-gray-600">
         <div className="mx-auto mb-2 opacity-40 text-2xl">{event.icon}</div>
         <p className="text-xs font-medium text-white">{event.name}</p>
-        <p className="text-[10px] text-gray-700 mt-0.5">
+        <p className="text-[11px] text-gray-700 mt-0.5">
           Up next · {seasonalWindowLabel(event)} — clear the most calls to win the 🏆
         </p>
       </div>
@@ -2489,7 +2489,7 @@ function SeasonalBoard({ event, data, loading, error, onRetry }: {
     return (
       <div className="text-center py-6 text-gray-600">
         <p className="text-xs font-medium">Couldn't load the contest</p>
-        <button onClick={onRetry} className="mt-2 text-[10px] text-amber-400 hover:text-amber-300 underline">
+        <button onClick={onRetry} className="mt-2 text-[11px] text-amber-400 hover:text-amber-300 underline">
           Try again
         </button>
       </div>
@@ -2517,7 +2517,7 @@ function SeasonalBoard({ event, data, loading, error, onRetry }: {
           <span className="text-lg">{event.icon}</span>
           <div className="min-w-0">
             <p className="text-xs font-bold text-white truncate">{event.name} Contest</p>
-            <p className="text-[9px] text-gray-600">
+            <p className="text-[11px] text-gray-600">
               {seasonalWindowLabel(event)} · {live ? 'LIVE' : 'FINAL'}
             </p>
           </div>
@@ -2527,7 +2527,7 @@ function SeasonalBoard({ event, data, loading, error, onRetry }: {
             <span className="text-base">🏆</span>
             <div className="min-w-0">
               <p className="text-[11px] font-bold text-amber-300 truncate">{winner.username} won the {event.name} contest!</p>
-              <p className="text-[9px] text-gray-500">{winner.calls} calls cleared · July 4th Champion badge</p>
+              <p className="text-[11px] text-gray-500">{winner.calls} calls cleared · July 4th Champion badge</p>
             </div>
           </div>
         )}
@@ -2548,19 +2548,19 @@ function SeasonalBoard({ event, data, loading, error, onRetry }: {
                 isMe ? 'bg-dispatch-red/10 border border-dispatch-red/30' : 'hover:bg-gray-800/60'
               }`}
             >
-              <span className="w-5 text-center text-[10px] text-gray-500 font-mono">
+              <span className="w-5 text-center text-[11px] text-gray-500 font-mono">
                 {rankMedal ?? `#${entry.rank}`}
               </span>
               <div className="min-w-0 flex-1">
                 <p className={`text-[11px] font-medium truncate ${isMe ? 'text-dispatch-red' : 'text-gray-200'}`}>
                   {entry.username} {isMe && '· you'}
                 </p>
-                <p className="text-[9px] text-gray-600">Level {entry.level}</p>
+                <p className="text-[11px] text-gray-600">Level {entry.level}</p>
               </div>
               <span className="text-[11px] font-mono text-amber-300 shrink-0">
                 {entry.callsCleared}
                 {(entry.cityClears ?? 0) > 0 && (
-                  <span className="text-[9px] text-sky-400/80 ml-1">+{entry.cityClears} city</span>
+                  <span className="text-[11px] text-sky-400/80 ml-1">+{entry.cityClears} city</span>
                 )}
               </span>
             </div>
@@ -2569,7 +2569,7 @@ function SeasonalBoard({ event, data, loading, error, onRetry }: {
       )}
 
       {live && me && (me.totalClears ?? me.callsCleared) > 0 && me.rank != null && (
-        <div className="px-3 pt-1 text-[9px] text-gray-600">
+        <div className="px-3 pt-1 text-[11px] text-gray-600">
           You're #{me.rank} with {(me.totalClears ?? me.callsCleared)}{' '}
           {(me.totalClears ?? me.callsCleared) === 1 ? 'call' : 'calls'} cleared
           {(me.cityClears ?? 0) > 0 && <> ({me.cityClears} by the city)</>}

@@ -10,7 +10,9 @@ import { SettingsModal } from './SettingsModal';
 import { ShiftReportModal } from './ShiftReportModal';
 import { ReleaseNotesModal } from './ReleaseNotesModal';
 import { currentVersion } from '@/data/releaseNotes';
-import { saveGame, getActiveSlot, SLOT_LABELS, hadSaveAuthFailure } from '../hooks/useSaveSystem';
+import { saveGame, getActiveSlot, SLOT_LABELS, hadSaveAuthFailure, hadSaveTooLargeFailure, hadSaveStaleFailure, lastSaveFailure } from '../hooks/useSaveSystem';
+import { ChallengeTracker } from './ChallengeTracker';
+import { SAVE_FAILURE_COPY } from '@/lib/saveFailure';
 import { Save, SaveAll } from 'lucide-react';
 import { playClick } from '../utils/sound';
 import { TUTORIAL_STEP_COUNT } from './OnboardingOverlay';
@@ -46,9 +48,13 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
       setMessage(
         ok
           ? `Saved to ${SLOT_LABELS[getActiveSlot()]}`
-          : hadSaveAuthFailure()
-            ? 'Session expired — sign back in from the profile menu'
-            : 'Save failed — try again in a moment'
+          : hadSaveTooLargeFailure()
+            ? SAVE_FAILURE_COPY['too-large'].message
+            : hadSaveStaleFailure()
+              ? SAVE_FAILURE_COPY.stale.message
+              : hadSaveAuthFailure()
+                ? SAVE_FAILURE_COPY.auth.message
+                : SAVE_FAILURE_COPY[lastSaveFailure()].message
       );
     } finally {
       setSaving(false);
@@ -98,7 +104,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                   <p className="text-sm font-semibold text-white group-hover:text-dispatch-green transition-colors">
                     Resume
                   </p>
-                  <p className="text-[10px] text-gray-500">Continue dispatch operations</p>
+                  <p className="text-[11px] text-gray-500">Continue dispatch operations</p>
                 </div>
               </motion.button>
 
@@ -111,7 +117,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                   <p className="text-sm font-semibold text-white group-hover:text-dispatch-cyan transition-colors">
                     Settings
                   </p>
-                  <p className="text-[10px] text-gray-500">Adjust preferences</p>
+                  <p className="text-[11px] text-gray-500">Adjust preferences</p>
                 </div>
               </button>
 
@@ -124,7 +130,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                   <p className="text-sm font-semibold text-white group-hover:text-amber-400 transition-colors">
                     Shift Report
                   </p>
-                  <p className="text-[10px] text-gray-500">Session stats for this shift</p>
+                  <p className="text-[11px] text-gray-500">Session stats for this shift</p>
                 </div>
               </button>
 
@@ -138,7 +144,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                     <p className="text-sm font-semibold text-white group-hover:text-dispatch-cyan transition-colors">
                       Replay Tutorial
                     </p>
-                    <p className="text-[10px] text-gray-500">Walk the {TUTORIAL_STEP_COUNT}-step tour again anytime</p>
+                    <p className="text-[11px] text-gray-500">Walk the {TUTORIAL_STEP_COUNT}-step tour again anytime</p>
                   </div>
                 </button>
               )}
@@ -152,9 +158,9 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                   <p className="text-sm font-semibold text-white group-hover:text-dispatch-cyan transition-colors">
                     What's New
                   </p>
-                  <p className="text-[10px] text-gray-500">Latest release notes · v{currentVersion()}</p>
+                  <p className="text-[11px] text-gray-500">Latest release notes · v{currentVersion()}</p>
                 </div>
-                <span className="text-[8px] px-1.5 py-0.5 rounded bg-dispatch-cyan/15 text-dispatch-cyan border border-dispatch-cyan/30 font-bold uppercase shrink-0">
+                <span className="text-[11px] px-1.5 py-0.5 rounded bg-dispatch-cyan/15 text-dispatch-cyan border border-dispatch-cyan/30 font-bold uppercase shrink-0">
                   new
                 </span>
               </button>
@@ -166,7 +172,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                   <p className="text-sm font-semibold text-white group-hover:text-dispatch-yellow transition-colors">
                     Restart
                   </p>
-                  <p className="text-[10px] text-gray-500">Start a new dispatch session</p>
+                  <p className="text-[11px] text-gray-500">Start a new dispatch session</p>
                 </div>
               </button>
 
@@ -182,7 +188,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                     <p className="text-sm font-semibold text-white group-hover:text-violet-400 transition-colors">
                       Relocate Command
                     </p>
-                    <p className="text-[10px] text-gray-500">Move your fleet to a new city (level-gated)</p>
+                    <p className="text-[11px] text-gray-500">Move your fleet to a new city (level-gated)</p>
                   </div>
                 </button>
               )}
@@ -197,7 +203,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                   <p className="text-sm font-semibold text-white group-hover:text-dispatch-red transition-colors">
                     Quit to Menu
                   </p>
-                  <p className="text-[10px] text-gray-500">Return to main menu</p>
+                  <p className="text-[11px] text-gray-500">Return to main menu</p>
                 </div>
               </button>
 
@@ -214,7 +220,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                   <p className="text-sm font-semibold text-white group-hover:text-dispatch-red transition-colors">
                     {itchPromoLabel()}
                   </p>
-                  <p className="text-[10px] text-gray-500">Desktop apps for Mac, Windows &amp; Linux</p>
+                  <p className="text-[11px] text-gray-500">Desktop apps for Mac, Windows &amp; Linux</p>
                 </div>
               </a>
             </div>
@@ -226,7 +232,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                 <p className="text-xs font-semibold text-gray-300 flex items-center gap-2">
                   <Save className="w-3.5 h-3.5 text-dispatch-cyan" /> Save Progress
                 </p>
-                <span className="text-[9px] text-gray-500 font-mono">
+                <span className="text-[11px] text-gray-500 font-mono">
                   {SLOT_LABELS[getActiveSlot()]} · autosave on
                 </span>
               </div>
@@ -238,14 +244,19 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                 <SaveAll className="w-3.5 h-3.5" />
                 {saving ? 'Saving…' : 'Save Now'}
               </button>
-              <p className="text-[9px] text-gray-600 mt-1.5">
+              <p className="text-[11px] text-gray-600 mt-1.5">
                 Manage slots (load / delete / start new) from the main menu → Load Game.
               </p>
-              {message && <p className={`text-[10px] mt-2 ${message.startsWith('Saved') ? 'text-dispatch-green' : 'text-amber-400'}`}>{message}</p>}
+              {message && <p className={`text-[11px] mt-2 ${message.startsWith('Saved') ? 'text-dispatch-green' : 'text-amber-400'}`}>{message}</p>}
+            </div>
+
+            {/* Batch 3d: challenges — claimable from pause without quitting. */}
+            <div className="mt-4 border-t border-gray-800 pt-4">
+              <ChallengeTracker coinRewards />
             </div>
           {/* Shortcut hint */}
-            <p className="text-center text-[10px] text-gray-700 mt-6">
-              Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-500 font-mono text-[9px]">Esc</kbd> to resume
+            <p className="text-center text-[11px] text-gray-700 mt-6">
+              Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-500 font-mono text-[11px]">Esc</kbd> to resume
             </p>
           </motion.div>
         </motion.div>

@@ -53,6 +53,8 @@ export interface MissionRewardInput {
   districtRewardMult?: number;
   /** Batch 3b: disaster-wave stage multiplier (waveRewardMultForStage); defaults to 1. */
   waveRewardMult?: number;
+  /** Batch 3d: fog-of-war exploration multiplier (fogBonusMultiplier); defaults to 1. */
+  fogRewardMult?: number;
 }
 
 export interface MissionRewards {
@@ -101,6 +103,7 @@ export function computeMissionRewards(input: MissionRewardInput): MissionRewards
   const premiumMult = input.premiumMult ?? 1;
   const districtRewardMult = input.districtRewardMult ?? 1;
   const waveRewardMult = input.waveRewardMult ?? 1;
+  const fogRewardMult = input.fogRewardMult ?? 1;
 
   const remainingRatio = Math.max(0, m.timeRemaining / (m.totalTime || 600));
   const speedBonus = 1 + remainingRatio * 0.5;
@@ -124,8 +127,8 @@ export function computeMissionRewards(input: MissionRewardInput): MissionRewards
   // Credits carry the level + premium bonuses; XP deliberately does not (the
   // membership accelerates credits, never progression — pay-to-accelerate, not
   // pay-to-win).
-  let creditMult = techRewardMult * speedBonus * chainBonus * rankBonus * levelBonus * commanderBonus * stationRewardMult * seasonalMult * premiumMult * districtRewardMult * waveRewardMult;
-  let xpMult = techRewardMult * speedBonus * chainBonus * rankBonus * commanderBonus * stationRewardMult * seasonalMult * districtRewardMult * waveRewardMult;
+  let creditMult = techRewardMult * speedBonus * chainBonus * rankBonus * levelBonus * commanderBonus * stationRewardMult * seasonalMult * premiumMult * districtRewardMult * waveRewardMult * fogRewardMult;
+  let xpMult = techRewardMult * speedBonus * chainBonus * rankBonus * commanderBonus * stationRewardMult * seasonalMult * districtRewardMult * waveRewardMult * fogRewardMult;
   if (isMutualAid) {
     creditMult *= 1.25;
     xpMult *= 1.25;

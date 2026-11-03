@@ -47,7 +47,7 @@ export function DisasterStatusChip({ onOpen }: { onOpen?: () => void }) {
     <button
       onClick={onOpen}
       title={`${disaster.name} — ${recovering ? 'recovery' : 'emergency'} in progress · ${formatTimer(secondsLeft)} left`}
-      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-bold select-none transition-colors ${
+      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] font-bold select-none transition-colors ${
         recovering
           ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/70'
           : 'bg-red-950/70 border-red-500/40 text-red-300 hover:bg-red-900/70'
@@ -55,7 +55,7 @@ export function DisasterStatusChip({ onOpen }: { onOpen?: () => void }) {
     >
       <span className={`w-1.5 h-1.5 rounded-full ${recovering ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
       <span className="text-xs leading-none">{disaster.icon}</span>
-      <span className="hidden sm:inline uppercase tracking-wider text-[8px]">
+      <span className="hidden sm:inline uppercase tracking-wider text-[11px]">
         {recovering ? 'Recovery' : 'Disaster'}
       </span>
       <span className="font-mono">{formatTimer(secondsLeft)}</span>
@@ -96,7 +96,7 @@ export function DisasterStatusStrip() {
         <p className="text-xs font-bold text-white truncate flex-1">
           {recovering ? 'Recovery' : disaster.name}
         </p>
-        <span className={`text-[10px] font-mono shrink-0 ${recovering ? 'text-emerald-300' : 'text-red-300'}`}>
+        <span className={`text-[11px] font-mono shrink-0 ${recovering ? 'text-emerald-300' : 'text-red-300'}`}>
           {formatTimer(secondsLeft)}
         </span>
       </div>
@@ -106,7 +106,7 @@ export function DisasterStatusStrip() {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <p className="mt-1 text-[9px] text-gray-400 leading-snug">
+      <p className="mt-1 text-[11px] text-gray-400 leading-snug">
         {recovering
           ? 'City returning to normal — recovery calls active in the affected zone.'
           : `${disaster.completed}/${disaster.spawned} calls contained — dispatch units to the affected zone.`}

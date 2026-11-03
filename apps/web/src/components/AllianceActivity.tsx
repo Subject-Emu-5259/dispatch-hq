@@ -113,7 +113,7 @@ export function AllianceActivity({ currentPlayerId }: AllianceActivityProps) {
         </div>
         <button
           onClick={() => void load(true)}
-          className="text-[9px] text-gray-500 hover:text-gray-300 transition-colors"
+          className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
         >
           ↻ Refresh
         </button>
@@ -146,7 +146,7 @@ export function AllianceActivity({ currentPlayerId }: AllianceActivityProps) {
                   {' '}
                   <span className="text-gray-400">{event.summary}</span>
                 </p>
-                <p className="text-[9px] text-gray-600 mt-0.5">
+                <p className="text-[11px] text-gray-600 mt-0.5">
                   {formatTimeAgo(event.createdAt)}
                 </p>
               </div>
@@ -159,7 +159,7 @@ export function AllianceActivity({ currentPlayerId }: AllianceActivityProps) {
       {hasMore && (
         <button
           onClick={loadMore}
-          className="w-full text-center text-[10px] text-gray-500 hover:text-gray-300 py-2 transition-colors"
+          className="w-full text-center text-[11px] text-gray-500 hover:text-gray-300 py-2 transition-colors"
         >
           Load more…
         </button>

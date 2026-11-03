@@ -271,7 +271,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 <Bell className="w-4 h-4 text-gray-400" />
                 <h2 className="text-sm font-bold text-white">Notifications</h2>
                 {totalUnread > 0 && (
-                  <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-dispatch-red text-white text-[10px] font-bold rounded-full">
+                  <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-dispatch-red text-white text-[11px] font-bold rounded-full">
                     {totalUnread > 99 ? '99+' : totalUnread}
                   </span>
                 )}
@@ -281,13 +281,13 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   <>
                     <button
                       onClick={markAllRead}
-                      className="px-2 py-1 text-[10px] font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors"
+                      className="px-2 py-1 text-[11px] font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors"
                     >
                       Mark read
                     </button>
                     <button
                       onClick={clearNotifications}
-                      className="px-2 py-1 text-[10px] font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded transition-colors"
+                      className="px-2 py-1 text-[11px] font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded transition-colors"
                     >
                       Clear
                     </button>
@@ -296,7 +296,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 {tab === 'inbox' && inboxUnread > 0 && (
                   <button
                     onClick={markInboxAllRead}
-                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors"
                   >
                     <CheckCheck className="w-3 h-3" /> Mark all read
                   </button>
@@ -317,7 +317,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
               >
                 <Bell className="w-3.5 h-3.5" /> Alerts
                 {unreadCount > 0 && (
-                  <span className="min-w-[16px] h-4 px-1 flex items-center justify-center bg-dispatch-red text-white text-[9px] font-bold rounded-full">
+                  <span className="min-w-[16px] h-4 px-1 flex items-center justify-center bg-dispatch-red text-white text-[11px] font-bold rounded-full">
                     {unreadCount}
                   </span>
                 )}
@@ -330,7 +330,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
               >
                 <InboxIcon className="w-3.5 h-3.5" /> Inbox
                 {inboxUnread > 0 && (
-                  <span className="min-w-[16px] h-4 px-1 flex items-center justify-center bg-dispatch-cyan text-gray-950 text-[9px] font-bold rounded-full">
+                  <span className="min-w-[16px] h-4 px-1 flex items-center justify-center bg-dispatch-cyan text-gray-950 text-[11px] font-bold rounded-full">
                     {inboxUnread}
                   </span>
                 )}
@@ -386,7 +386,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                             <p className={`text-[11px] mt-0.5 leading-relaxed ${kindBody}`}>
                               {m.body}
                             </p>
-                            <p className="text-[9px] text-gray-600 mt-1">{timeAgo(Date.parse(m.createdAt))}</p>
+                            <p className="text-[11px] text-gray-600 mt-1">{timeAgo(Date.parse(m.createdAt))}</p>
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); deleteInbox(m.id); }}
@@ -454,10 +454,10 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                               {n.title}
                             </p>
                             {n.value && (
-                              <span className="text-[10px] font-mono font-bold text-amber-400">{n.value}</span>
+                              <span className="text-[11px] font-mono font-bold text-amber-400">{n.value}</span>
                             )}
                             {badge && (
-                              <span className={`text-[8px] font-bold px-1 py-0.5 rounded uppercase tracking-wider ${badge.color}`}>
+                              <span className={`text-[11px] font-bold px-1 py-0.5 rounded uppercase tracking-wider ${badge.color}`}>
                                 {badge.label}
                               </span>
                             )}
@@ -467,7 +467,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                               {n.message}
                             </p>
                           )}
-                          <p className="text-[9px] text-gray-600 mt-1">{timeAgo(n.createdAt)}</p>
+                          <p className="text-[11px] text-gray-600 mt-1">{timeAgo(n.createdAt)}</p>
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); removeNotification(n.id); }}

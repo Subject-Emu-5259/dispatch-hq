@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <RotateCcw className="w-3.5 h-3.5" /> Reload Game
           </button>
           {this.state.error?.message && (
-            <p className="mt-4 text-[9px] text-gray-700 max-w-sm break-words">{this.state.error.message}</p>
+            <p className="mt-4 text-[11px] text-gray-700 max-w-sm break-words">{this.state.error.message}</p>
           )}
         </div>
       );

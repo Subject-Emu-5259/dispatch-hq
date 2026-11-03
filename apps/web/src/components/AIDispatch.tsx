@@ -156,7 +156,7 @@ export function AIDispatch({ isOpen, onClose }: AIDispatchProps) {
                 </p>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  <p className="text-[9px] text-gray-500">Rule-based</p>
+                  <p className="text-[11px] text-gray-500">Rule-based</p>
                 </div>
               </div>
             </div>
@@ -167,11 +167,11 @@ export function AIDispatch({ isOpen, onClose }: AIDispatchProps) {
 
           {/* Live recommendations */}
           <div className="border-b border-gray-800/50 max-h-[35%] overflow-y-auto">
-            <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="px-3 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
               <Zap className="w-3 h-3" /> Live Recommendations
             </div>
             {recommendations.length === 0 ? (
-              <div className="px-3 pb-3 text-[10px] text-gray-500">
+              <div className="px-3 pb-3 text-[11px] text-gray-500">
                 No active calls need units right now.
               </div>
             ) : (
@@ -183,27 +183,27 @@ export function AIDispatch({ isOpen, onClose }: AIDispatchProps) {
                   >
                     <div className="flex items-start justify-between gap-1.5">
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold text-white truncate">{rec.mission.name}</p>
-                        <p className="text-[9px] text-gray-500 truncate">
+                        <p className="text-[11px] font-bold text-white truncate">{rec.mission.name}</p>
+                        <p className="text-[11px] text-gray-500 truncate">
                           {rec.mission.category} · diff {rec.mission.difficulty}
                         </p>
                       </div>
                       <button
                         onClick={() => handleDispatchRecommendation(rec)}
                         disabled={loading || rec.units.length === 0}
-                        className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md bg-dispatch-cyan/20 border border-dispatch-cyan/30 text-dispatch-cyan text-[10px] font-bold hover:bg-dispatch-cyan/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md bg-dispatch-cyan/20 border border-dispatch-cyan/30 text-dispatch-cyan text-[11px] font-bold hover:bg-dispatch-cyan/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >
                         <Plus className="w-3 h-3" /> {rec.units.length}
                       </button>
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-1">
                       {rec.units.slice(0, 4).map(u => (
-                        <span key={u.id} className="px-1.5 py-0.5 rounded-full bg-gray-700/50 border border-gray-600/40 text-[9px] text-gray-300 truncate max-w-[6rem]">
+                        <span key={u.id} className="px-1.5 py-0.5 rounded-full bg-gray-700/50 border border-gray-600/40 text-[11px] text-gray-300 truncate max-w-[6rem]">
                           {u.name}
                         </span>
                       ))}
                       {rec.missingTypes.length > 0 && (
-                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-900/30 border border-red-500/30 text-[9px] text-red-300">
+                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-900/30 border border-red-500/30 text-[11px] text-red-300">
                           <AlertTriangle className="w-2.5 h-2.5" /> Need {rec.missingTypes.join(', ')}
                         </span>
                       )}
@@ -219,7 +219,7 @@ export function AIDispatch({ isOpen, onClose }: AIDispatchProps) {
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : msg.role === 'system' ? 'justify-center' : 'justify-start'}`}>
                 {msg.role === 'system' ? (
-                  <div className="text-[10px] text-gray-400 text-center px-2 py-1 rounded bg-gray-800/30 max-w-[90%]">
+                  <div className="text-[11px] text-gray-400 text-center px-2 py-1 rounded bg-gray-800/30 max-w-[90%]">
                     {msg.content}
                   </div>
                 ) : (
@@ -251,7 +251,7 @@ export function AIDispatch({ isOpen, onClose }: AIDispatchProps) {
                 <button
                   key={s.label}
                   onClick={() => setInput(s.label)}
-                  className="px-2 py-1 text-[10px] rounded-full bg-gray-800/60 border border-gray-700/40 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
+                  className="px-2 py-1 text-[11px] rounded-full bg-gray-800/60 border border-gray-700/40 text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
                 >
                   {s.icon} {s.label}
                 </button>

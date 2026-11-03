@@ -138,7 +138,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             exit={{ opacity: 0, y: -10 }}
             className="max-w-sm text-center"
           >
-            <p className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-1">Dispatch Tip</p>
+            <p className="text-[11px] text-gray-600 uppercase tracking-wider font-semibold mb-1">Dispatch Tip</p>
             <p className="text-sm text-gray-400">{LOADING_TIPS[tipIndex]}</p>
           </motion.div>
         </AnimatePresence>
@@ -163,7 +163,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
       {/* Version — always mirrors the latest release note so it never goes stale */}
       <div className="absolute bottom-4 left-4">
-        <p className="text-[10px] text-gray-700 font-mono">v{RELEASE_NOTES[0]?.version ?? '0.8.0'}</p>
+        <p className="text-[11px] text-gray-700 font-mono">v{RELEASE_NOTES[0]?.version ?? '0.8.0'}</p>
       </div>
     </motion.div>
   );

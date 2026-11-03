@@ -144,7 +144,7 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
 
   if (loading) {
     return (
-      <div className="text-center py-4 text-[10px] text-gray-500">
+      <div className="text-center py-4 text-[11px] text-gray-500">
         <RefreshCw className="w-3 h-3 animate-spin inline mr-1" />
         Loading treasury…
       </div>
@@ -170,7 +170,7 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
         </div>
         <div className="text-2xl font-black text-amber-400 font-mono">
           {balance.toLocaleString()}
-          <span className="text-[10px] text-amber-400/60 ml-1">credits</span>
+          <span className="text-[11px] text-amber-400/60 ml-1">credits</span>
         </div>
       </div>
 
@@ -181,7 +181,7 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-2 py-1"
+            className="text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-2 py-1"
           >
             ✅ {success}
           </motion.div>
@@ -191,7 +191,7 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 rounded px-2 py-1"
+            className="text-[11px] text-red-400 bg-red-500/10 border border-red-500/20 rounded px-2 py-1"
           >
             ❌ {error}
           </motion.div>
@@ -204,7 +204,7 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
         <div className="bg-gray-800/40 border border-gray-700/30 rounded-lg p-2">
           <div className="flex items-center gap-1 mb-1.5">
             <ArrowDownToLine className="w-3 h-3 text-emerald-400" />
-            <span className="text-[10px] font-bold text-gray-300">Deposit</span>
+            <span className="text-[11px] font-bold text-gray-300">Deposit</span>
           </div>
           <div className="flex gap-1">
             <input
@@ -212,25 +212,25 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
               value={depositAmount}
               onChange={(e) => setDepositAmount(e.target.value)}
               placeholder="100"
-              className="flex-1 bg-gray-900/60 border border-gray-700/40 rounded px-2 py-1 text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50"
+              className="flex-1 bg-gray-900/60 border border-gray-700/40 rounded px-2 py-1 text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50"
               min={100}
             />
             <button
               onClick={handleDeposit}
               disabled={!depositAmount || parseInt(depositAmount, 10) < 100}
-              className="px-2 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded text-[10px] font-bold hover:bg-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="px-2 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded text-[11px] font-bold hover:bg-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Add
             </button>
           </div>
-          <p className="text-[9px] text-gray-600 mt-1">Your credits: {playerCredits.toLocaleString()}</p>
+          <p className="text-[11px] text-gray-600 mt-1">Your credits: {playerCredits.toLocaleString()}</p>
         </div>
 
         {/* Withdraw */}
         <div className="bg-gray-800/40 border border-gray-700/30 rounded-lg p-2">
           <div className="flex items-center gap-1 mb-1.5">
             <ArrowUpFromLine className="w-3 h-3 text-amber-400" />
-            <span className="text-[10px] font-bold text-gray-300">Withdraw</span>
+            <span className="text-[11px] font-bold text-gray-300">Withdraw</span>
           </div>
           {canWithdraw ? (
             <div className="flex gap-1">
@@ -239,19 +239,19 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder="100"
-                className="flex-1 bg-gray-900/60 border border-gray-700/40 rounded px-2 py-1 text-[10px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50"
+                className="flex-1 bg-gray-900/60 border border-gray-700/40 rounded px-2 py-1 text-[11px] text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50"
                 min={100}
               />
               <button
                 onClick={handleWithdraw}
                 disabled={!withdrawAmount || parseInt(withdrawAmount, 10) < 100}
-                className="px-2 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded text-[10px] font-bold hover:bg-amber-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="px-2 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded text-[11px] font-bold hover:bg-amber-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 Take
               </button>
             </div>
           ) : (
-            <p className="text-[9px] text-gray-600 py-1">Officer+ only</p>
+            <p className="text-[11px] text-gray-600 py-1">Officer+ only</p>
           )}
         </div>
       </div>
@@ -260,16 +260,16 @@ export function AllianceTreasury({ allianceLevel, memberRole }: AllianceTreasury
       <div>
         <div className="flex items-center gap-1 mb-2">
           <Clock className="w-3 h-3 text-gray-500" />
-          <span className="text-[10px] font-bold text-gray-400">Recent Activity</span>
+          <span className="text-[11px] font-bold text-gray-400">Recent Activity</span>
         </div>
         {transactions.length === 0 ? (
-          <p className="text-[10px] text-gray-600 text-center py-3">No transactions yet</p>
+          <p className="text-[11px] text-gray-600 text-center py-3">No transactions yet</p>
         ) : (
           <div className="space-y-1 max-h-40 overflow-y-auto">
             {transactions.map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center gap-2 text-[10px] py-1 px-2 rounded bg-gray-800/30"
+                className="flex items-center gap-2 text-[11px] py-1 px-2 rounded bg-gray-800/30"
               >
                 <span className="text-sm">{REASON_ICONS[tx.reason] ?? '📝'}</span>
                 <div className="flex-1 min-w-0">

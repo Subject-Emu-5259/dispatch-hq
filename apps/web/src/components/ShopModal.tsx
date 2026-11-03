@@ -113,7 +113,7 @@ export function ShopModal({ isOpen, onClose }: ShopModalProps) {
               <Coins className="w-4 h-4 text-amber-400" />
               <span className="text-sm font-bold text-white tabular-nums">{coins.toLocaleString()} coins</span>
               {isPremium && (
-                <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded px-1.5 py-0.5">
+                <span className="ml-auto flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded px-1.5 py-0.5">
                   <Crown className="w-3 h-3" /> COMMANDER
                 </span>
               )}
@@ -163,11 +163,11 @@ export function ShopModal({ isOpen, onClose }: ShopModalProps) {
                     return (
                     <div key={p.id} className="relative rounded-lg bg-gray-800/40 border border-gray-700/40 p-3 flex flex-col">
                       {badge && (
-                        <span className="absolute -top-2 -right-1 text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <span className="absolute -top-2 -right-1 text-[11px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
                           {badge}
                         </span>
                       )}
-                      <span className="text-[10px] text-gray-500">{p.name}</span>
+                      <span className="text-[11px] text-gray-500">{p.name}</span>
                       <span className="text-sm font-black text-amber-300 flex items-center gap-1 tabular-nums">
                         <Coins className="w-3.5 h-3.5" /> {p.coinCount.toLocaleString()}
                       </span>
@@ -191,7 +191,7 @@ export function ShopModal({ isOpen, onClose }: ShopModalProps) {
                 <p className="text-[11px] font-semibold text-white flex items-center gap-1">
                   <Zap className="w-3.5 h-3.5 text-cyan-400" /> Buy credits
                 </p>
-                <p className="text-[10px] text-gray-500">
+                <p className="text-[11px] text-gray-500">
                   {COIN_CREDITS_RATE.coins} coins → {COIN_CREDITS_RATE.credits.toLocaleString()} credits
                 </p>
               </div>
@@ -204,7 +204,7 @@ export function ShopModal({ isOpen, onClose }: ShopModalProps) {
               </button>
             </div>
 
-            <p className="text-[9px] text-gray-600 mb-3">
+            <p className="text-[11px] text-gray-600 mb-3">
               Training skips are available on a unit's training card. Coins are premium currency — everything else stays earnable in-game.
             </p>
 

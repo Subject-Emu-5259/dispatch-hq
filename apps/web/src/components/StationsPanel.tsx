@@ -153,7 +153,7 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-dispatch-red" />
                 <h2 className="text-sm font-bold text-white">Stations Command</h2>
-                <span className="px-2 py-0.5 rounded-full bg-gray-800 text-[10px] text-gray-400 font-medium">
+                <span className="px-2 py-0.5 rounded-full bg-gray-800 text-[11px] text-gray-400 font-medium">
                   {stations.length}
                 </span>
               </div>
@@ -255,12 +255,12 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
 
                               {unitList.length > 0 && (
                                 <div className="space-y-1.5">
-                                  <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">Assigned Units</p>
+                                  <p className="text-[11px] uppercase tracking-wider text-gray-600 font-semibold">Assigned Units</p>
                                   {unitList.map((u) => (
                                     <div key={u.id} className="flex items-center gap-2 px-2 py-1.5 bg-gray-800/40 rounded-lg text-[11px]">
                                       <span className="text-base">{UNIT_CONFIGS[u.type]?.icon || '🚒'}</span>
                                       <span className="text-gray-300 truncate flex-1">{u.name}</span>
-                                      <span className={`capitalize text-[10px] px-1.5 py-0.5 rounded ${
+                                      <span className={`capitalize text-[11px] px-1.5 py-0.5 rounded ${
                                         u.status === 'available' ? 'bg-green-500/15 text-green-400' :
                                         u.status === 'en_route' ? 'bg-dispatch-red/15 text-dispatch-red' :
                                         u.status === 'on_scene' ? 'bg-amber-500/15 text-amber-400' :
@@ -272,7 +272,7 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
                               )}
 
                               <div className="space-y-1.5">
-                                <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">Acquire Unit</p>
+                                <p className="text-[11px] uppercase tracking-wider text-gray-600 font-semibold">Acquire Unit</p>
                                 <div className="grid grid-cols-2 gap-2">
                                   {(STATION_UNITS[station.type] || []).map((unitTypeKey) => {
                                     const unitConfig = UNIT_CONFIGS[unitTypeKey];
@@ -291,7 +291,7 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
                                         }`}
                                       >
                                         <span className="text-[11px] font-medium text-gray-200">{unitConfig.icon} {unitConfig.name}</span>
-                                        <span className="text-[10px] text-amber-400 font-mono mt-0.5">💰{cost.toLocaleString()}</span>
+                                        <span className="text-[11px] text-amber-400 font-mono mt-0.5">💰{cost.toLocaleString()}</span>
                                       </button>
                                     );
                                   })}
@@ -304,8 +304,8 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
                               </div>
 
                               <div className="space-y-1.5">
-                                <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">Station Crew</p>
-                                <p className="text-[10px] text-gray-500">{station.employees?.length || 0} personnel • {assignableEmployees(station).length} available</p>
+                                <p className="text-[11px] uppercase tracking-wider text-gray-600 font-semibold">Station Crew</p>
+                                <p className="text-[11px] text-gray-500">{station.employees?.length || 0} personnel • {assignableEmployees(station).length} available</p>
                                 <button
                                   onClick={() => setViewingStation(station)}
                                   className="w-full text-[11px] font-medium text-dispatch-blue hover:text-blue-300 border border-dispatch-blue/30 bg-dispatch-blue/10 rounded-lg px-2 py-1.5 transition-colors">

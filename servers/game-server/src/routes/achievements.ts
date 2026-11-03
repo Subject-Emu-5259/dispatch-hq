@@ -25,6 +25,11 @@ const ACHIEVEMENT_SEED = [
   // Halloween 2026 (window Oct 26 – Nov 1 UTC) — same pattern as above.
   { key: 'seasonal_halloween', name: 'Night Watch', description: 'Kept the city safe through Halloween week.', icon: '🎃', xpBonus: 200, requirementType: 'seasonal_clears', requirementValue: 1 },
   { key: 'seasonal_winner_halloween', name: 'Halloween Champion', description: 'Cleared the most calls during the Halloween contest.', icon: '🏆', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
+  // Batch 3d generic seasons — same pattern: participation + winner each.
+  { key: 'seasonal_winter_storm', name: 'Storm Watch', description: 'Held the line through Winter Storm Season.', icon: '❄️', xpBonus: 200, requirementType: 'seasonal_clears', requirementValue: 1 },
+  { key: 'seasonal_winner_winter-storm', name: 'Winter Storm Champion', description: 'Cleared the most calls during the Winter Storm Season contest.', icon: '🏆', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
+  { key: 'seasonal_summer_wildfire', name: 'Wildfire Line', description: 'Held the line through Summer Wildfire Season.', icon: '🔥', xpBonus: 200, requirementType: 'seasonal_clears', requirementValue: 1 },
+  { key: 'seasonal_winner_summer-wildfire', name: 'Summer Wildfire Champion', description: 'Cleared the most calls during the Summer Wildfire Season contest.', icon: '🏆', xpBonus: 1000, requirementType: 'seasonal_winner', requirementValue: 1 },
 ];
 
 async function ensureAchievements() {

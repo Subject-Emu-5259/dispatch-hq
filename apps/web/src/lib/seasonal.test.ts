@@ -56,8 +56,8 @@ describe('seasonal', () => {
     expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 4)))?.id).toBe('independence-day');
     // July 8: ended 2 days ago → final standings still shown.
     expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 8)))?.id).toBe('independence-day');
-    // July 20: too stale → next upcoming is Halloween (added 2026-10-25).
-    expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 20)))?.id).toBe('halloween');
+    // July 20: too stale → next upcoming is Summer Wildfire Season (Batch 3d, Aug 10).
+    expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 6, 20)))?.id).toBe('summer-wildfire');
     // April: next upcoming is July 4th.
     expect(relevantSeasonalEvent(new Date(Date.UTC(2026, 3, 15)))?.id).toBe('independence-day');
   });

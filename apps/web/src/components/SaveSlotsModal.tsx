@@ -125,7 +125,7 @@ export function SaveSlotsModal({ isOpen, mode, onClose, onLoad, onStartNew, onDe
                 <HardDrive className="w-5 h-5 text-dispatch-cyan" />
                 <div>
                   <h2 className="text-lg font-bold text-white">{mode === 'load' ? 'Load Game' : 'New Campaign'}</h2>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[11px] text-gray-500">
                     {mode === 'load'
                       ? 'Choose a saved dispatch career to resume'
                       : 'Pick a slot for the fresh career — autosave writes here'}
@@ -171,25 +171,25 @@ export function SaveSlotsModal({ isOpen, mode, onClose, onLoad, onStartNew, onDe
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-black text-white">{SLOT_LABELS[info.slot]}</span>
                           {info.exists ? (
-                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                               Save
                             </span>
                           ) : (
-                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-700/40 text-gray-500 border border-gray-600/40">
+                            <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-700/40 text-gray-500 border border-gray-600/40">
                               Empty
                             </span>
                           )}
                           {isActive && info.exists && (
-                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                            <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
                               Current
                             </span>
                           )}
                         </div>
-                        <span className="text-[9px] text-gray-500">{info.exists && info.updatedAt ? timeAgo(info.updatedAt) : ''}</span>
+                        <span className="text-[11px] text-gray-500">{info.exists && info.updatedAt ? timeAgo(info.updatedAt) : ''}</span>
                       </div>
 
                       {info.exists && preview ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
                           <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-1.5">
                             <p className="text-gray-600 flex items-center gap-1"><MapPin className="w-3 h-3" /> City</p>
                             <p className="text-gray-300 font-semibold truncate">{preview.city || '—'}</p>
@@ -214,7 +214,7 @@ export function SaveSlotsModal({ isOpen, mode, onClose, onLoad, onStartNew, onDe
                       )}
 
                       <div className="flex items-center justify-between mt-3 gap-2">
-                        <span className="text-[9px] text-gray-600 font-mono">
+                        <span className="text-[11px] text-gray-600 font-mono">
                           {info.exists && preview ? gameClockLabel(preview.gameMinutes) : '—'}
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -274,7 +274,7 @@ export function SaveSlotsModal({ isOpen, mode, onClose, onLoad, onStartNew, onDe
               )}
             </div>
 
-            <p className="text-center text-[10px] text-gray-600 mt-5 flex items-center justify-center gap-1.5">
+            <p className="text-center text-[11px] text-gray-600 mt-5 flex items-center justify-center gap-1.5">
               <Play className="w-3 h-3" /> Continue resumes your current slot · autosave runs every minute
             </p>
           </motion.div>

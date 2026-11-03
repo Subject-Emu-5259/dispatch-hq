@@ -135,7 +135,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white">Your Profile</h2>
-                <p className="text-[10px] text-gray-500">Dispatch identity & records</p>
+                <p className="text-[11px] text-gray-500">Dispatch identity & records</p>
               </div>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors">
@@ -160,7 +160,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 <div className="flex items-center gap-2">
                   <p className="text-base font-bold text-white truncate">{name}</p>
                   {isFounder && (
-                    <span className="px-1.5 py-0.5 rounded bg-dispatch-red/20 border border-dispatch-red/40 text-[9px] font-bold text-dispatch-red uppercase tracking-wider shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-dispatch-red/20 border border-dispatch-red/40 text-[11px] font-bold text-dispatch-red uppercase tracking-wider shrink-0">
                       Founder
                     </span>
                   )}
@@ -169,16 +169,16 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-sm">{rank.icon}</span>
                   <span className="text-xs font-semibold text-white">{rank.title}</span>
-                  <span className="text-[10px] text-gray-500">· Lv {player?.level ?? 1}</span>
+                  <span className="text-[11px] text-gray-500">· Lv {player?.level ?? 1}</span>
                 </div>
               </div>
             </div>
 
             {/* Edit identity */}
             <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4 space-y-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Display Identity</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Display Identity</p>
               <div>
-                <label className="text-[10px] text-gray-500 block mb-1">Display name</label>
+                <label className="text-[11px] text-gray-500 block mb-1">Display name</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -187,7 +187,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 />
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 block mb-1.5">Avatar</label>
+                <label className="text-[11px] text-gray-500 block mb-1.5">Avatar</label>
                 <div className="flex flex-wrap gap-1.5">
                   {AVATARS.map((a) => (
                     <button
@@ -220,9 +220,9 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             {/* Level progress (v0.19 curve) */}
             <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Level Progress</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Level Progress</p>
                 {atMaxLevel && (
-                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-bold text-amber-400 uppercase tracking-wider">
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-[11px] font-bold text-amber-400 uppercase tracking-wider">
                     Max Level
                   </span>
                 )}
@@ -242,7 +242,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 />
               </div>
               {!atMaxLevel && (
-                <p className="mt-1.5 text-[9px] text-gray-600">
+                <p className="mt-1.5 text-[11px] text-gray-600">
                   {(xpForNext - levelXp).toLocaleString()} XP to Level {level + 1}
                 </p>
               )}
@@ -250,7 +250,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
             {/* Rank progress */}
             <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Rank Progress</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Rank Progress</p>
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-gray-300">{rank.icon} {rank.title}</span>
                 {next ? (
@@ -277,7 +277,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
             {/* Redeem a promo code */}
             <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1.5">
                 <Ticket className="w-3 h-3" /> Redeem a Promo Code
               </p>
               <div className="flex items-center gap-2">
@@ -298,12 +298,12 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 </button>
               </div>
               {redeemMsg && (
-                <p className={`mt-2 flex items-center gap-1.5 text-[10px] ${redeemMsg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>
+                <p className={`mt-2 flex items-center gap-1.5 text-[11px] ${redeemMsg.ok ? 'text-green-400' : 'text-dispatch-red'}`}>
                   {redeemMsg.ok ? <CheckCircle2 className="w-3 h-3 shrink-0" /> : <AlertCircle className="w-3 h-3 shrink-0" />}
                   {redeemMsg.text}
                 </p>
               )}
-              <p className="mt-1.5 text-[9px] text-gray-600">
+              <p className="mt-1.5 text-[11px] text-gray-600">
                 Balance: {player?.credits?.toLocaleString() ?? 0} credits · {levelXp.toLocaleString()} XP into Lv {level}{atMaxLevel ? ' (max)' : ''}
               </p>
             </div>
@@ -326,7 +326,7 @@ function StatTile({ icon, label, value, color }: { icon: React.ReactNode; label:
     <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3">
       <div className={`flex items-center gap-1.5 ${color} mb-1`}>
         {icon}
-        <span className="text-[9px] font-medium uppercase tracking-wider">{label}</span>
+        <span className="text-[11px] font-medium uppercase tracking-wider">{label}</span>
       </div>
       <p className="text-base font-bold text-white">{value}</p>
     </div>

@@ -93,7 +93,7 @@ export function TechTree({ isOpen, onClose }: TechTreeProps) {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-white">Dispatch Tech Tree</h2>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[11px] text-gray-500">
                     {purchasedCount}/{totalCount} technologies researched •{' '}
                     <span className="text-dispatch-green font-semibold">{credits.toLocaleString()} credits</span>
                   </p>
@@ -125,7 +125,7 @@ export function TechTree({ isOpen, onClose }: TechTreeProps) {
                     {branch === 'technology' && <Brain className="w-4 h-4" />}
                     {branch === 'training' && <Target className="w-4 h-4" />}
                     <span>{config.label}</span>
-                    <span className="text-[10px] opacity-60">{purchasedInB}/{branchTechsAll.length}</span>
+                    <span className="text-[11px] opacity-60">{purchasedInB}/{branchTechsAll.length}</span>
                   </button>
                 );
               })}
@@ -143,7 +143,7 @@ export function TechTree({ isOpen, onClose }: TechTreeProps) {
                   if (!tech) return null;
                   const cfg = BRANCH_CONFIG[tech.branch];
                   return (
-                    <span key={id} className={`text-[10px] px-2 py-1 rounded border ${cfg.bg} ${cfg.border} ${cfg.color}`}>
+                    <span key={id} className={`text-[11px] px-2 py-1 rounded border ${cfg.bg} ${cfg.border} ${cfg.color}`}>
                       {tech.icon} {tech.effect}
                     </span>
                   );
@@ -191,24 +191,24 @@ export function TechTree({ isOpen, onClose }: TechTreeProps) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="text-sm font-bold text-white">{tech.name}</h3>
-                              <span className="text-[9px] px-1.5 py-0.5 bg-gray-800 rounded text-gray-500 font-mono">
+                              <span className="text-[11px] px-1.5 py-0.5 bg-gray-800 rounded text-gray-500 font-mono">
                                 T{tech.tier}
                               </span>
                               {isPurchased && (
-                                <span className={`text-[9px] px-1.5 py-0.5 ${branchConfig.bg} ${branchConfig.color} rounded`}>
+                                <span className={`text-[11px] px-1.5 py-0.5 ${branchConfig.bg} ${branchConfig.color} rounded`}>
                                   Researched
                                 </span>
                               )}
                             </div>
                             <p className="text-xs text-gray-400 mt-0.5">{tech.description}</p>
                             <div className="flex items-center gap-3 mt-2 flex-wrap">
-                              <span className={`text-[10px] font-semibold ${
+                              <span className={`text-[11px] font-semibold ${
                                 canAfford || isPurchased ? 'text-dispatch-green' : 'text-dispatch-red'
                               }`}>
                                 {tech.cost.toLocaleString()} credits
                               </span>
                               {tech.requires && tech.requires.length > 0 && (
-                                <span className="text-[10px] text-gray-600">
+                                <span className="text-[11px] text-gray-600">
                                   Requires: {tech.requires.map(r => TECH_BY_ID[r]?.name).join(', ')}
                                 </span>
                               )}

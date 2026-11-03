@@ -262,7 +262,7 @@ function EventHistory({ events, isOpen, onClose }: EventHistoryProps) {
 
       <div className="space-y-1.5 max-h-[240px] overflow-y-auto">
         {events.length === 0 ? (
-          <p className="text-[10px] text-gray-600 text-center py-4">No events yet</p>
+          <p className="text-[11px] text-gray-600 text-center py-4">No events yet</p>
         ) : (
           events.map((item, i) => {
             const styles = SEVERITY_STYLES[item.event.severity];
@@ -271,8 +271,8 @@ function EventHistory({ events, isOpen, onClose }: EventHistoryProps) {
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{item.event.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[10px] font-semibold ${styles.text} truncate`}>{item.event.name}</p>
-                    <p className="text-[9px] text-gray-500">{item.event.effect}</p>
+                    <p className={`text-[11px] font-semibold ${styles.text} truncate`}>{item.event.name}</p>
+                    <p className="text-[11px] text-gray-500">{item.event.effect}</p>
                   </div>
                 </div>
               </div>

@@ -6,8 +6,16 @@ const christmas = SEASONAL_WINDOWS.find((w) => w.id === 'christmas')!;
 const halloween = SEASONAL_WINDOWS.find((w) => w.id === 'halloween')!;
 
 describe('seasonal windows', () => {
-  it('mirrors the client windows (independence-day + christmas + halloween)', () => {
-    expect(SEASONAL_WINDOWS.length).toBe(3);
+  it('mirrors the client windows (independence-day + christmas + halloween + Batch 3d seasons)', () => {
+    expect(SEASONAL_WINDOWS.length).toBe(5);
+    const winter = SEASONAL_WINDOWS.find((w) => w.id === 'winter-storm')!;
+    const summer = SEASONAL_WINDOWS.find((w) => w.id === 'summer-wildfire')!;
+    expect(winter.start).toEqual({ month: 1, day: 12 });
+    expect(winter.end).toEqual({ month: 1, day: 18 });
+    expect(summer.start).toEqual({ month: 8, day: 10 });
+    expect(summer.end).toEqual({ month: 8, day: 16 });
+    expect(windowActive(winter, new Date(Date.UTC(2026, 0, 15)))).toBe(true);
+    expect(windowActive(summer, new Date(Date.UTC(2026, 7, 12)))).toBe(true);
     expect(july.start).toEqual({ month: 7, day: 1 });
     expect(july.end).toEqual({ month: 7, day: 6 });
     expect(christmas.start).toEqual({ month: 12, day: 24 });

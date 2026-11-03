@@ -167,7 +167,7 @@ export default function CityHospitalPanel() {
             <HeartPulse className="w-4 h-4 text-dispatch-green" />
             {hospital?.name ?? 'City Hospital'}
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-gray-500">
+          <div className="flex items-center gap-2 text-[11px] text-gray-500">
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
               <BedDouble className="w-3 h-3" /> {occupied}/{beds} beds
             </span>
@@ -193,7 +193,7 @@ export default function CityHospitalPanel() {
                 onClick={handleNurseRotation}
                 disabled={!rotationCanAfford}
                 title={`Pay ${NURSE_ROTATION_COST.toLocaleString()} credits for a fresh nursing shift — resets ER fatigue (${staffFatigue}/100) and brings every earned nurse back to the floor.`}
-                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] transition-colors ${
+                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[11px] transition-colors ${
                   rotationCanAfford
                     ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20'
                     : 'border-white/10 bg-gray-900/50 text-gray-500 cursor-not-allowed'
@@ -227,7 +227,7 @@ export default function CityHospitalPanel() {
             <button
               key={k}
               onClick={() => setView(k as 'current' | 'discharged')}
-              className={`text-[10px] px-2 py-1.5 rounded-lg border transition-colors ${
+              className={`text-[11px] px-2 py-1.5 rounded-lg border transition-colors ${
                 view === k ? 'bg-dispatch-green text-white border-dispatch-green' : 'bg-gray-900/50 text-gray-400 border-white/10 hover:bg-gray-800'
               }`}
             >
@@ -250,7 +250,7 @@ export default function CityHospitalPanel() {
         {hospital && (
           <div className="mt-2 flex items-center gap-2">
             <span
-              className="inline-flex items-center gap-1 px-1.5 py-1 rounded border border-violet-500/20 bg-violet-500/10 text-violet-300 text-[10px]"
+              className="inline-flex items-center gap-1 px-1.5 py-1 rounded border border-violet-500/20 bg-violet-500/10 text-violet-300 text-[11px]"
               title={`Base ward: ${HOSPITAL_BEDS} beds + ${WARD_BEDS_PER_LEVEL} per upgrade. ${erStaffing(shift, Date.now(), hospital)} nurses from today's EMS clears add ${erStaffing(shift, Date.now(), hospital)} more.`}
             >
               <Building2 className="w-3 h-3" /> Ward Lv {ward}/{HOSPITAL_WARD_MAX_LEVEL} · {hospital.beds} base beds
@@ -260,7 +260,7 @@ export default function CityHospitalPanel() {
                 onClick={handleWardUpgrade}
                 disabled={!wardCanAfford}
                 title={`Add ${WARD_BEDS_PER_LEVEL} beds to the base ward. Effective capacity: ${hospital.beds + WARD_BEDS_PER_LEVEL + erStaffing(shift, Date.now(), hospital)} beds.`}
-                className={`inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg border transition-colors ${
+                className={`inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg border transition-colors ${
                   wardCanAfford
                     ? 'bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border-violet-500/30'
                     : 'bg-gray-900/50 text-gray-500 border-white/10 cursor-not-allowed'
@@ -269,9 +269,9 @@ export default function CityHospitalPanel() {
                 <Building2 className="w-3 h-3" /> Upgrade Ward — {nextWardCost.toLocaleString()} 💰
               </button>
             ) : (
-              <span className="text-[10px] text-emerald-300/90">Ward fully expanded (+{HOSPITAL_WARD_MAX_LEVEL * WARD_BEDS_PER_LEVEL} beds)</span>
+              <span className="text-[11px] text-emerald-300/90">Ward fully expanded (+{HOSPITAL_WARD_MAX_LEVEL * WARD_BEDS_PER_LEVEL} beds)</span>
             )}
-            <span className="text-[9px] text-gray-500 ml-auto">+{WARD_BEDS_PER_LEVEL} beds per level</span>
+            <span className="text-[11px] text-gray-500 ml-auto">+{WARD_BEDS_PER_LEVEL} beds per level</span>
           </div>
         )}
         {/* Hospital Ward perk (v0.24.0): EMS stations with the specialization
@@ -280,7 +280,7 @@ export default function CityHospitalPanel() {
         {hospital && perkBeds > 0 && (
           <div className="mt-2">
             <span
-              className="inline-flex items-center gap-1 px-1.5 py-1 rounded border border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-300 text-[10px]"
+              className="inline-flex items-center gap-1 px-1.5 py-1 rounded border border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-300 text-[11px]"
               title="From EMS stations that picked the Hospital Ward specialization."
             >
               <Building2 className="w-3 h-3" /> Hospital Ward perk (+{perkBeds} beds)
@@ -295,7 +295,7 @@ export default function CityHospitalPanel() {
           <div className="text-center py-8 px-4">
             <HeartPulse className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <div className="text-sm text-white font-semibold">No hospital built yet</div>
-            <div className="text-[10px] mt-1 text-gray-400 leading-relaxed">
+            <div className="text-[11px] mt-1 text-gray-400 leading-relaxed">
               EMS calls complete at the scene until you place the City General Hospital on the map.
               Critical patients airlift only once you also build the Air Ambulance Helipad.
             </div>
@@ -311,7 +311,7 @@ export default function CityHospitalPanel() {
           <div className="text-center py-10 text-gray-500">
             <BedDouble className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <div className="text-sm">No patients admitted.</div>
-            <div className="text-[10px] mt-1">Clear EMS calls to transport victims to the hospital.</div>
+            <div className="text-[11px] mt-1">Clear EMS calls to transport victims to the hospital.</div>
           </div>
         )}
         {hospital && filtered.map((patient) => (
@@ -324,7 +324,7 @@ export default function CityHospitalPanel() {
 
 function CardBadge({ text, cls }: { text: string; cls: string }) {
   return (
-    <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${cls}`}>
+    <span className={`text-[11px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${cls}`}>
       {text}
     </span>
   );
@@ -341,29 +341,29 @@ function PatientCard({ patient, onDischarge }: { patient: Patient; onDischarge: 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold text-white truncate">{patient.lastName}, {patient.firstName}</span>
-            <span className="text-[9px] text-gray-500">Age {patient.age} · {patient.roomNumber}</span>
+            <span className="text-[11px] text-gray-500">Age {patient.age} · {patient.roomNumber}</span>
           </div>
           <div className="mt-1 flex items-center gap-1.5 text-xs">
             <Stethoscope className="w-3 h-3 text-gray-500" />
             <span className="text-gray-300">{patient.condition}</span>
           </div>
           {patient.transportedBy && !patient.diverted && (
-            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-400/80">
+            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-emerald-400/80">
               🚑 Delivered by {patient.transportedBy}
             </div>
           )}
           {patient.diverted && (
-            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-amber-300/90">
+            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-amber-300/90">
               ↪ Diverted to {patient.divertedTo ?? 'the regional trauma center'} (ER full)
             </div>
           )}
           <div className="mt-1.5 grid grid-cols-2 gap-2 text-xs">
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Admitted</div>
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Admitted</div>
               <div className="text-gray-200">{formatDuration(Date.now() - patient.admitTime)} ago</div>
             </div>
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
-              <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1">
+              <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1">
                 {patient.status === 'treated' ? <Stethoscope className="w-2.5 h-2.5" /> : <AlertTriangle className="w-2.5 h-2.5" />} Care
               </div>
               <div className="text-gray-200">
@@ -376,7 +376,7 @@ function PatientCard({ patient, onDischarge }: { patient: Patient; onDischarge: 
           <CardBadge text={patient.severity} cls={severityBadge[patient.severity]} />
           <CardBadge text={patient.status} cls={statusBadge[patient.status]} />
           {patient.diverted && (
-            <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300">
+            <span className="text-[11px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300">
               DIVERTED
             </span>
           )}
@@ -384,7 +384,7 @@ function PatientCard({ patient, onDischarge }: { patient: Patient; onDischarge: 
             <button
               onClick={onDischarge}
               disabled={patient.status !== 'treated'}
-              className={`text-[10px] mt-0.5 px-2 py-1 rounded border transition-colors ${
+              className={`text-[11px] mt-0.5 px-2 py-1 rounded border transition-colors ${
                 patient.status === 'treated'
                   ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30'
                   : 'bg-gray-800 text-gray-500 border-white/10 cursor-not-allowed'

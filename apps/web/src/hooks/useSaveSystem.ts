@@ -44,6 +44,9 @@ import type { Hospital, Helipad } from '@/lib/hospital';
 import type { SatisfactionRecord } from '@/lib/cityDistricts';
 import { parseAdoptedCities, type AdoptedCity } from '@/lib/adoptedCities';
 import type { DisasterWaveState } from '@/lib/disasterWaves';
+import { parseChallengeState, type ChallengeState } from '@/lib/challenges';
+import { parseFogRevealed } from '@/lib/fogExploration';
+import { classifySaveError, dispatchSaveQueued, type SaveFailureKind } from '@/lib/saveFailure';
 
 const AUTOSAVE_INTERVAL = 60000; // 60 seconds
 const RETRY_BASE_MS = 10000;     // first retry after a failed autosave
@@ -210,6 +213,10 @@ interface SaveData {
   districtSatisfaction?: SatisfactionRecord;
   adoptedCities?: AdoptedCity[];
   disasterWave?: DisasterWaveState | null;
+  // Batch 3d: challenge progress + revealed fog zones. Optional — legacy
+  // saves restore to fresh challenges / no zones revealed.
+  challenges?: ChallengeState;
+  fogRevealed?: string[];
 }
 
 /** Card preview shown on the main-menu Load Game screen. */
@@ -493,6 +500,8 @@ function buildSaveData(): SaveData {
     districtSatisfaction: state.districtSatisfaction,
     adoptedCities: state.adoptedCities,
     disasterWave: state.disasterWave,
+    challenges: state.challenges,
+    fogRevealed: [...state.fogRevealed],
     settings: loadSettings(),
   };
 }
@@ -540,6 +549,8 @@ function stateSignature(): string {
     // mid-tour reload restores the step from the LAST autosave (up to a minute
     // stale) or the beacon misses the change entirely.
     s.onboardingStep,
+    JSON.stringify(s.challenges),
+    s.fogRevealed.length,
     missionState,
     unitState,
     settingsState,
@@ -578,6 +589,9 @@ let serverSaveWasEmpty = false;
 let saveQueue: Promise<boolean> = Promise.resolve(true);
 let lastSavedSignature = '';
 let lastSaveAuthError = false;
+let lastSaveFailureKind: SaveFailureKind = 'server';
+let lastSaveTooLargeError = false;
+let lastSaveStaleError = false;
 
 // ── Saved-player baseline (live admin-grant delivery) ─────────────────────
 // The last server-persisted player totals. The /me poll (App.tsx) computes
@@ -643,6 +657,21 @@ export function hadSaveAuthFailure(): boolean {
   return lastSaveAuthError;
 }
 
+/** Batch 3d: kind of the most recent saveGame failure (server = default). */
+export function lastSaveFailure(): SaveFailureKind {
+  return lastSaveFailureKind;
+}
+
+/** Batch 3d: the most recent saveGame failed with a too-large payload. */
+export function hadSaveTooLargeFailure(): boolean {
+  return lastSaveTooLargeError;
+}
+
+/** Batch 3d: the most recent saveGame was rejected as stale. */
+export function hadSaveStaleFailure(): boolean {
+  return lastSaveStaleError;
+}
+
 export function saveGame(slot?: string): Promise<boolean> {
   const name = normalizeSlot(slot);
   const run = async (): Promise<boolean> => {
@@ -676,9 +705,14 @@ export function saveGame(slot?: string): Promise<boolean> {
       return true;
     } catch (e) {
       console.error('Failed to save game:', e);
-      lastSaveAuthError = /unauthorized|invalid or expired|missing or malformed|401/i.test(
-        e instanceof Error ? e.message : String(e)
-      );
+      // Batch 3d: three-way failure split (offline / too-large / stale /
+      // auth / server) so autosave + Save Now never mislabel the cause.
+      const online = typeof navigator === 'undefined' ? true : navigator.onLine;
+      lastSaveFailureKind = classifySaveError(e, online);
+      lastSaveAuthError = lastSaveFailureKind === 'auth';
+      lastSaveTooLargeError = lastSaveFailureKind === 'too-large';
+      lastSaveStaleError = lastSaveFailureKind === 'stale';
+      if (lastSaveFailureKind === 'offline') dispatchSaveQueued();
       return false;
     }
   };
@@ -786,6 +820,10 @@ function restoreSave(save: SaveData): void {
     store.setDistrictSatisfaction(save.districtSatisfaction ?? {});
     store.setAdoptedCities(parseAdoptedCities(save.adoptedCities));
     store.setDisasterWave(save.disasterWave ?? null);
+  });
+  guard('batch3d', () => {
+    store.setChallenges(parseChallengeState(save.challenges));
+    store.setFogRevealed(parseFogRevealed(save.fogRevealed));
   });
   guard('gameClock', () => {
     if (typeof save.gameMinutes === 'number' && Number.isFinite(save.gameMinutes)) {

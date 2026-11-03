@@ -112,7 +112,7 @@ export default function CriminalRecordsPanel() {
             <FileSearch className="w-4 h-4 text-dispatch-red" />
             Criminal Records
           </div>
-          <div className="text-[10px] text-gray-500">{filtered.length} shown</div>
+          <div className="text-[11px] text-gray-500">{filtered.length} shown</div>
         </div>
         <div className="mt-2 flex items-center gap-2">
           <div className="relative flex-1 min-w-0">
@@ -128,7 +128,7 @@ export default function CriminalRecordsPanel() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`text-[10px] px-2 py-1.5 rounded-lg border transition-colors whitespace-nowrap ${
+              className={`text-[11px] px-2 py-1.5 rounded-lg border transition-colors whitespace-nowrap ${
                 filter === f ? 'bg-dispatch-red text-white border-dispatch-red' : 'bg-gray-900/50 text-gray-400 border-white/10 hover:bg-gray-800'
               }`}
             >
@@ -201,40 +201,40 @@ function RecordRow({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-medium text-white truncate">{record.lastName}, {record.firstName}</span>
-              <span className="text-[10px] text-gray-500">{record.dateOfBirth} • {record.citizenship}</span>
+              <span className="text-[11px] text-gray-500">{record.dateOfBirth} • {record.citizenship}</span>
             </div>
-            <div className="text-[10px] text-gray-400 truncate flex items-center gap-1">
+            <div className="text-[11px] text-gray-400 truncate flex items-center gap-1">
               <MapPin className="w-2.5 h-2.5 shrink-0" /> {record.address}
             </div>
             <div className="mt-1 flex flex-wrap gap-1">
               {record.charges.slice(0, 3).map((c, i) => (
-                <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-white/5">{c}</span>
+                <span key={i} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-white/5">{c}</span>
               ))}
               {record.charges.length > 3 && (
-                <span className="text-[9px] text-gray-500">+{record.charges.length - 3}</span>
+                <span className="text-[11px] text-gray-500">+{record.charges.length - 3}</span>
               )}
             </div>
           </div>
         </button>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${riskStyles[record.riskLevel]}`}>
+          <span className={`text-[11px] px-1.5 py-0.5 rounded border ${riskStyles[record.riskLevel]}`}>
             {riskLabels[record.riskLevel]}
           </span>
           {record.warrantStatus === 'active' && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1">
+            <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1">
               <AlertTriangle className="w-2.5 h-2.5" /> Warrant
             </span>
           )}
           <div className="flex items-center gap-1 mt-1">
             <button
               onClick={onFlag}
-              className="text-[9px] px-2 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
+              className="text-[11px] px-2 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
             >
               FLAG
             </button>
             <button
               onClick={onBook}
-              className="text-[9px] px-2 py-1 rounded bg-dispatch-red/20 text-dispatch-red border border-dispatch-red/30 hover:bg-dispatch-red/30"
+              className="text-[11px] px-2 py-1 rounded bg-dispatch-red/20 text-dispatch-red border border-dispatch-red/30 hover:bg-dispatch-red/30"
             >
               BOOK
             </button>
@@ -274,11 +274,11 @@ function RecordDetailModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-white">{record.lastName}, {record.firstName}</h3>
-              <div className="text-[10px] text-gray-400">Record {record.id.split('_')[1]?.toUpperCase()} • {record.city}</div>
+              <div className="text-[11px] text-gray-400">Record {record.id.split('_')[1]?.toUpperCase()} • {record.city}</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] px-2 py-1 rounded border ${riskStyles[record.riskLevel]}`}>
+            <span className={`text-[11px] px-2 py-1 rounded border ${riskStyles[record.riskLevel]}`}>
               {riskLabels[record.riskLevel]}
             </span>
             <button onClick={onClose} className="p-1 rounded hover:bg-gray-800 text-gray-400"><X className="w-4 h-4" /></button>
@@ -297,21 +297,21 @@ function RecordDetailModal({
         </div>
 
         <div className="mt-4">
-          <div className="text-[10px] text-gray-500 mb-1 flex items-center gap-1"><Gavel className="w-3 h-3" /> Charges</div>
+          <div className="text-[11px] text-gray-500 mb-1 flex items-center gap-1"><Gavel className="w-3 h-3" /> Charges</div>
           <div className="flex flex-wrap gap-1.5">
             {record.charges.map((c, i) => (
-              <span key={i} className="text-[10px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">{c}</span>
+              <span key={i} className="text-[11px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">{c}</span>
             ))}
           </div>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="bg-gray-950 border border-white/5 rounded-lg p-2">
-            <div className="text-[10px] text-gray-500 mb-0.5">Prior Arrests</div>
+            <div className="text-[11px] text-gray-500 mb-0.5">Prior Arrests</div>
             <div className="text-base font-semibold text-white">{record.arrestCount}</div>
           </div>
           <div className="bg-gray-950 border border-white/5 rounded-lg p-2">
-            <div className="text-[10px] text-gray-500 mb-0.5">Warrant Status</div>
+            <div className="text-[11px] text-gray-500 mb-0.5">Warrant Status</div>
             <div className={`text-sm font-semibold flex items-center gap-1 ${record.warrantStatus === 'active' ? 'text-red-400' : 'text-green-400'}`}>
               {record.warrantStatus === 'active' ? <AlertTriangle className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
               {record.warrantStatus === 'active' ? 'Active Warrant' : 'No Active Warrant'}
@@ -321,7 +321,7 @@ function RecordDetailModal({
 
         {record.notes && (
           <div className="mt-3 bg-dispatch-red/5 border border-dispatch-red/20 rounded-lg p-2 text-xs text-gray-300">
-            <div className="text-[10px] text-dispatch-red mb-0.5">Officer Notes</div>
+            <div className="text-[11px] text-dispatch-red mb-0.5">Officer Notes</div>
             {record.notes}
           </div>
         )}
@@ -342,7 +342,7 @@ function RecordDetailModal({
 function InfoBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2 min-w-0">
-      <div className="text-[9px] text-gray-500 mb-0.5 flex items-center gap-1 truncate">{icon}{label}</div>
+      <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1 truncate">{icon}{label}</div>
       <div className="text-[11px] text-gray-200 truncate">{value}</div>
     </div>
   );

@@ -374,7 +374,7 @@ export function TopBar({
                     <span className="hidden md:inline">{item.label}</span>
 
                     {item.badge && activeMissionCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center bg-amber-500 text-[10px] font-bold text-gray-900 rounded-full">
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center bg-amber-500 text-[11px] font-bold text-gray-900 rounded-full">
                         {activeMissionCount > 99 ? '99+' : activeMissionCount}
                       </span>
                     )}
@@ -482,9 +482,9 @@ export function TopBar({
                     </div>
                     <div className="max-h-64 overflow-y-auto py-1">
                       {searchQuery.trim().length < 2 ? (
-                        <p className="px-3 py-2 text-[10px] text-gray-500">Type at least 2 characters…</p>
+                        <p className="px-3 py-2 text-[11px] text-gray-500">Type at least 2 characters…</p>
                       ) : searchResults && searchResults.units.length + searchResults.stations.length + searchResults.missions.length === 0 ? (
-                        <p className="px-3 py-2 text-[10px] text-gray-500">No matches found.</p>
+                        <p className="px-3 py-2 text-[11px] text-gray-500">No matches found.</p>
                       ) : searchResults && (
                         <>
                           {searchResults.units.length > 0 && (
@@ -520,7 +520,7 @@ export function TopBar({
             {/* Game clock chip — virtual day/night + active weather (see lib/gameClock & lib/weather).
                 Full chip on sm+; icon-only on phones to save space. */}
             <div
-              className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-bold select-none ${
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] font-bold select-none ${
                 weather === 'storm'
                   ? 'bg-blue-950/70 border-blue-500/40 text-blue-200'
                   : weather === 'fog'
@@ -545,7 +545,7 @@ export function TopBar({
                 : night ? <Moon className="w-3 h-3" /> : <Sun className="w-3 h-3" />}
               <span className="font-mono">{clockLabel(gameMinutes)}</span>
               <span className="text-gray-500 hidden xl:inline">·</span>
-              <span className="uppercase tracking-wider text-[8px] hidden xl:inline">
+              <span className="uppercase tracking-wider text-[11px] hidden xl:inline">
                 {weather === 'storm' ? 'Storm' : weather === 'fog' ? 'Fog' : weather === 'heatwave' ? 'Heat' : night ? 'Night' : 'Day'}
               </span>
             </div>
@@ -553,11 +553,11 @@ export function TopBar({
             {/* Live seasonal contest chip — event + current rank at a glance (v0.21.2) */}
             {liveSeasonal && (
               <div
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-dispatch-red/15 border-dispatch-red/30 text-dispatch-red text-[10px] font-bold select-none"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-dispatch-red/15 border-dispatch-red/30 text-dispatch-red text-[11px] font-bold select-none"
                 title={`${liveSeasonal.name} contest — every cleared call counts; rank refreshes live`}
               >
                 <span className="text-xs leading-none">{liveSeasonal.icon}</span>
-                <span className="hidden xl:inline uppercase tracking-wider text-[8px]">Contest</span>
+                <span className="hidden xl:inline uppercase tracking-wider text-[11px]">Contest</span>
                 {seasonalRank !== null && (
                   <span className="font-mono">#{seasonalRank}</span>
                 )}
@@ -621,7 +621,7 @@ export function TopBar({
             >
               <Bell className="w-4 h-4 text-gray-400" />
               {unreadCount + inboxUnread > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center bg-dispatch-red text-[9px] font-bold text-white rounded-full border border-gray-950">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center bg-dispatch-red text-[11px] font-bold text-white rounded-full border border-gray-950">
                   {unreadCount + inboxUnread > 99 ? '99+' : unreadCount + inboxUnread}
                 </span>
               )}
@@ -711,16 +711,16 @@ export function TopBar({
                           <div className="flex items-center gap-1.5">
                             <p className="text-sm font-semibold text-white">{player?.username || 'Commander'}</p>
                             {isFounder && (
-                              <span className="px-1 py-px rounded bg-dispatch-red/20 border border-dispatch-red/40 text-[8px] font-bold text-dispatch-red uppercase tracking-wider">
+                              <span className="px-1 py-px rounded bg-dispatch-red/20 border border-dispatch-red/40 text-[11px] font-bold text-dispatch-red uppercase tracking-wider">
                                 Founder
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] text-gray-400 truncate max-w-[140px]">{displayEmail || 'Guest account'}</p>
+                          <p className="text-[11px] text-gray-400 truncate max-w-[140px]">{displayEmail || 'Guest account'}</p>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px]">{rank.icon}</span>
-                            <span className="text-[10px] text-white">{rank.title}</span>
-                            <span className="text-[10px] text-gray-500">· Lv {player?.level || 1}</span>
+                            <span className="text-[11px]">{rank.icon}</span>
+                            <span className="text-[11px] text-white">{rank.title}</span>
+                            <span className="text-[11px] text-gray-500">· Lv {player?.level || 1}</span>
                           </div>
                         </div>
                       </div>
@@ -799,7 +799,7 @@ export function TopBar({
                     </div>
                     <div>
                       <h2 className="text-base font-bold text-white leading-tight">Help & FAQ</h2>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Everything you need to command your city</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Everything you need to command your city</p>
                     </div>
                   </div>
                   <button onClick={() => setShowHelp(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
@@ -813,7 +813,7 @@ export function TopBar({
                     <button
                       key={t.id}
                       onClick={() => setHelpTab(t.id)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
                         helpTab === t.id
                           ? 'bg-dispatch-red/20 text-white ring-1 ring-dispatch-red/40'
                           : 'bg-gray-800/60 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
@@ -848,7 +848,7 @@ export function TopBar({
               <div className="px-5 py-3.5 border-t border-gray-800/60 flex items-center justify-between gap-3">
                 <button
                   onClick={() => { setShowHelp(false); setShowBugReport(true); }}
-                  className="flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-dispatch-cyan transition-colors"
+                  className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-dispatch-cyan transition-colors"
                 >
                   <Bug className="w-3 h-3" />
                   Found a problem? Report it
@@ -868,7 +868,7 @@ export function TopBar({
 function SearchGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-1">
-      <p className="px-3 pt-1 pb-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-600">{label}</p>
+      <p className="px-3 pt-1 pb-0.5 text-[11px] font-bold uppercase tracking-wider text-gray-600">{label}</p>
       {children}
     </div>
   );
@@ -883,7 +883,7 @@ function SearchItem({ icon, text, sub, onClick }: { icon: string; text: string; 
       <span className="text-sm shrink-0">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate">{text}</span>
-        <span className="block text-[9px] text-gray-500 truncate capitalize">{sub}</span>
+        <span className="block text-[11px] text-gray-500 truncate capitalize">{sub}</span>
       </span>
     </button>
   );
@@ -941,18 +941,18 @@ function HelpCard({ icon: Icon, tint, title, desc, keys, action }: HelpCardData)
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold text-white leading-tight">{title}</p>
-          <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">{desc}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">{desc}</p>
           {keys && (
             <div className="flex items-center gap-1 mt-1.5">
               {keys.map((k) => (
-                <kbd key={k} className="px-1.5 py-0.5 rounded bg-gray-700/80 text-gray-300 text-[9px] font-mono border border-gray-600/40">{k}</kbd>
+                <kbd key={k} className="px-1.5 py-0.5 rounded bg-gray-700/80 text-gray-300 text-[11px] font-mono border border-gray-600/40">{k}</kbd>
               ))}
             </div>
           )}
           {action && (
             <button
               onClick={action.onClick}
-              className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-dispatch-cyan hover:text-cyan-300 transition-colors"
+              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-dispatch-cyan hover:text-cyan-300 transition-colors"
             >
               {action.label} →
             </button>

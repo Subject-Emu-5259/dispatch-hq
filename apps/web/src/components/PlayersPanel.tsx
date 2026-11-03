@@ -90,7 +90,7 @@ export function PlayersPanel({ onClose }: { onClose: () => void }) {
           <div className="min-w-0">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               Commanders Online
-              <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold border ${
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                 state === 'maintenance'
                   ? 'bg-amber-900/50 border-amber-500/40 text-amber-300'
                   : state === 'online'
@@ -100,7 +100,7 @@ export function PlayersPanel({ onClose }: { onClose: () => void }) {
                 {state === 'maintenance' ? 'Maintenance' : state === 'online' ? `${onlineCount} online` : 'Offline'}
               </span>
             </h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5">
               {state === 'maintenance'
                 ? 'Online services paused by the founder — single-player continues.'
                 : state === 'online'
@@ -161,7 +161,7 @@ export function PlayersPanel({ onClose }: { onClose: () => void }) {
         {/* Footer hint */}
         <div className="px-4 py-2 border-t border-gray-800 bg-gray-900/40 flex items-center gap-1.5">
           <Wifi className="w-3 h-3 text-gray-600 shrink-0" />
-          <p className="text-[9px] text-gray-600 leading-snug">
+          <p className="text-[11px] text-gray-600 leading-snug">
             Presence is server-based — activity reflects each fleet's live status (missions, patrol, idle).
           </p>
         </div>
@@ -180,17 +180,17 @@ function PlayerRow({ p, isMe, near }: { p: OnlinePlayerPresence; isMe: boolean; 
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-semibold text-white truncate">
           {p.username || 'Commander'}
-          {isMe && <span className="ml-1 text-[9px] text-gray-500 font-normal">(you)</span>}
+          {isMe && <span className="ml-1 text-[11px] text-gray-500 font-normal">(you)</span>}
           {near && (
-            <span className="ml-1.5 text-[8px] px-1 py-px rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 font-semibold uppercase">near you</span>
+            <span className="ml-1.5 text-[11px] px-1 py-px rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 font-semibold uppercase">near you</span>
           )}
         </p>
-        <p className="text-[9px] text-gray-500 truncate">{p.city ?? 'City unset'}</p>
+        <p className="text-[11px] text-gray-500 truncate">{p.city ?? 'City unset'}</p>
       </div>
-      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold shrink-0">
+      <span className="text-[11px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold shrink-0">
         Lv {p.level}
       </span>
-      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-semibold shrink-0 whitespace-nowrap ${act.chip}`}>
+      <span className={`text-[11px] px-1.5 py-0.5 rounded border font-semibold shrink-0 whitespace-nowrap ${act.chip}`}>
         {act.icon} {act.label}
       </span>
     </li>
@@ -199,7 +199,7 @@ function PlayerRow({ p, isMe, near }: { p: OnlinePlayerPresence; isMe: boolean; 
 
 function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <p className="flex items-center gap-1.5 px-1 pt-2 pb-1 text-[9px] uppercase tracking-wider text-gray-500 font-semibold">
+    <p className="flex items-center gap-1.5 px-1 pt-2 pb-1 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">
       {icon}
       {label}
     </p>
@@ -211,7 +211,7 @@ function StateRow({ icon, title, desc }: { icon: string; title: string; desc: st
     <div className="flex flex-col items-center justify-center gap-1.5 py-8 px-6 text-center">
       <span className="text-2xl">{icon}</span>
       <p className="text-xs font-semibold text-white">{title}</p>
-      <p className="text-[10px] text-gray-500 leading-relaxed">{desc}</p>
+      <p className="text-[11px] text-gray-500 leading-relaxed">{desc}</p>
     </div>
   );
 }

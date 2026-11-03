@@ -52,7 +52,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-white">Settings</h2>
-                  <p className="text-[10px] text-gray-500">Audio, speed, patrol & accessibility</p>
+                  <p className="text-[11px] text-gray-500">Audio, speed, patrol & accessibility</p>
                 </div>
               </div>
               <button
@@ -74,7 +74,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   )}
                   <div>
                     <p className="text-sm font-semibold text-white">Sound Effects</p>
-                    <p className="text-[10px] text-gray-500">Alerts only — mission, pursuit & disaster tones</p>
+                    <p className="text-[11px] text-gray-500">Alerts only — mission, pursuit & disaster tones</p>
                   </div>
                 </div>
                 <button
@@ -113,7 +113,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <div className={`space-y-1.5 pt-4 border-t border-gray-800 transition-opacity ${settings.soundEnabled ? '' : 'opacity-50'}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-gray-300">Alerts Volume</span>
-                  <span className="text-[10px] font-mono text-gray-500">
+                  <span className="text-[11px] font-mono text-gray-500">
                     {Math.round((settings.soundCategoryVolumes?.alert ?? 1) * 100)}%
                   </span>
                 </div>
@@ -133,7 +133,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   }}
                   className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
-                <p className="text-[9px] text-gray-600 pt-0.5">Only alert tones play (missions, pursuits, disasters, completions). UI clicks, radio beeps and ambient were removed.</p>
+                <p className="text-[11px] text-gray-600 pt-0.5">Only alert tones play (missions, pursuits, disasters, completions). UI clicks, radio beeps and ambient were removed.</p>
               </div>
 
               {/* Test the alert cue */}
@@ -154,7 +154,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   {storeDark ? <Sun className="w-5 h-5 text-dispatch-cyan" /> : <Moon className="w-5 h-5 text-gray-500" />}
                   <div>
                     <p className="text-sm font-semibold text-white">Dark Mode</p>
-                    <p className="text-[10px] text-gray-500">{storeDark ? 'Lights on' : 'Lights off'}</p>
+                    <p className="text-[11px] text-gray-500">{storeDark ? 'Lights on' : 'Lights off'}</p>
                   </div>
                 </div>
                 <button
@@ -174,7 +174,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <Music className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm font-semibold text-white">Music</p>
-                    <p className="text-[10px] text-gray-500">Ambient dispatch radio (coming soon)</p>
+                    <p className="text-[11px] text-gray-500">Ambient dispatch radio (coming soon)</p>
                   </div>
                 </div>
                 <button
@@ -201,7 +201,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   onChange={(e) => patch({ gameSpeed: Number(e.target.value) })}
                   className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-dispatch-cyan"
                 />
-                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                <div className="flex justify-between text-[11px] text-gray-600 mt-1">
                   <span>Slow</span>
                   <span>Normal</span>
                   <span>Fast</span>
@@ -230,7 +230,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     onChange={(e) => patch({ patrolShiftMinutes: Number(e.target.value) })}
                     className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                   />
-                  <p className="text-[10px] text-gray-600">How long a unit patrols before returning to the station for a 60s rest break.</p>
+                  <p className="text-[11px] text-gray-600">How long a unit patrols before returning to the station for a 60s rest break.</p>
                 </div>
 
                 {/* Default post-mission behavior */}
@@ -244,7 +244,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           patch({ defaultPostMissionBehavior: b });
                           useGameStore.getState().setDefaultPostMissionBehavior(b);
                         }}
-                        className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-colors ${
+                        className={`px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${
                           settings.defaultPostMissionBehavior === b
                             ? 'bg-blue-500/20 border-blue-500/50 text-blue-300'
                             : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/60'
@@ -254,7 +254,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       </button>
                     ))}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                  <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
                     <Route className="w-3 h-3 shrink-0" />
                     <span>Auto weighs call volume — patrols more when the city is busy.</span>
                   </div>
@@ -276,7 +276,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       <button
                         key={p}
                         onClick={() => patch({ missionPace: p })}
-                        className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-colors ${
+                        className={`px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${
                           settings.missionPace === p
                             ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
                             : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/60'
@@ -286,7 +286,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       </button>
                     ))}
                   </div>
-                  <p className="text-[10px] text-gray-600">How often new calls hit the board (Relaxed 20s · Normal 12s · Intense 6s).</p>
+                  <p className="text-[11px] text-gray-600">How often new calls hit the board (Relaxed 20s · Normal 12s · Intense 6s).</p>
                 </div>
 
                 {/* Max active calls */}
@@ -304,7 +304,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     onChange={(e) => patch({ maxActiveMissions: Number(e.target.value) })}
                     className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                   />
-                  <p className="text-[10px] text-gray-600">The board never holds more calls than this (level scaling adds a little room).</p>
+                  <p className="text-[11px] text-gray-600">The board never holds more calls than this (level scaling adds a little room).</p>
                 </div>
               </div>
 
@@ -319,7 +319,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <button
                       key={f}
                       onClick={() => patch({ disasterFrequency: f })}
-                      className={`px-1 py-1.5 rounded-lg text-[10px] font-bold border transition-colors capitalize ${
+                      className={`px-1 py-1.5 rounded-lg text-[11px] font-bold border transition-colors capitalize ${
                         settings.disasterFrequency === f
                           ? 'bg-red-500/20 border-red-500/50 text-red-300'
                           : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/60'
@@ -329,7 +329,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-gray-600">
+                <p className="text-[11px] text-gray-600">
                   {settings.disasterFrequency === 'off'
                     ? 'Never — keep the city calm.'
                     : settings.disasterFrequency === 'rare'
@@ -346,7 +346,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span className="text-base">🏙️</span>
                   <div>
                     <p className="text-sm font-semibold text-white">City Answers Mutual Aid Calls</p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[11px] text-gray-500">
                       Partner-agency calls (disaster waves, recovery) are handled by simulated city units for a small payout — build a partner station to answer them yourself for the full +25% bonus.
                     </p>
                   </div>
@@ -366,7 +366,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span className="text-base">🏙️🤝</span>
                   <div>
                     <p className="text-sm font-semibold text-white">Simulated Cross-Service Incidents</p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[11px] text-gray-500">
                       Other departments' calls appear across the city and the CPU resolves them — the city feels alive even with no partner station, and nothing piles up unanswerable. A built partner station still answers its own calls for the +25%.
                     </p>
                   </div>
@@ -391,7 +391,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <button
                       key={f}
                       onClick={() => patch({ mutualAidPace: f })}
-                      className={`px-1 py-1.5 rounded-lg text-[10px] font-bold border transition-colors capitalize ${
+                      className={`px-1 py-1.5 rounded-lg text-[11px] font-bold border transition-colors capitalize ${
                         settings.mutualAidPace === f
                           ? 'bg-blue-500/20 border-blue-500/50 text-blue-300'
                           : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/60'
@@ -401,7 +401,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-gray-600">
+                <p className="text-[11px] text-gray-600">
                   {settings.mutualAidPace === 'off'
                     ? 'No partner calls — only your own department’s emergencies. Flip it on once a partner station is built.'
                     : settings.mutualAidPace === 'rare'
@@ -422,7 +422,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   )}
                   <div>
                     <p className="text-sm font-semibold text-white">Online Gameplay</p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[11px] text-gray-500">
                       Multiplayer — see other commanders and their units on the map, live chat & presence. Turn off for a private single-player session (offline mode is server-independent).
                     </p>
                   </div>
@@ -438,7 +438,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   />
                 </button>
               </div>
-              <p className="text-[9px] text-gray-600 pt-1">
+              <p className="text-[11px] text-gray-600 pt-1">
                 Online features run on the Dispatch HQ server (shared map, chat, presence). Your campaign always plays locally and keeps saving — the switch only controls the multiplayer layer.
               </p>
 
@@ -448,10 +448,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span className="text-base">🤝</span>
                   <div>
                     <p className="text-sm font-semibold text-white">Auto-Respond Alliance Calls</p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[11px] text-gray-500">
                       Automatically dispatch the nearest unit to shared alliance missions as they arrive. Turn off to triage manually.
                     </p>
-                    <p className="text-[9px] text-amber-400/70 mt-0.5">Commander members get this enabled by default</p>
+                    <p className="text-[11px] text-amber-400/70 mt-0.5">Commander members get this enabled by default</p>
                   </div>
                 </div>
                 <button
@@ -477,7 +477,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <button
                       key={f}
                       onClick={() => patch({ fatigueMode: f })}
-                      className={`px-1 py-1.5 rounded-lg text-[10px] font-bold border transition-colors capitalize ${
+                      className={`px-1 py-1.5 rounded-lg text-[11px] font-bold border transition-colors capitalize ${
                         settings.fatigueMode === f
                           ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
                           : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/60'
@@ -487,7 +487,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-gray-600">
+                <p className="text-[11px] text-gray-600">
                   {settings.fatigueMode === 'off'
                     ? 'Off — crews never tire and fatigue never affects response.'
                     : settings.fatigueMode === 'gentle'
@@ -502,7 +502,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span className="text-base">🔔</span>
                   <div>
                     <p className="text-sm font-semibold text-white">Desktop Notifications</p>
-                    <p className="text-[10px] text-gray-500">Alert you when a critical call needs units while you're away</p>
+                    <p className="text-[11px] text-gray-500">Alert you when a critical call needs units while you're away</p>
                   </div>
                 </div>
                 <button
@@ -528,7 +528,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span className="text-base">🌈</span>
                   <div>
                     <p className="text-sm font-semibold text-white">Colorblind-Safe Crime Heat</p>
-                    <p className="text-[10px] text-gray-500">Use a blue→orange heat palette that reads without red-green perception</p>
+                    <p className="text-[11px] text-gray-500">Use a blue→orange heat palette that reads without red-green perception</p>
                   </div>
                 </div>
                 <button
@@ -549,7 +549,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <Activity className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm font-semibold text-white">Share Anonymous Play Stats</p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[11px] text-gray-500">
                       Send session length and mission counts (no personal data) to help balance the game. Off by default.
                     </p>
                   </div>
