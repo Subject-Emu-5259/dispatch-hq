@@ -108,9 +108,20 @@ app.get('/trailer-poster.jpg', (c) => serveStatic(c) || c.notFound());
 // On-origin map data (v0.23.2): tiles + OSRM routes served from the game's own
 // origin with a disk cache, so the map has zero third-party dependencies.
 // MUST stay before the SPA catch-all below.
-app.get('/tiles/*', tileHandler);
-app.get('/routing/*', routingHandler);
-app.get('/geocode/*', geocodeHandler);
+// Batch 1 (P0-3): these used to sit before the auth blanket with NO limits —
+// an unauthenticated open proxy burning OSM/OSRM/Nominatim quota. They are now
+// authenticated (the game client is always authed by the time it shows a map:
+// menu → city-select → playing, and same-origin tile/img + fetch requests
+// carry the auth cookie) AND per-IP rate-limited in their own bucket scope
+// (see rateLimit `scope` — a map burst must not eat the auth buckets).
+// Limits sit far above a real map session: a full map view loads dozens of
+// tiles, a handful of routes, and a few city searches per minute.
+app.use('/tiles/*', authMiddleware);
+app.use('/routing/*', authMiddleware);
+app.use('/geocode/*', authMiddleware);
+app.get('/tiles/*', rateLimit({ windowMs: 60_000, max: 300, scope: 'proxy-tiles' }), tileHandler);
+app.get('/routing/*', rateLimit({ windowMs: 60_000, max: 120, scope: 'proxy-routing' }), routingHandler);
+app.get('/geocode/*', rateLimit({ windowMs: 60_000, max: 60, scope: 'proxy-geocode' }), geocodeHandler);
 
 app.get('/health', (c) => {
   return c.json({

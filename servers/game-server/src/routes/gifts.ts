@@ -90,19 +90,19 @@ giftsRouter.post('/send', async (c) => {
     return c.json({ error: `Daily gift cap is ${DAILY_GIFT_CAP} credits (sent + received combined). You have ${DAILY_GIFT_CAP - todayVolume} remaining today.` }, 400);
   }
 
-  // Check sender has enough credits
-  const senderRow = await db.select({ credits: players.credits }).from(players).where(eq(players.id, senderId)).limit(1);
-  const senderCredits = senderRow[0]?.credits ?? 0;
-  if (senderCredits < amount) return c.json({ error: 'Insufficient credits' }, 400);
-
-  // Get receiver's current credits
-  const receiverRow = await db.select({ credits: players.credits }).from(players).where(eq(players.id, receiverId)).limit(1);
-  const receiverCredits = receiverRow[0]?.credits ?? 0;
-
-  // Atomic: deduct from sender, credit to receiver, log gift
-  await db.transaction(async (tx) => {
-    await tx.update(players).set({ credits: senderCredits - amount }).where(eq(players.id, senderId));
-    await tx.update(players).set({ credits: receiverCredits + amount }).where(eq(players.id, receiverId));
+  // Batch 1 (P1-M2): the debit is a guarded UPDATE inside the transaction —
+  // `credits >= amount` in the WHERE clause, affected rows as the verdict —
+  // so concurrent gifts can never drive the sender negative or double-spend.
+  // The old code read the balance, checked in JS, then wrote absolute values.
+  const transferred = await db.transaction(async (tx) => {
+    const debited = await tx.update(players)
+      .set({ credits: sql`${players.credits} - ${amount}` })
+      .where(and(eq(players.id, senderId), sql`${players.credits} >= ${amount}`))
+      .returning({ credits: players.credits });
+    if (debited.length === 0) return null;
+    await tx.update(players)
+      .set({ credits: sql`${players.credits} + ${amount}` })
+      .where(eq(players.id, receiverId));
     await tx.insert(allianceGifts).values({
       allianceId: senderMembership.allianceId,
       senderId,
@@ -110,7 +110,9 @@ giftsRouter.post('/send', async (c) => {
       amount,
       message,
     });
+    return debited[0];
   });
+  if (!transferred) return c.json({ error: 'Insufficient credits' }, 400);
 
   // Resolve receiver name for the response
   const receiverNameRow = await db.select({ name: players.username }).from(players).where(eq(players.id, receiverId)).limit(1);
@@ -125,7 +127,7 @@ giftsRouter.post('/send', async (c) => {
     success: true,
     sent: amount,
     receiverName: receiverNameRow[0]?.name ?? 'Unknown',
-    senderBalance: senderCredits - amount,
+    senderBalance: transferred.credits,
   });
 });
 

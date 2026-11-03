@@ -14,6 +14,7 @@ import { db } from '../db';
 import { players, seasonalContestEntries, seasonalContests } from '../db/schema';
 import type { AuthVars } from '../auth/middleware';
 import { awardAchievementByKey } from './achievements';
+import { awardAllianceXp, ALLIANCE_XP_PER_SEASONAL_CLEAR } from './alliances';
 
 interface SeasonalWindow {
   id: string;
@@ -167,6 +168,14 @@ seasonal.post('/contest/:eventId/complete', async (c) => {
 
   // Lazy winner fallback: if the window closed mid-session, resolve now.
   if (windowEnded(w)) await resolveWinner(eventId).catch(() => null);
+
+  // Batch 1 (P1-M6): the server-verified completion event. The window was
+  // validated above and the entry row persisted, so this clear is real as far
+  // as the server can tell — award the fixed server-determined alliance XP
+  // (never a client number). Best-effort: a missing alliance is a no-op.
+  if (!isCity) {
+    await awardAllianceXp(playerId, ALLIANCE_XP_PER_SEASONAL_CLEAR).catch(() => null);
+  }
 
   return c.json({ success: true, kind });
 });

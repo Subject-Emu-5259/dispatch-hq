@@ -2,7 +2,7 @@
 // Dispatch HQ — WebSocket Action Handler
 // ============================================
 
-import { eq, sql } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db } from '../db';
 import { players, stations, units } from '../db/schema';
 import { STATION_CONFIGS, STATION_LEVELS, UNIT_CONFIGS } from '@dispatch-hq/shared';
@@ -36,6 +36,15 @@ export async function handleAction(
   }
 }
 
+// Batch 1 (P1-M2): this path is currently DEAD from the client (no
+// `type: 'action'` sender exists — it is hardened, NOT wired back up), but
+// the old shape was a free-unit bug waiting to happen: the station/unit was
+// INSERTED before the debit, and the debit was an unguarded relative update
+// after a JS balance check, so a crash between insert and debit (or two
+// concurrent actions) minted free assets or drove credits negative. Every
+// money action below is now ONE transaction: guarded debit FIRST
+// (`credits >= cost` in the WHERE clause, affected rows as the verdict),
+// then the asset insert/update. A failed debit rolls everything back.
 async function buildStation(
   playerId: string,
   action: Extract<GameAction, { type: 'build_station' }>,
@@ -44,34 +53,33 @@ async function buildStation(
   if (!config) {
     return { result: { success: false, error: 'Invalid station type' }, changes: [] };
   }
-  const playerRows = await db.select().from(players).where(eq(players.id, playerId)).limit(1);
-  if (playerRows.length === 0) {
-    return { result: { success: false, error: 'Player not found' }, changes: [] };
-  }
-  const player = playerRows[0];
-  if (player.credits < config.baseCost) {
+  const done = await db.transaction(async (tx) => {
+    const debited = await tx.update(players)
+      .set({ credits: sql`${players.credits} - ${config.baseCost}` })
+      .where(and(eq(players.id, playerId), sql`${players.credits} >= ${config.baseCost}`))
+      .returning({ credits: players.credits });
+    if (debited.length === 0) return null;
+    const result = await tx.insert(stations).values({
+      ownerId: playerId,
+      stationType: action.stationType,
+      name: `${config.name} ${Date.now().toString().slice(-4)}`,
+      lat: action.position.lat,
+      lng: action.position.lng,
+      level: 1,
+      capacity: config.baseCapacity,
+      unitCount: 0,
+      coverageRadius: STATION_LEVELS[0].coverageRadius,
+    }).returning();
+    return { station: result[0], credits: debited[0].credits };
+  });
+  if (!done) {
     return { result: { success: false, error: 'Insufficient credits' }, changes: [] };
   }
-  const result = await db.insert(stations).values({
-    ownerId: playerId,
-    stationType: action.stationType,
-    name: `${config.name} ${Date.now().toString().slice(-4)}`,
-    lat: action.position.lat,
-    lng: action.position.lng,
-    level: 1,
-    capacity: config.baseCapacity,
-    unitCount: 0,
-    coverageRadius: STATION_LEVELS[0].coverageRadius,
-  }).returning();
-  const station = result[0];
-  await db.update(players)
-    .set({ credits: sql`${players.credits} - ${config.baseCost}` })
-    .where(eq(players.id, playerId));
   const changes: StateChange[] = [
-    { entity: 'station', id: station.id, changes: { created: station } },
-    { entity: 'player', id: playerId, changes: { credits: player.credits - config.baseCost } },
+    { entity: 'station', id: done.station.id, changes: { created: done.station } },
+    { entity: 'player', id: playerId, changes: { credits: done.credits } },
   ];
-  return { result: { success: true, data: { station } }, changes };
+  return { result: { success: true, data: { station: done.station } }, changes };
 }
 
 async function upgradeStation(
@@ -91,28 +99,31 @@ async function upgradeStation(
   if (!levelConfig) {
     return { result: { success: false, error: 'Station already at max level' }, changes: [] };
   }
-  const playerRows = await db.select().from(players).where(eq(players.id, playerId)).limit(1);
-  const player = playerRows[0];
-  if (player.credits < levelConfig.cost) {
+  const done = await db.transaction(async (tx) => {
+    const debited = await tx.update(players)
+      .set({ credits: sql`${players.credits} - ${levelConfig.cost}` })
+      .where(and(eq(players.id, playerId), sql`${players.credits} >= ${levelConfig.cost}`))
+      .returning({ credits: players.credits });
+    if (debited.length === 0) return null;
+    await tx.update(stations)
+      .set({
+        level: nextLevel,
+        capacity: levelConfig.capacity,
+        coverageRadius: levelConfig.coverageRadius,
+      })
+      .where(eq(stations.id, station.id));
+    return debited[0].credits;
+  });
+  if (done === null) {
     return { result: { success: false, error: 'Insufficient credits' }, changes: [] };
   }
-  await db.update(stations)
-    .set({
-      level: nextLevel,
-      capacity: levelConfig.capacity,
-      coverageRadius: levelConfig.coverageRadius,
-    })
-    .where(eq(stations.id, station.id));
-  await db.update(players)
-    .set({ credits: sql`${players.credits} - ${levelConfig.cost}` })
-    .where(eq(players.id, playerId));
   const changes: StateChange[] = [
     {
       entity: 'station',
       id: station.id,
       changes: { level: nextLevel, capacity: levelConfig.capacity, coverageRadius: levelConfig.coverageRadius },
     },
-    { entity: 'player', id: playerId, changes: { credits: player.credits - levelConfig.cost } },
+    { entity: 'player', id: playerId, changes: { credits: done } },
   ];
   return { result: { success: true, data: { stationId: station.id, level: nextLevel } }, changes };
 }
@@ -136,34 +147,37 @@ async function buyUnit(
   if (station.unitCount >= station.capacity) {
     return { result: { success: false, error: 'Station at capacity' }, changes: [] };
   }
-  const playerRows = await db.select().from(players).where(eq(players.id, playerId)).limit(1);
-  const player = playerRows[0];
-  if (player.credits < unitConfig.cost) {
+  const done = await db.transaction(async (tx) => {
+    const debited = await tx.update(players)
+      .set({ credits: sql`${players.credits} - ${unitConfig.cost}` })
+      .where(and(eq(players.id, playerId), sql`${players.credits} >= ${unitConfig.cost}`))
+      .returning({ credits: players.credits });
+    if (debited.length === 0) return null;
+    const result = await tx.insert(units).values({
+      ownerId: playerId,
+      stationId: action.stationId,
+      unitType: action.unitType,
+      name: unitConfig.name,
+      status: 'available',
+      heading: 0,
+      speed: 0,
+      trainingLevel: 1,
+    }).returning();
+    const unit = result[0];
+    await tx.update(stations)
+      .set({ unitCount: sql`(SELECT COUNT(*) FROM ${units} WHERE station_id = ${action.stationId})` })
+      .where(eq(stations.id, action.stationId));
+    return { unit, credits: debited[0].credits };
+  });
+  if (!done) {
     return { result: { success: false, error: 'Insufficient credits' }, changes: [] };
   }
-  const result = await db.insert(units).values({
-    ownerId: playerId,
-    stationId: action.stationId,
-    unitType: action.unitType,
-    name: unitConfig.name,
-    status: 'available',
-    heading: 0,
-    speed: 0,
-    trainingLevel: 1,
-  }).returning();
-  const unit = result[0];
-  await db.update(stations)
-    .set({ unitCount: sql`(SELECT COUNT(*) FROM ${units} WHERE station_id = ${action.stationId})` })
-    .where(eq(stations.id, action.stationId));
-  await db.update(players)
-    .set({ credits: sql`${players.credits} - ${unitConfig.cost}` })
-    .where(eq(players.id, playerId));
   const changes: StateChange[] = [
-    { entity: 'unit', id: unit.id, changes: { created: unit } },
+    { entity: 'unit', id: done.unit.id, changes: { created: done.unit } },
     { entity: 'station', id: station.id, changes: { unitCount: station.unitCount + 1 } },
-    { entity: 'player', id: playerId, changes: { credits: player.credits - unitConfig.cost } },
+    { entity: 'player', id: playerId, changes: { credits: done.credits } },
   ];
-  return { result: { success: true, data: { unit } }, changes };
+  return { result: { success: true, data: { unit: done.unit } }, changes };
 }
 
 async function dispatchUnit(

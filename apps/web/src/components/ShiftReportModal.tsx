@@ -24,6 +24,7 @@ import {
   buildShareCardData, renderShareCard, loadCardLogo, shareCardPng,
   CARD_WIDTH, CARD_HEIGHT,
 } from '@/lib/shareCard';
+import { useNotifications } from './NotificationCenter';
 import { playClick } from '../utils/sound';
 
 interface ShiftReportModalProps {
@@ -41,6 +42,7 @@ function fmtElapsed(ms: number): string {
 
 export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
   const shift = useGameStore((s) => s.shift);
+  const { addNotification } = useNotifications();
   const player = useGameStore((s) => s.player);
   const units = useGameStore((s) => s.units);
   const stations = useGameStore((s) => s.stations);
@@ -187,7 +189,14 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
       setSharedAsImage(outcome);
       setTimeout(() => setSharedAsImage(null), 2400);
     } catch {
-      // Canvas/clipboard unavailable — the button simply stays idle.
+      // Batch 1 polish: a failed share used to look like a dead button — the
+      // button simply stayed idle. Surface it as a toast instead.
+      addNotification({
+        type: 'error',
+        title: 'Share failed',
+        message: "Couldn't create the image — try again.",
+        icon: '⚠️',
+      });
     }
   };
 

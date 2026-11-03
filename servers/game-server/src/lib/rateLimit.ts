@@ -21,6 +21,11 @@ export interface RateLimitOptions {
   keyFn?: (c: Context) => string;
   /** Optional route label for the stats readout — defaults to the request path. */
   label?: string;
+  /** Optional bucket namespace. Buckets are otherwise keyed ONLY by the key
+   *  (IP or player), so unrelated routes share one bucket — Batch 1 (P0-3)
+   *  scopes the map proxy here so a tile burst can never eat the auth
+   *  buckets (or vice versa). Existing callers without a scope are unchanged. */
+  scope?: string;
 }
 
 interface Bucket {
@@ -119,9 +124,10 @@ function clientIp(c: Context): string {
   return 'unknown';
 }
 
-export function rateLimit({ windowMs, max, keyFn, label }: RateLimitOptions) {
+export function rateLimit({ windowMs, max, keyFn, label, scope }: RateLimitOptions) {
   return async (c: Context, next: Next): Promise<Response | void> => {
-    const key = keyFn ? keyFn(c) : clientIp(c);
+    const baseKey = keyFn ? keyFn(c) : clientIp(c);
+    const key = scope ? `${scope}:${baseKey}` : baseKey;
     const route = label ?? c.req.path;
     const now = Date.now();
     let bucket = buckets.get(key);

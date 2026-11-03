@@ -11,7 +11,7 @@ import { db } from '../db';
 import { alliances, allianceMembers, allianceJoinRequests, chatMessages, chatMessageReceipts, players } from '../db/schema';
 import type { AuthVars } from '../auth/middleware';
 import type { ServerMessage } from '@dispatch-hq/shared';
-import { allianceLevelFor, nextAllianceLevel } from '@dispatch-hq/shared';
+import { allianceLevelFor } from '@dispatch-hq/shared';
 import { canAccessAlliances, ALLIANCE_MIN_LEVEL } from '../config';
 import { connectionManager } from '../websocket/connectionManager';
 
@@ -237,40 +237,37 @@ alliancesRouter.post('/join', async (c) => {
   return c.json({ alliance: await allianceSummary(target.id), joined: true });
 });
 
-// Credit shared alliance XP (client-authoritative game state reports mission
-// completions). Rate-safe: a per-request cap + a per-player cooldown prevent
-// flooding; the server recomputes level from the shared ladder and reports
-// level-ups.
-const MAX_XP_PER_REQUEST = 500;
-const XP_COOLDOWN_MS = 1500;
-const lastXpCredit = new Map<string, number>();
-alliancesRouter.post('/xp', async (c) => {
-  const playerId = c.get('playerId');
-  const now = Date.now();
-  const last = lastXpCredit.get(playerId);
-  if (last !== undefined && now - last < XP_COOLDOWN_MS) {
-    return c.json({ error: 'Too many credits — slow down' }, 429);
-  }
-  lastXpCredit.set(playerId, now);
-  const mine = await getMyAlliance(playerId);
-  if (!mine) return c.json({ error: 'You are not in an alliance' }, 404);
-  const body = await c.req.json().catch(() => ({}));
-  const amount = Math.min(Number(body.xp) || 0, MAX_XP_PER_REQUEST);
-  if (amount <= 0) return c.json({ error: 'xp must be a positive number' }, 400);
+// ── Batch 1 (P1-M6): server-awarded alliance XP ────────────────────────────
+// The old POST /alliances/xp let any member add up to 500 XP per 1.5s from a
+// client-supplied number — ~20,000 XP/min of pure farm, straight onto the
+// alliance board. That path is RETIRED (410 below): XP now arrives only from
+// a server-side completion event, via awardAllianceXp, at a fixed
+// server-determined amount. The per-player cooldown + route limit stay as
+// backstops on the remaining alliance write routes, not as the gate.
+// Current server-verified source: a seasonal contest clear (routes/seasonal.ts
+// validates the window server-side and persists the entry row before this is
+// called). Alliance XP from ordinary mission clears is paused until a server
+// mission ledger exists — that is a Batch 3 build, not something to fake
+// here by trusting the client again.
+export const ALLIANCE_XP_PER_SEASONAL_CLEAR = 25;
 
+/** Award fixed alliance XP from a server-side event only. Never call with a client-supplied amount. */
+export async function awardAllianceXp(playerId: string, xp: number): Promise<{ xp: number; level: number; leveledUp: boolean } | null> {
+  const mine = await getMyAlliance(playerId);
+  if (!mine) return null;
   const before = mine.alliance.level;
-  const newXp = (mine.alliance.xp ?? 0) + Math.round(amount);
+  const newXp = (mine.alliance.xp ?? 0) + Math.max(0, Math.floor(xp));
   const levelInfo = allianceLevelFor(newXp);
   await db.update(alliances).set({ xp: newXp, level: levelInfo.level }).where(eq(alliances.id, mine.alliance.id));
+  return { xp: newXp, level: levelInfo.level, leveledUp: levelInfo.level > before };
+}
 
-  const leveledUp = levelInfo.level > before;
+// Client-reported alliance XP is retired: XP is awarded by the server on a
+// verified completion event (see awardAllianceXp), never from a client number.
+alliancesRouter.post('/xp', async (c) => {
   return c.json({
-    success: true,
-    xp: newXp,
-    level: levelInfo.level,
-    leveledUp,
-    nextLevel: nextAllianceLevel(newXp),
-  });
+    error: 'Client-reported alliance XP is retired — alliance XP is awarded by the server on verified mission completion only.',
+  }, 410);
 });
 
 // View my alliance's shareable invite code.

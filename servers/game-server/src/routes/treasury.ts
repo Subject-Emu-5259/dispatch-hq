@@ -167,34 +167,37 @@ treasuryRouter.post('/deposit', async (c) => {
     return c.json({ error: `Daily deposit cap is ${DAILY_DEPOSIT_CAP} credits. You have ${DAILY_DEPOSIT_CAP - todayDeposits} remaining today.` }, 400);
   }
 
-  // Check player has enough credits
-  const playerRow = await db.select({ credits: players.credits }).from(players).where(eq(players.id, playerId)).limit(1);
-  const playerCredits = playerRow[0]?.credits ?? 0;
-  if (playerCredits < amount) return c.json({ error: 'Insufficient credits' }, 400);
-
-  // Atomic: deduct from player, add to treasury, log transaction
-  const treasury = await getOrCreateTreasury(membership.allianceId);
-  const newBalance = treasury.balance + amount;
-
-  await db.transaction(async (tx) => {
-    // Deduct from player
-    await tx.update(players).set({ credits: playerCredits - amount }).where(eq(players.id, playerId));
-    // Update treasury
-    await tx.update(allianceTreasury).set({ balance: newBalance, updatedAt: new Date() }).where(eq(allianceTreasury.allianceId, membership.allianceId));
-    // Log transaction
+  // Batch 1 (P1-M2): guarded debit — `credits >= amount` in the WHERE clause,
+  // affected rows as the verdict — plus a relative treasury increment, all in
+  // one transaction. The old code read both balances, checked in JS, then
+  // wrote absolute values: concurrent deposits could double-spend the player.
+  await getOrCreateTreasury(membership.allianceId);
+  const deposited = await db.transaction(async (tx) => {
+    const debited = await tx.update(players)
+      .set({ credits: sql`${players.credits} - ${amount}` })
+      .where(and(eq(players.id, playerId), sql`${players.credits} >= ${amount}`))
+      .returning({ credits: players.credits });
+    if (debited.length === 0) return null;
+    const credited = await tx.update(allianceTreasury)
+      .set({ balance: sql`${allianceTreasury.balance} + ${amount}`, updatedAt: new Date() })
+      .where(eq(allianceTreasury.allianceId, membership.allianceId))
+      .returning({ balance: allianceTreasury.balance });
+    if (credited.length === 0) return null;
     await tx.insert(allianceTreasuryTransactions).values({
       allianceId: membership.allianceId,
       playerId,
       delta: amount,
       reason: 'deposit',
-      balanceAfter: newBalance,
+      balanceAfter: credited[0].balance,
     });
+    return { playerCredits: debited[0].credits, balance: credited[0].balance };
   });
+  if (!deposited) return c.json({ error: 'Insufficient credits' }, 400);
 
   // Log activity feed event
   void logAllianceActivity(membership.allianceId, playerId, 'treasury_deposit', `Deposited ${amount.toLocaleString()} credits to the treasury`);
 
-  return c.json({ balance: newBalance, deposited: amount });
+  return c.json({ balance: deposited.balance, deposited: amount });
 });
 
 // ── POST /api/alliances/treasury/withdraw — take credits from the treasury ───
@@ -219,35 +222,37 @@ treasuryRouter.post('/withdraw', async (c) => {
     return c.json({ error: `Daily withdrawal cap is ${DAILY_WITHDRAWAL_CAP} credits. You have ${DAILY_WITHDRAWAL_CAP - todayWithdrawals} remaining today.` }, 400);
   }
 
-  // Check treasury has enough
-  const treasury = await getOrCreateTreasury(membership.allianceId);
-  if (treasury.balance < amount) return c.json({ error: 'Insufficient treasury balance' }, 400);
-
-  const newBalance = treasury.balance - amount;
-
-  // Get player's current credits for the update
-  const playerRow = await db.select({ credits: players.credits }).from(players).where(eq(players.id, playerId)).limit(1);
-  const playerCredits = playerRow[0]?.credits ?? 0;
-
-  await db.transaction(async (tx) => {
-    // Add to player
-    await tx.update(players).set({ credits: playerCredits + amount }).where(eq(players.id, playerId));
-    // Update treasury
-    await tx.update(allianceTreasury).set({ balance: newBalance, updatedAt: new Date() }).where(eq(allianceTreasury.allianceId, membership.allianceId));
-    // Log transaction
+  // Batch 1 (P1-M2): guarded treasury debit — `balance >= amount` in the
+  // WHERE clause — plus a relative player credit, all in one transaction.
+  // The old code read both balances, checked in JS, then wrote absolute
+  // values: concurrent withdrawals could overdraw the treasury.
+  await getOrCreateTreasury(membership.allianceId);
+  const withdrawn = await db.transaction(async (tx) => {
+    const debited = await tx.update(allianceTreasury)
+      .set({ balance: sql`${allianceTreasury.balance} - ${amount}`, updatedAt: new Date() })
+      .where(and(eq(allianceTreasury.allianceId, membership.allianceId), sql`${allianceTreasury.balance} >= ${amount}`))
+      .returning({ balance: allianceTreasury.balance });
+    if (debited.length === 0) return null;
+    const credited = await tx.update(players)
+      .set({ credits: sql`${players.credits} + ${amount}` })
+      .where(eq(players.id, playerId))
+      .returning({ credits: players.credits });
+    if (credited.length === 0) return null;
     await tx.insert(allianceTreasuryTransactions).values({
       allianceId: membership.allianceId,
       playerId,
       delta: -amount,
       reason: 'withdraw',
-      balanceAfter: newBalance,
+      balanceAfter: debited[0].balance,
     });
+    return { balance: debited[0].balance, playerCredits: credited[0].credits };
   });
+  if (!withdrawn) return c.json({ error: 'Insufficient treasury balance' }, 400);
 
   // Log activity feed event
   void logAllianceActivity(membership.allianceId, playerId, 'treasury_withdraw', `Withdrew ${amount.toLocaleString()} credits from the treasury`);
 
-  return c.json({ balance: newBalance, withdrawn: amount });
+  return c.json({ balance: withdrawn.balance, withdrawn: amount });
 });
 
 export { treasuryRouter };

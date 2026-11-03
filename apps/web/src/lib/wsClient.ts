@@ -19,6 +19,10 @@ class WsClient {
   private handlers = new Map<string, Set<MessageHandler>>();
   private connected = false;
   private shouldReconnect = true;
+  // Batch 1 polish: timestamp (ms epoch) of the last connection attempt, so
+  // the Online chip can show "last attempt" next to its Reconnect button
+  // instead of leaving a stuck Offline state mysterious.
+  private lastAttemptAt: number | null = null;
   // Real socket-state listener (v0.22.x): the store's wsConnected flag used to
   // depend on an auth_ok MESSAGE arriving, so a socket that was genuinely up
   // (presence + unit relay working) could still read as "Offline" on the chip.
@@ -38,6 +42,7 @@ class WsClient {
 
   private doConnect() {
     this.cleanupSocket();
+    this.lastAttemptAt = Date.now();
     try {
       this.ws = new WebSocket(this.getWsUrl());
     } catch (e) {
@@ -139,6 +144,11 @@ class WsClient {
 
   isConnected() {
     return this.connected;
+  }
+
+  /** Ms epoch of the last connection attempt, or null if never attempted. */
+  getLastAttemptAt() {
+    return this.lastAttemptAt;
   }
 
   /** Subscribe to real socket-state changes (open/close/disconnect). Returns

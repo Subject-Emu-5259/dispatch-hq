@@ -1140,10 +1140,28 @@ export interface AllianceXpResponse {
   nextLevel: { level: number; xpThreshold: number } | null;
 }
 
-export async function creditAllianceXp(xp: number): Promise<AllianceXpResponse> {
-  return apiFetch<AllianceXpResponse>('/alliances/xp', {
+// ── Grant ledger (Batch 1, P1-M3) ──────────────────────────────────────────
+// Undelivered server-side grants (promo redemptions, admin grants) for the
+// caller. The /me poll applies these by id and acks them; see App.tsx.
+export interface PendingGrant {
+  id: string;
+  source: string;
+  ref: string;
+  credits: number;
+  coins: number;
+  xp: number;
+  level: number;
+  createdAt: string;
+}
+
+export async function fetchPendingGrants(): Promise<{ grants: PendingGrant[] }> {
+  return apiFetch<{ grants: PendingGrant[] }>('/player/grants/pending');
+}
+
+export async function ackGrants(ids: string[]): Promise<{ success: boolean; acked: number }> {
+  return apiFetch<{ success: boolean; acked: number }>('/player/grants/ack', {
     method: 'POST',
-    body: JSON.stringify({ xp }),
+    body: JSON.stringify({ ids }),
   });
 }
 

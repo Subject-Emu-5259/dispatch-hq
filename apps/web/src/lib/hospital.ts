@@ -309,8 +309,8 @@ export function applyNurseRotation(
  */
 const REGIONAL_TRAUMA_CENTERS: Record<string, string> = {
   'west memphis': 'Memphis Regional Trauma Center',
-  'memphis': 'Nashville Regional Trauma Center',
-  'nashville': 'Memphis Regional Trauma Center',
+  'memphis': 'Memphis Regional Trauma Center',
+  'nashville': 'Nashville Regional Trauma Center',
   'little rock': 'UAMS Medical Center',
   'new york': 'Bellevue Hospital Center',
   'new york city': 'Bellevue Hospital Center',

@@ -50,21 +50,8 @@ const MENU_ITEMS = [
   { id: 'settings', label: 'Settings', icon: Settings, color: 'text-gray-400', description: 'Configure dispatch preferences' },
 ];
 
-// ── Community links — the game's official pages, reachable right from the menu ──
+// ── Community links — the game's official page, reachable right from the menu ──
 const SOCIAL_LINKS = [
-  {
-    id: 'facebook',
-    label: 'Facebook',
-    handle: '@DispatchHQ',
-    href: 'https://www.facebook.com/profile.php?id=61592479787997',
-    color: '#1877F2',
-    hoverBg: 'hover:bg-[#1877F2]/20',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4" aria-hidden="true">
-        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-      </svg>
-    ),
-  },
   {
     id: 'reddit',
     label: 'Reddit',
@@ -385,7 +372,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
           <ChevronRight className="w-4 h-4 text-dispatch-red/60 group-hover:text-dispatch-red transition-colors" />
         </motion.button>
 
-        {/* Community — official Facebook & Reddit pages */}
+        {/* Community — official Reddit page */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -393,7 +380,7 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
           className="w-full max-w-xs mt-6"
         >
           <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 mb-2">Community</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             {SOCIAL_LINKS.map((social) => (
               <a
                 key={social.id}

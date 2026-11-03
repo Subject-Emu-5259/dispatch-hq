@@ -596,6 +596,34 @@ export function setSavedPlayerBaseline(baseline: PlayerBaseline | null): void {
   lastSavedPlayerBaseline = baseline;
 }
 
+// ── Applied grant ids (Batch 1, P1-M3 ledger delivery) ─────────────────────
+// The server marks a grant delivered on ack, but a crash between applying a
+// grant locally and the ack landing would re-deliver it on the next poll —
+// so applied ids ALSO persist in localStorage (capped FIFO, newest 500).
+// The poll filters pending grants against this set before applying.
+const APPLIED_GRANTS_KEY = 'dhq_applied_grants_v1';
+
+export function loadAppliedGrantIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(APPLIED_GRANTS_KEY);
+    if (!raw) return new Set();
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.filter((id): id is string => typeof id === 'string'));
+  } catch {
+    return new Set();
+  }
+}
+
+export function saveAppliedGrantIds(ids: Set<string>): void {
+  try {
+    const arr = [...ids].slice(-500);
+    localStorage.setItem(APPLIED_GRANTS_KEY, JSON.stringify(arr));
+  } catch {
+    // Storage full/blocked — the server-side ack is the other dedup layer.
+  }
+}
+
 /** True when the most recent saveGame failed because the session token is no
  * longer valid (deploy restarts can orphan tokens). Lets the UI say "sign back
  * in" instead of a generic retry hint. */

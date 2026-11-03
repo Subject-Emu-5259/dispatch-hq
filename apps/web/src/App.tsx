@@ -32,8 +32,8 @@ import { RandomEvents, useRandomEvents } from './components/RandomEvents';
 import { WeatherOverlay } from './components/WeatherOverlay';
 import { useGameStore } from './stores/gameStore';
 const AuthScreen = lazy(() => import('./components/AuthScreen').then((m) => ({ default: m.AuthScreen })));
-import { apiFetch, syncCareerStats, creditAllianceXp, setUnauthorizedHandler, fetchMyAlliance, reportSeasonalClear } from './lib/apiClient';
-import { useSaveSystem, loadGame, hasSaveGame, saveGame, refreshSaveSlots, clearLocalSaveCache, deleteSaveGame, setActiveSlot, wasSessionActive, markSessionActive, clearSessionActive, getSavedPlayerBaseline, setSavedPlayerBaseline, type SaveSlotId } from './hooks/useSaveSystem';
+import { apiFetch, syncCareerStats, setUnauthorizedHandler, fetchMyAlliance, fetchPendingGrants, ackGrants, reportSeasonalClear } from './lib/apiClient';
+import { useSaveSystem, loadGame, hasSaveGame, saveGame, refreshSaveSlots, clearLocalSaveCache, deleteSaveGame, setActiveSlot, wasSessionActive, markSessionActive, clearSessionActive, getSavedPlayerBaseline, setSavedPlayerBaseline, loadAppliedGrantIds, saveAppliedGrantIds, type SaveSlotId } from './hooks/useSaveSystem';
 import { useAchievements } from './hooks/useAchievements';
 const AIDispatch = lazy(() => import('./components/AIDispatch').then((m) => ({ default: m.AIDispatch })));
 const UnifiedDispatchCenter = lazy(() => import('./components/UnifiedDispatchCenter').then((m) => ({ default: m.UnifiedDispatchCenter })));
@@ -324,6 +324,10 @@ function GameApp() {
   // WebSocket gate below re-runs the moment the player flips it.
   const [onlineMode, setOnlineMode] = useState(() => loadSettings().onlineMode);
   useEffect(() => subscribeSettings((s) => setOnlineMode(s.onlineMode)), []);
+  // Batch 1 polish: last WS connection-attempt timestamp for the Online chip's
+  // Reconnect row. Refreshed on every socket-state change and on manual
+  // reconnect taps; null until the first attempt.
+  const [lastWsAttemptAt, setLastWsAttemptAt] = useState<number | null>(null);
 
   // ── Update nudge (v0.22.0) ──
   // Compares the running bundle's version against the live server's on boot +
@@ -390,10 +394,20 @@ function GameApp() {
   // ── Live profile sync (admin back-office actions land instantly) ──
   // Bonus grants, promo redemptions from another device, and any other admin
   // change write straight to the player row server-side. Poll /me while signed
-  // in and deliver grants within ~30s (instantly on window focus). Grants are
-  // computed as `server − last-saved baseline` and ADDED on top of the live
-  // store — so a bonus arrives without ever clobbering earnings that happened
-  // since the last autosave. The next autosave persists the merged totals.
+  // in and deliver grants within ~30s (instantly on window focus).
+  //
+  // Batch 1 (P1-M3): delivery is now LEDGER-FIRST. The old path computed
+  // grants as `server − last-saved baseline`, which silently swallowed any
+  // grant that didn't push the DB row above the saved campaign total (the
+  // normal case for an established player). The server now records every
+  // promo/admin grant in a ledger row (same transaction as the wallet move),
+  // and this poll applies ledger grants by id — exactly once, regardless of
+  // the saved total. Delivery is deduped twice: a localStorage set of applied
+  // ids (survives a crash between apply and ack) and a server-side ack.
+  // The baseline-diff path still runs for non-ledger DB movements (another
+  // device's shop/gift activity), but computed against server totals MINUS
+  // the ledger amounts applied this poll — otherwise the same grant would
+  // arrive twice (once from the ledger, once from the diff).
   useEffect(() => {
     if (!player?.id) return;
     let cancelled = false;
@@ -406,13 +420,47 @@ function GameApp() {
         const baseline = getSavedPlayerBaseline() ?? {
           credits: cur.credits, coins: cur.coins, xp: cur.xp, level: cur.level,
         };
+        // ── Ledger grants (Batch 1) ──
+        let ledger = { credits: 0, coins: 0, xp: 0, level: 0 };
+        try {
+          const { grants } = await fetchPendingGrants();
+          if (!cancelled && grants.length > 0) {
+            const applied = loadAppliedGrantIds();
+            const fresh = grants.filter((g) => !applied.has(g.id));
+            if (fresh.length > 0) {
+              for (const g of fresh) {
+                ledger.credits += g.credits;
+                ledger.coins += g.coins;
+                ledger.xp += g.xp;
+                ledger.level += g.level;
+                applied.add(g.id);
+              }
+              saveAppliedGrantIds(applied);
+            }
+            // Ack everything the server sent (including already-applied ids —
+            // the ack is idempotent) so the pending list shrinks server-side.
+            void ackGrants(grants.map((g) => g.id)).catch(() => { /* retry next poll */ });
+          }
+        } catch {
+          // Ledger fetch failure is non-fatal: the baseline-diff path below
+          // still delivers grants that push the DB row above the baseline,
+          // and the next poll retries the ledger.
+        }
         const next: Partial<Player> = {};
-        const creditGrant = me.player.credits - baseline.credits;
-        if (creditGrant > 0) next.credits = cur.credits + creditGrant;
-        const coinGrant = me.player.coins - baseline.coins;
-        if (coinGrant > 0) next.coins = cur.coins + coinGrant;
-        const xpGrant = Math.max(0, me.player.xp - baseline.xp);
-        const levelGrant = Math.max(0, me.player.level - baseline.level);
+        // Baseline-diff, adjusted for ledger amounts already applied above.
+        const adjCredits = me.player.credits - ledger.credits;
+        const adjCoins = me.player.coins - ledger.coins;
+        const adjXp = me.player.xp - ledger.xp;
+        const adjLevel = me.player.level - ledger.level;
+        // Total per currency = adjusted diff (other DB movements only) PLUS
+        // the ledger grants. Summing, never either/or: an either/or here
+        // would drop one channel whenever both fired in the same poll.
+        const totalCreditGrant = Math.max(0, adjCredits - baseline.credits) + ledger.credits;
+        if (totalCreditGrant > 0) next.credits = cur.credits + totalCreditGrant;
+        const totalCoinGrant = Math.max(0, adjCoins - baseline.coins) + ledger.coins;
+        if (totalCoinGrant > 0) next.coins = cur.coins + totalCoinGrant;
+        const xpGrant = Math.max(0, adjXp - baseline.xp) + ledger.xp;
+        const levelGrant = Math.max(0, adjLevel - baseline.level) + ledger.level;
         if (xpGrant > 0 || levelGrant > 0) {
           // Grants (XP + explicit level bumps) level up through the shared
           // curve, so a bonus can't inflate the remainder past the threshold.
@@ -422,7 +470,10 @@ function GameApp() {
         }
         if (Object.keys(next).length > 0) {
           useGameStore.getState().updatePlayer(next);
-          // Acknowledge the grant so the next poll doesn't re-apply it.
+          // Acknowledge everything delivered this poll so the next poll
+          // doesn't re-apply it. The baseline jumps to the FULL server
+          // totals (ledger amounts included) — the adjusted diff above is
+          // what keeps that jump from double-counting.
           setSavedPlayerBaseline({
             credits: me.player.credits,
             coins: me.player.coins,
@@ -1868,36 +1919,14 @@ function GameApp() {
                 seasonalMult: seasonalRewardMult(),
                 premiumMult: premiumCreditMultiplier(p.isPremium ?? false),
               });
-              const { earnedCredits, earnedXp, speedBonus, chainBonus, isMutualAid, allianceXp: allianceXpCredit } = rewards;
-              // Shared alliance XP: 25% of the mission's base XP (before the
-              // commander bonus) feeds the alliance pool so levels don't
-              // self-accelerate — the guild levels up and unlocks perks.
-              if (allianceState && allianceXpCredit != null) {
-                const allianceName = allianceState.name;
-                creditAllianceXp(allianceXpCredit).then((res) => {
-                  if (!res || !res.success) return;
-                  // Patch only xp/level onto the live alliance (single read —
-                  // never spread a stale snapshot that could revert the roster).
-                  const current = useGameStore.getState().myAlliance;
-                  if (current) {
-                    useGameStore.getState().setMyAlliance({
-                      ...current,
-                      xp: res.xp,
-                      level: res.level,
-                    });
-                  }
-                  if (res.leveledUp) {
-                    const icon = allianceLevelFor(res.xp).icon;
-                    addNotification({
-                      type: 'success',
-                      title: `${allianceName} reached Level ${res.level}!`,
-                      message: `New perks unlocked — ${icon} member cap, map reveal, and commander bonus increased.`,
-                      icon,
-                      duration: 5000,
-                    });
-                  }
-                }).catch(() => {});
-              }
+              const { earnedCredits, earnedXp, speedBonus, chainBonus, isMutualAid } = rewards;
+              // Batch 1 (P1-M6): client-reported alliance XP is retired — the
+              // server awards alliance XP only on a verified completion
+              // (seasonal clears today; a server mission ledger is the Batch 3
+              // build for ordinary clears). computeMissionRewards still
+              // reports the alliance bonus for display, but nothing here
+              // posts XP to the server anymore, so the farm vector is closed
+              // without inventing a fake server verification.
               if (chainBonus > 1) {
                 playChainComplete();
                 addNotification({
@@ -2790,6 +2819,7 @@ function GameApp() {
     // gray Offline on close, amber Maintenance on the flag.
     const unConnChange = wsClient.onConnectionChange((connected) => {
       useGameStore.getState().setWsConnected(connected);
+      setLastWsAttemptAt(wsClient.getLastAttemptAt());
     });
 
     return () => {
@@ -3105,8 +3135,13 @@ function GameApp() {
           count; otherwise gray — "Offline Mode" when the player chose a private
           single-player session, "Offline" while reconnecting. Clickable (v0.22.17):
           opens the Commanders Online panel — the live roster of who's connected,
-          with city, level, and what they're doing. */}
-      <div className="absolute top-14 right-4 z-[40] pointer-events-none">
+          with city, level, and what they're doing.
+          Batch 1 polish: when offline with Online mode on, an explicit
+          Reconnect button + last-attempt timestamp sit under the chip, so a
+          stuck Offline state is actionable instead of mysterious. Manual
+          reconnect re-arms the client's retry budget (connect() resets the
+          5-attempt cap), which is why this is a button and not just a label. */}
+      <div className="absolute top-14 right-4 z-[40] pointer-events-none flex flex-col items-end gap-1">
         <button
           onClick={() => setShowPlayersPanel(true)}
           title="Commanders Online — who's on duty right now"
@@ -3127,6 +3162,22 @@ function GameApp() {
               ? `Online · ${onlineCount} player${onlineCount === 1 ? '' : 's'}`
               : onlineMode ? 'Offline' : 'Offline Mode'}
         </button>
+        {!wsConnected && !maintenance && onlineMode && (
+          <div className="pointer-events-auto flex items-center gap-2">
+            <button
+              onClick={() => { wsClient.connect(); setLastWsAttemptAt(Date.now()); }}
+              title="Reconnect to the dispatch server now"
+              className="px-2.5 py-1 rounded-full text-[10px] font-semibold border border-gray-700/50 bg-gray-900/70 text-gray-300 backdrop-blur-md shadow-lg cursor-pointer hover:bg-gray-800 active:scale-[0.97]"
+            >
+              Reconnect
+            </button>
+            {lastWsAttemptAt && (
+              <span className="text-[9px] text-gray-500">
+                Last attempt {new Date(lastWsAttemptAt).toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Commanders Online panel — clickable chip → live roster */}

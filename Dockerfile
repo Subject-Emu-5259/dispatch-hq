@@ -11,7 +11,13 @@ WORKDIR /app
 COPY . .
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter "@dispatch-hq/web..." build \
+# Batch 1 (P1-M1): ALWAYS clean before compiling. dist/ is gitignored, so a
+# build context carrying a previous dist/ used to silently resurrect deleted
+# routers (the Oct 25 gate batch deleted missions/stations/units routers that
+# were still importable from a stale dist/serve-combined.js). A stale dist/
+# must never decide what ships.
+RUN rm -rf apps/web/dist servers/game-server/dist \
+ && pnpm --filter "@dispatch-hq/web..." build \
  && pnpm --filter "@dispatch-hq/game-server..." build
 
 ENV NODE_ENV=production

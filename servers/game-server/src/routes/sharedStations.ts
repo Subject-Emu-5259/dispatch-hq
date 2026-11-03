@@ -249,40 +249,46 @@ sharedStationsRouter.post('/:id/claim', async (c) => {
   // Claim cost = full build cost of the station type
   const claimCost = STATION_COSTS[station.stationType] ?? 5000;
 
-  // Check player has enough credits
-  const playerRow = await db.select({ credits: players.credits }).from(players).where(eq(players.id, playerId)).limit(1);
-  const playerCredits = playerRow[0]?.credits ?? 0;
-  if (playerCredits < claimCost) {
-    return c.json({ error: `Insufficient credits. Need ${claimCost.toLocaleString()}, have ${playerCredits.toLocaleString()}` }, 400);
-  }
+  // Treasury row must exist before the guarded credit below (created at
+  // alliance/shared-station build time; this is an idempotent backstop).
+  await getOrCreateTreasury(membership.allianceId);
 
-  // Atomic: deduct from player, credit treasury, transfer ownership
-  await db.transaction(async (tx) => {
-    // Deduct from player
-    await tx.update(players).set({ credits: playerCredits - claimCost }).where(eq(players.id, playerId));
-
-    // Credit treasury
-    const treasury = await getOrCreateTreasury(membership.allianceId);
-    const newTreasuryBalance = treasury.balance + claimCost;
-    await tx.update(allianceTreasury)
-      .set({ balance: newTreasuryBalance, updatedAt: new Date() })
-      .where(eq(allianceTreasury.allianceId, membership.allianceId));
-
-    // Log treasury transaction
+  // Batch 1 (P1-M2): the WHOLE claim runs inside one transaction, and the
+  // ownership transfer itself is the mutex: the station update matches only
+  // while it is still alliance-owned, so a second concurrent claim finds
+  // zero rows and fails instead of double-transferring. The player debit is
+  // a guarded UPDATE (`credits >= claimCost`) in the same transaction, so a
+  // double-claim can never double-spend either. The old code checked the
+  // balance OUTSIDE the transaction and wrote absolute values for both legs.
+  const claimed = await db.transaction(async (tx) => {
+    const transferred = await tx.update(stations)
+      .set({ allianceId: null, ownerId: playerId })
+      .where(and(eq(stations.id, stationId), eq(stations.allianceId, membership.allianceId)))
+      .returning({ id: stations.id });
+    if (transferred.length === 0) return null;
+    const debited = await tx.update(players)
+      .set({ credits: sql`${players.credits} - ${claimCost}` })
+      .where(and(eq(players.id, playerId), sql`${players.credits} >= ${claimCost}`))
+      .returning({ credits: players.credits });
+    if (debited.length === 0) return null;
+    const credited = await tx.update(allianceTreasury)
+      .set({ balance: sql`${allianceTreasury.balance} + ${claimCost}`, updatedAt: new Date() })
+      .where(eq(allianceTreasury.allianceId, membership.allianceId))
+      .returning({ balance: allianceTreasury.balance });
+    if (credited.length === 0) return null;
     await tx.insert(allianceTreasuryTransactions).values({
       allianceId: membership.allianceId,
       playerId,
       delta: claimCost,
       reason: 'station_build',
       refId: stationId,
-      balanceAfter: newTreasuryBalance,
+      balanceAfter: credited[0].balance,
     });
-
-    // Transfer ownership: remove allianceId, set player as owner
-    await tx.update(stations)
-      .set({ allianceId: null, ownerId: playerId })
-      .where(eq(stations.id, stationId));
+    return debited[0];
   });
+  if (!claimed) {
+    return c.json({ error: 'Station already claimed or insufficient credits' }, 409);
+  }
 
   // Log activity feed event
   void logAllianceActivity(membership.allianceId, playerId, 'station_claimed',
@@ -292,7 +298,7 @@ sharedStationsRouter.post('/:id/claim', async (c) => {
     stationId,
     claimedBy: playerId,
     claimCost,
-    playerCredits: playerCredits - claimCost,
+    playerCredits: claimed.credits,
   });
 });
 

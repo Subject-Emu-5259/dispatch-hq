@@ -619,9 +619,19 @@ app.whenReady().then(async () => {
 });
 
 // ── Smoke test (DHQ_SMOKE=1) ─────────────────────────────────────────────────
-// Release gate: the packaged app must actually render the game, not merely
-// launch. Polls the renderer until it produces body content, then exits 0.
-// Any load failure, renderer crash, or 60s stall exits 1 — the release fails.
+// Release gate: the packaged app must actually render the BUNDLED game, not
+// merely launch. Two guards close the old holes:
+//   1. Main-process bundled guard: if DHQ_APP_URL is set (remote override)
+//      or no bundled dist was found, the gate fails immediately instead of
+//      proving the live site renders.
+//   2. Game-DOM check: the old "any non-empty body text" test passed on the
+//      offline status page ("Waking the dispatch server…" / "Can't reach…"),
+//      which is a file:// page with real text but no game. The gate now
+//      requires the real game document: a non-file:// URL plus a mounted
+//      #root element with children and substantial UI text. Anything else
+//      keeps polling until the render deadline, then fails.
+// Any load failure, renderer crash, or stall exits 1 — the release fails.
+// Production wake-aware loading is untouched; only this test path changed.
 function runSmoke(): void {
   const win = mainWindow;
   if (!win) {
@@ -633,6 +643,10 @@ function runSmoke(): void {
     console.error(`SMOKE_FAIL ${why}`);
     app.exit(1);
   };
+  if (!BUNDLED || !bundledDistDir) {
+    fail('not-bundled');
+    return;
+  }
   const hardTimeout = setTimeout(() => fail('timeout'), 60_000);
   win.webContents.on('did-fail-load', (_e, code, desc) => {
     fail(`did-fail-load ${code} ${String(desc)}`);
@@ -649,17 +663,27 @@ function runSmoke(): void {
       }
       win.webContents
         .executeJavaScript(
-          '({ title: document.title, text: (document.body && document.body.innerText || "").trim().length })',
+          '(() => { const root = document.getElementById("root"); return { url: window.location.href, isFile: window.location.protocol === "file:", hasRoot: !!root, rootChildren: root ? root.childElementCount : 0, text: (document.body && document.body.innerText || "").trim().length }; })()',
         )
-        .then((r: { title: string; text: number }) => {
-          if (r.text > 0) {
-            clearTimeout(hardTimeout);
-            console.log(`SMOKE_OK title="${r.title}" rendered=${r.text > 0}`);
-            app.exit(0);
-          } else {
-            setTimeout(poll, 500);
-          }
-        })
+        .then(
+          (r: {
+            url: string;
+            isFile: boolean;
+            hasRoot: boolean;
+            rootChildren: number;
+            text: number;
+          }) => {
+            if (!r.isFile && r.hasRoot && r.rootChildren > 0 && r.text > 100) {
+              clearTimeout(hardTimeout);
+              console.log(
+                `SMOKE_OK url="${r.url}" rootChildren=${r.rootChildren} textLen=${r.text}`,
+              );
+              app.exit(0);
+            } else {
+              setTimeout(poll, 500);
+            }
+          },
+        )
         .catch(() => setTimeout(poll, 500));
     };
     setTimeout(poll, 500);

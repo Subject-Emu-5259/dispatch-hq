@@ -522,3 +522,32 @@ export const allianceActivity = pgTable('alliance_activity', {
   index('idx_alliance_activity_alliance').on(table.allianceId),
   index('idx_alliance_activity_created').on(table.createdAt),
 ]);
+
+// ── Player Grant Ledger (Batch 1, P1-M3 fix) ───────────────────────────────
+// Server-side delivery record for every DB-side grant (promo redemption,
+// admin grant). The old delivery path — the /me poll computing
+// `DB credits − last-saved baseline` — silently swallowed grants whenever the
+// player's saved campaign total already exceeded the DB row (the normal case
+// for any established player). The ledger replaces it: a grant is recorded in
+// the SAME transaction that moves the DB row, and the client delivers it by
+// ledger id (deduped client-side + acked server-side), so it arrives exactly
+// once regardless of the saved total. `deliveredAt` is set by the ack
+// endpoint; undelivered rows are what GET /api/player/grants/pending returns.
+// (source, ref) is unique so a retried redeem/grant can never record twice:
+// promo rows use ref = the promo_redemptions id, admin rows a fresh uuid.
+export const playerGrants = pgTable('player_grants', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  playerId: uuid('player_id').references(() => players.id).notNull(),
+  source: varchar('source', { length: 20 }).notNull(),
+  ref: varchar('ref', { length: 64 }).notNull(),
+  credits: integer('credits').default(0).notNull(),
+  coins: integer('coins').default(0).notNull(),
+  xp: bigint('xp', { mode: 'number' }).default(0).notNull(),
+  level: integer('level').default(0).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+}, (table) => [
+  index('idx_player_grants_player').on(table.playerId),
+  index('idx_player_grants_pending').on(table.playerId, table.deliveredAt),
+  uniqueIndex('idx_player_grants_source_ref').on(table.playerId, table.source, table.ref),
+]);

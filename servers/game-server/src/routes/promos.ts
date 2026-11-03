@@ -11,6 +11,7 @@ import { db } from '../db';
 import { players, promoCodes, promoRedemptions } from '../db/schema';
 import type { AuthVars } from '../auth/middleware';
 import { applyRewards, type PromoRewards } from './admin';
+import { recordGrant } from '../lib/grants';
 
 const promo = new Hono<{ Variables: AuthVars }>();
 
@@ -34,14 +35,12 @@ promo.post('/redeem', async (c) => {
   const promo = codeRows[0];
   if (!promo) return c.json({ error: 'Invalid promo code' }, 404);
 
-  // Active + not expired + under the usage cap.
+  // Active + not expired + under the usage cap (fast-path check; the
+  // serialized guard inside the transaction below is the real gate).
   if (!promo.active) return c.json({ error: 'This code is no longer active' }, 400);
   if (promo.expiresAt && new Date(promo.expiresAt).getTime() < Date.now()) {
     return c.json({ error: 'This code has expired' }, 400);
   }
-  // Check-then-act on the usage cap: the unique per-player index prevents
-  // duplicate claims, but two *different* players redeeming concurrently could
-  // both pass this check and nudge past maxUses. Acceptable for a game promo.
   if ((promo.usedCount ?? 0) >= (promo.maxUses ?? 1)) {
     return c.json({ error: 'This code has reached its redemption limit' }, 400);
   }
@@ -54,8 +53,14 @@ promo.post('/redeem', async (c) => {
     .limit(1);
   if (prior.length > 0) return c.json({ error: 'You have already redeemed this code' }, 409);
 
-  // Apply the rewards atomically: bump the player and count the redemption
-  // together so a crash can't grant rewards without recording the claim.
+  // Batch 1 (P1-M2 + P1-M3): everything inside ONE transaction, all guarded.
+  // The cap bump is a single UPDATE ... WHERE usedCount < maxUses — the
+  // affected-row count is the verdict, so two concurrent redeems past the
+  // last slot can never both pass (the old check-then-act admitted that).
+  // Player deltas are RELATIVE increments, not absolute writes from a stale
+  // read, so concurrent grants compose instead of clobbering. And the grant
+  // ledger row is recorded in the same transaction, so delivery (P1-M3) can
+  // never lose a grant the wallet already received.
   const playerRows = await db.select().from(players).where(eq(players.id, playerId)).limit(1);
   const player = playerRows[0];
   if (!player) return c.json({ error: 'Player not found' }, 404);
@@ -68,21 +73,37 @@ promo.post('/redeem', async (c) => {
     return c.json({ error: 'This code grants nothing' }, 400);
   }
 
+  let result: { credits: number; coins: number; xp: number; level: number } | null = null;
   try {
-    await db.transaction(async (tx) => {
-      await tx.update(players)
-        .set({ credits: target.credits, coins: target.coins, xp: target.xp, level: target.level, lastActive: new Date() })
-        .where(eq(players.id, playerId));
-      await tx.update(promoCodes)
+    result = await db.transaction(async (tx) => {
+      const bumped = await tx.update(promoCodes)
         .set({ usedCount: sql`${promoCodes.usedCount} + 1` })
-        .where(eq(promoCodes.id, promo.id));
-      // Record the claim with the player's level at redemption time so the
-      // founder can audit who claimed what, when, and at what level.
-      await tx.insert(promoRedemptions).values({
+        .where(and(eq(promoCodes.id, promo.id), sql`${promoCodes.usedCount} < ${promo.maxUses}`))
+        .returning({ usedCount: promoCodes.usedCount });
+      if (bumped.length === 0) return null;
+      const inserted = await tx.insert(promoRedemptions).values({
         promoId: promo.id,
         playerId,
         levelAtRedemption: player.level ?? 1,
+      }).returning({ id: promoRedemptions.id });
+      const updated = await tx.update(players)
+        .set({
+          credits: sql`${players.credits} + ${granted.credits ?? 0}`,
+          coins: sql`${players.coins} + ${granted.coins ?? 0}`,
+          xp: sql`${players.xp} + ${granted.xp ?? 0}`,
+          level: sql`${players.level} + ${granted.level ?? 0}`,
+          lastActive: new Date(),
+        })
+        .where(eq(players.id, playerId))
+        .returning({ credits: players.credits, coins: players.coins, xp: players.xp, level: players.level });
+      if (updated.length === 0) return null;
+      await recordGrant(tx as never, playerId, 'promo', inserted[0].id, {
+        credits: granted.credits ?? 0,
+        coins: granted.coins ?? 0,
+        xp: granted.xp ?? 0,
+        level: granted.level ?? 0,
       });
+      return { credits: updated[0].credits, coins: updated[0].coins, xp: Number(updated[0].xp) || 0, level: updated[0].level };
     });
   } catch (err) {
     // The unique index on (promoId, playerId) is the backstop for the check
@@ -92,13 +113,14 @@ promo.post('/redeem', async (c) => {
     console.error('Promo redemption failed:', err);
     return c.json({ error: 'Redemption failed — please try again' }, 500);
   }
+  if (!result) return c.json({ error: 'This code has reached its redemption limit' }, 400);
 
   return c.json({
     success: true,
     code: promo.code,
     label: promo.label,
     granted,
-    player: { credits: target.credits, coins: target.coins, xp: target.xp, level: target.level },
+    player: result,
   });
 });
 

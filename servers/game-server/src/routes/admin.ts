@@ -11,6 +11,7 @@
 import { Hono } from 'hono';
 import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
+import { randomUUID } from 'node:crypto';
 import { db } from '../db';
 import { players, missions, chatMessages, bugReports, playerStats, promoCodes, promoRedemptions, guestUpgradeAudit, seasonalContests, seasonalContestEntries, inboxMessages } from '../db/schema';
 import { config, isAdminEmail } from '../config';
@@ -18,6 +19,7 @@ import { connectionManager } from '../websocket/connectionManager';
 import { getMaintenanceState, setMaintenance, scheduleMaintenance, maintenanceInboxNote } from '../lib/maintenance';
 import { getSignupGateState, setSignupGate } from '../lib/signupGate';
 import { getRateLimitStats } from '../lib/rateLimit';
+import { recordGrant } from '../lib/grants';
 import type { AuthVars } from '../auth/middleware';
 import type { ServerMessage } from '@dispatch-hq/shared';
 import { SEASONAL_WINDOWS, SEASONAL_WINDOW_LABELS, windowActive, windowEnded, getContestWinner, resolveWinner } from './seasonal';
@@ -510,19 +512,41 @@ admin.post('/grant', async (c) => {
 
   const target = { credits: player.credits ?? 0, coins: player.coins ?? 0, xp: Number(player.xp) || 0, level: player.level ?? 1 };
   const granted = applyRewards(target, rewards);
-  await db.update(players)
-    .set({ credits: target.credits, coins: target.coins, xp: target.xp, level: target.level, lastActive: new Date() })
-    .where(eq(players.id, player.id));
+  // Batch 1 (P1-M2 + P1-M3): relative increments (never an absolute write from
+  // a stale read) + a grant-ledger row in the same transaction, so the client
+  // delivers this grant exactly once even when the saved campaign total
+  // already exceeds the DB row.
+  const updated = await db.transaction(async (tx) => {
+    const rows = await tx.update(players)
+      .set({
+        credits: sql`${players.credits} + ${granted.credits ?? 0}`,
+        coins: sql`${players.coins} + ${granted.coins ?? 0}`,
+        xp: sql`${players.xp} + ${granted.xp ?? 0}`,
+        level: sql`${players.level} + ${granted.level ?? 0}`,
+        lastActive: new Date(),
+      })
+      .where(eq(players.id, player.id))
+      .returning({ credits: players.credits, coins: players.coins, xp: players.xp, level: players.level });
+    if (rows.length === 0) return null;
+    await recordGrant(tx as never, player.id, 'admin', randomUUID(), {
+      credits: granted.credits ?? 0,
+      coins: granted.coins ?? 0,
+      xp: granted.xp ?? 0,
+      level: granted.level ?? 0,
+    });
+    return rows[0];
+  });
+  if (!updated) return c.json({ error: 'Player not found' }, 404);
 
   return c.json({
     success: true,
     username: player.username,
     granted,
     player: {
-      credits: target.credits,
-      coins: target.coins,
-      xp: target.xp,
-      level: target.level,
+      credits: updated.credits,
+      coins: updated.coins,
+      xp: Number(updated.xp) || 0,
+      level: updated.level,
     },
   });
 });

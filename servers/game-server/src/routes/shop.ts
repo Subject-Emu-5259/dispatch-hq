@@ -6,7 +6,7 @@
 
 import { Hono } from 'hono';
 import type { Context } from 'hono';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { db } from '../db';
 import { players, orders, membershipTiers, coinPacks, coinTransactions } from '../db/schema';
@@ -158,40 +158,49 @@ shopRoutes.post('/checkout', async (c) => {
   });
 });
 
-/** Spend coins: skip a training session or buy credits. Server-authoritative debit. */
+/** Spend coins: skip a training session or buy credits. Server-authoritative debit.
+ *  Batch 1 (P1-M2): the debit is ONE guarded UPDATE — `coins >= cost` in the
+ *  WHERE clause, with the affected-row count as the verdict — so 20 concurrent
+ *  spends can never drive coins negative or double-spend. The old code read
+ *  the balance, checked in JS, then wrote an absolute `balanceAfter`: two
+ *  concurrent spends both passed the check and both wrote, duplicating the
+ *  grant or driving the balance below zero. */
 shopRoutes.post('/spend', async (c) => {
   const playerId = c.get('playerId');
   const body = await c.req.json().catch(() => null) as { kind?: unknown; coins?: unknown; remainingSec?: unknown } | null;
   const kind = body?.kind;
 
-  const me = await db.select({ coins: players.coins }).from(players).where(eq(players.id, playerId)).limit(1);
-  const coins = me[0]?.coins ?? 0;
-
   if (kind === 'buy_credits') {
     const spendCoins = Math.floor(Number(body?.coins) || 0);
     if (spendCoins <= 0) return c.json({ error: 'Invalid coin amount' }, 400);
-    if (coins < spendCoins) return c.json({ error: 'Not enough coins' }, 402);
     const credits = creditsForCoins(spendCoins);
-    const balanceAfter = coins - spendCoins;
-    await db.transaction(async (tx) => {
-      await tx.update(players)
-        .set({ coins: balanceAfter, credits: sql`${players.credits} + ${credits}` })
-        .where(eq(players.id, playerId));
-      await tx.insert(coinTransactions).values({ playerId, delta: -spendCoins, reason: 'spend', balanceAfter });
+    const debited = await db.transaction(async (tx) => {
+      const rows = await tx.update(players)
+        .set({ coins: sql`${players.coins} - ${spendCoins}`, credits: sql`${players.credits} + ${credits}` })
+        .where(and(eq(players.id, playerId), sql`${players.coins} >= ${spendCoins}`))
+        .returning({ coins: players.coins });
+      if (rows.length === 0) return null;
+      await tx.insert(coinTransactions).values({ playerId, delta: -spendCoins, reason: 'spend', balanceAfter: rows[0].coins });
+      return rows[0];
     });
-    return c.json({ success: true, coins: balanceAfter, creditsGranted: credits });
+    if (!debited) return c.json({ error: 'Not enough coins' }, 402);
+    return c.json({ success: true, coins: debited.coins, creditsGranted: credits });
   }
 
   if (kind === 'skip_training') {
     const remainingSec = Math.max(0, Math.floor(Number(body?.remainingSec) || 0));
     const cost = skipTrainingCost(remainingSec);
-    if (coins < cost) return c.json({ error: 'Not enough coins' }, 402);
-    const balanceAfter = coins - cost;
-    await db.transaction(async (tx) => {
-      await tx.update(players).set({ coins: balanceAfter }).where(eq(players.id, playerId));
-      await tx.insert(coinTransactions).values({ playerId, delta: -cost, reason: 'spend', balanceAfter });
+    const debited = await db.transaction(async (tx) => {
+      const rows = await tx.update(players)
+        .set({ coins: sql`${players.coins} - ${cost}` })
+        .where(and(eq(players.id, playerId), sql`${players.coins} >= ${cost}`))
+        .returning({ coins: players.coins });
+      if (rows.length === 0) return null;
+      await tx.insert(coinTransactions).values({ playerId, delta: -cost, reason: 'spend', balanceAfter: rows[0].coins });
+      return rows[0];
     });
-    return c.json({ success: true, coins: balanceAfter, cost });
+    if (!debited) return c.json({ error: 'Not enough coins' }, 402);
+    return c.json({ success: true, coins: debited.coins, cost });
   }
 
   return c.json({ error: 'Invalid spend kind' }, 400);

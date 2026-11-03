@@ -1,6 +1,6 @@
 {
   "name": "@dispatch-hq/desktop",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "description": "Dispatch HQ \u2014 desktop app (Electron) for macOS, Windows, and Linux. Bundles the full game client; accounts, saves, and multiplayer run on the production server. Native (electron-updater) + server-version update channels.",
   "author": "De'Andrew Harris",

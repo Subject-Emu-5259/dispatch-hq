@@ -288,10 +288,10 @@ describe('ER depth (v0.22.12): staffing, beds, overflow', () => {
     expect(atCapacity([{ status: 'discharged' as const }, ...occupied(beds - 1)], hospital, { emsCleared: 0 })).toBe(false);
   });
 
-  it('maps each launch city to the next city\'s trauma center', () => {
+  it('maps each launch city to its OWN regional trauma center (Batch 1: Memphis/Nashville were swapped)', () => {
     expect(traumaCenterFor('West Memphis, AR')).toBe('Memphis Regional Trauma Center');
-    expect(traumaCenterFor('Memphis')).toBe('Nashville Regional Trauma Center');
-    expect(traumaCenterFor('Nashville, TN')).toBe('Memphis Regional Trauma Center');
+    expect(traumaCenterFor('Memphis')).toBe('Memphis Regional Trauma Center');
+    expect(traumaCenterFor('Nashville, TN')).toBe('Nashville Regional Trauma Center');
     expect(traumaCenterFor('Little Rock, AR')).toBe('UAMS Medical Center');
     expect(traumaCenterFor('New York City')).toBe('Bellevue Hospital Center');
     expect(traumaCenterFor('New York, NY')).toBe('Bellevue Hospital Center');

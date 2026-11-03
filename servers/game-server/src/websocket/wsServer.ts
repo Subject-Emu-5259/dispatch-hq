@@ -37,7 +37,7 @@ const lastAllianceReceiptAt = new Map<string, number>();
 async function buildStateSnapshot(playerId: string): Promise<GameStateSnapshot | null> {
   const playerRows = await db.select().from(players).where(eq(players.id, playerId)).limit(1);
   if (playerRows.length === 0) return null;
-  const player = playerRows[0];
+  const player = sanitizeSnapshotPlayer(playerRows[0]);
   const stationRows = await db.select().from(stations).where(eq(stations.ownerId, playerId));
   const unitRows = await db.select().from(units).where(eq(units.ownerId, playerId));
   const missionRows = await db.select().from(missions).where(eq(missions.status, 'active'));
@@ -47,6 +47,17 @@ async function buildStateSnapshot(playerId: string): Promise<GameStateSnapshot |
     units: unitRows,
     missions: missionRows,
   };
+}
+
+/**
+ * Batch 1 (P0-2 safe half): the WS snapshot player, minus credential material.
+ * Pure + exported so tests assert exactly what the socket sends: the raw DB
+ * row carries passwordHash, and the old snapshot sent it verbatim. Any future
+ * credential/hash column must be added to this strip list, not to the payload.
+ */
+export function sanitizeSnapshotPlayer(row: Record<string, unknown>): Record<string, unknown> {
+  const { passwordHash: _passwordHash, ...safe } = row;
+  return safe;
 }
 
 interface AuthenticatedSocket {
