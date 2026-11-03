@@ -41,6 +41,9 @@ import { loadSettings, saveSettings, getSettingsSource } from '@/utils/settings'
 import type { DispatchSettings } from '@/utils/settings';
 import type { Poi } from '@/lib/pois';
 import type { Hospital, Helipad } from '@/lib/hospital';
+import type { SatisfactionRecord } from '@/lib/cityDistricts';
+import { parseAdoptedCities, type AdoptedCity } from '@/lib/adoptedCities';
+import type { DisasterWaveState } from '@/lib/disasterWaves';
 
 const AUTOSAVE_INTERVAL = 60000; // 60 seconds
 const RETRY_BASE_MS = 10000;     // first retry after a failed autosave
@@ -202,6 +205,11 @@ interface SaveData {
   // mid-tour reload resumes at the same step instead of restarting the
   // tutorial (v0.22.x). Absent in legacy saves → treated as done on restore.
   onboardingStep?: number;
+  // Batch 3b: district satisfaction + adopted cities + live disaster wave.
+  // All optional — legacy saves restore to defaults (neutral / empty / none).
+  districtSatisfaction?: SatisfactionRecord;
+  adoptedCities?: AdoptedCity[];
+  disasterWave?: DisasterWaveState | null;
 }
 
 /** Card preview shown on the main-menu Load Game screen. */
@@ -482,6 +490,9 @@ function buildSaveData(): SaveData {
     gameMinutes: state.gameMinutes,
     weekly: state.weekly,
     onboardingStep: state.onboardingStep,
+    districtSatisfaction: state.districtSatisfaction,
+    adoptedCities: state.adoptedCities,
+    disasterWave: state.disasterWave,
     settings: loadSettings(),
   };
 }
@@ -771,6 +782,11 @@ function restoreSave(save: SaveData): void {
   guard('placedPois', () => store.setPlacedPois(Array.isArray(save.placedPois) ? save.placedPois : []));
   guard('hospital', () => store.setHospital(save.hospital ?? null));
   guard('helipad', () => store.setHelipad(save.helipad ?? null));
+  guard('batch3b', () => {
+    store.setDistrictSatisfaction(save.districtSatisfaction ?? {});
+    store.setAdoptedCities(parseAdoptedCities(save.adoptedCities));
+    store.setDisasterWave(save.disasterWave ?? null);
+  });
   guard('gameClock', () => {
     if (typeof save.gameMinutes === 'number' && Number.isFinite(save.gameMinutes)) {
       store.advanceGameClock(save.gameMinutes - store.gameMinutes);

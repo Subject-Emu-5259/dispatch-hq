@@ -18,6 +18,7 @@ import {
   NURSE_ROTATION_COST, applyNurseRotation,
 } from '@/lib/hospital';
 import type { Patient } from '@dispatch-hq/shared';
+import { decideHospitalAdmission } from '@/lib/capacityDecisions';
 
 const severityBadge: Record<string, string> = {
   critical: 'bg-red-500/15 text-red-400 border-red-500/30',
@@ -169,6 +170,14 @@ export default function CityHospitalPanel() {
           <div className="flex items-center gap-2 text-[10px] text-gray-500">
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
               <BedDouble className="w-3 h-3" /> {occupied}/{beds} beds
+            </span>
+            <span
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-white/10 bg-gray-900/60 text-gray-300"
+              title={decideHospitalAdmission(occupied, beds).action === 'divert'
+                ? 'ER full — the next patient diverts to the regional trauma center (−3 district trust).'
+                : 'Beds open — the next patient is admitted here.'}
+            >
+              {(() => { const d = decideHospitalAdmission(occupied, beds); return d.action === 'divert' ? '⚠️ Next patient diverts (−3 trust)' : `Next patient admitted · ${d.bedsFree} free`; })()}
             </span>
             <span
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border ${nursesRotatingOff ? 'border-amber-500/40 bg-amber-500/10 text-amber-300' : 'border-sky-500/20 bg-sky-500/10 text-sky-300'}`}

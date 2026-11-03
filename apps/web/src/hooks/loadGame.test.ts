@@ -25,6 +25,9 @@ const storeMock = vi.hoisted(() => {
     'setCriminalRecords', 'setInmates', 'setPatients', 'setInvestigations',
     'advanceGameClock', 'setWeekly', 'setCareer', 'setPatrolRoutes',
     'setDefaultPostMissionBehavior', 'setDefaultPatrolMode',
+    // Batch 3b: restoreSave's batch3b guard calls these — mock them so the
+    // guard actually runs instead of being swallowed like placedPois is.
+    'setDistrictSatisfaction', 'setAdoptedCities', 'setDisasterWave',
   ] as const;
   const setters: Record<string, ReturnType<typeof vi.fn>> = {};
   for (const name of SETTERS) setters[name] = vi.fn();

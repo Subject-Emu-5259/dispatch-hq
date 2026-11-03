@@ -59,6 +59,9 @@ import {
 } from '@/lib/disasters';
 import { spawnChainStage } from '@/lib/missionChains';
 import { computeMissionRewards, missionService } from '@/lib/rewards';
+import { unlockedDistricts, satisfactionFor, satisfactionDeltaForResponse, applySatisfaction, districtRewardMultiplier, pickDistrictForSpawn } from '@/lib/cityDistricts';
+import { startDisasterWave, recordWaveSpawned, recordWaveCompletion, currentWaveStage, waveRewardMultForStage, type DisasterWaveState } from '@/lib/disasterWaves';
+import { recordAdoptedCityMission } from '@/lib/adoptedCities';
 import { CPU_UNIT_NAME, cpuWorkSeconds, cpuMutualAidPayout, partnerAgencyServices, cityAnswersCall, partnerCallAnswerable } from '@/lib/cpuMutualAid';
 import { unitCanPatrol } from '@/lib/dispatchLogic';
 import { activeSeasonalEvent, seasonalRewardMult, type SeasonalEvent } from '@/lib/seasonal';
@@ -750,6 +753,17 @@ function GameApp() {
       ).length;
       if (activeCount >= maxActive) return;
       const mission = await buildMission(selectedService, selectedCity, { level });
+      // Batch 3b: organic calls belong to an unlocked district, weighted by
+      // that district's satisfaction (happy districts call more).
+      {
+        const st = useGameStore.getState();
+        const picked = pickDistrictForSpawn(
+          unlockedDistricts(selectedCity.name, level),
+          st.districtSatisfaction,
+          selectedCity.name,
+        );
+        if (picked) mission.district = picked;
+      }
       addMission(mission);
 
       // ── Co-op dispatch: broadcast shared missions to alliance (Phase 1) ──
@@ -848,6 +862,73 @@ function GameApp() {
     return () => clearInterval(interval);
   }, [gameScreen, selectedCity, selectedService, settingsVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Batch 3b: multi-stage disaster waves ──
+  // Stage 1 is the disaster's flat template wave (spawned below, tagged
+  // district + waveStage 1). When a stage's missions all clear, the next
+  // stage spawns in a new district with escalated rewards; the finale
+  // completes the wave. Spawn uses buildMission like every other wave item.
+  const spawnNextWaveStage = async (wave: DisasterWaveState) => {
+    const stage = currentWaveStage(wave);
+    const st = useGameStore.getState();
+    if (!stage || !st.selectedCity || !st.activeDisaster) return;
+    const def = DISASTER_DEFINITIONS.find((d) => d.id === wave.defId);
+    if (!def) return;
+    const adapted = adaptWaveToService(def.templates, st.selectedService, st.stations);
+    const spawned: string[] = [];
+    for (let i = 0; i < stage.missionCount; i++) {
+      const t = adapted[i % adapted.length];
+      try {
+        const mission = await buildMission(t.service, st.selectedCity, {
+          level: st.player?.level ?? 1,
+          template: getMissionTemplateById(t.templateId),
+          origin: st.activeDisaster.zone,
+        });
+        mission.disasterId = wave.defId;
+        mission.district = stage.district;
+        mission.waveStage = stage.stage;
+        // Same event: createdAt pins the mission to this disaster's window
+        // so the disaster completion counters recognize its clears.
+        mission.createdAt = new Date(st.activeDisaster.startedAt).toISOString();
+        mission.creditsReward = Math.round(mission.creditsReward * stage.rewardMult);
+        mission.xpReward = Math.round(mission.xpReward * stage.rewardMult);
+        st.addMission(mission);
+        spawned.push(mission.id);
+      } catch {
+        // Road-snapping can fail offline — skip this stage item.
+      }
+    }
+    const live = useGameStore.getState();
+    if (live.activeDisaster) live.setDisaster({ ...live.activeDisaster, spawned: live.activeDisaster.spawned + spawned.length });
+    if (live.disasterWave) live.setDisasterWave(recordWaveSpawned(live.disasterWave, stage.stage, spawned.length));
+    addNotification({
+      type: 'emergency',
+      title: `${def.icon} ${def.name} — Stage ${stage.stage}: ${stage.district}`,
+      message: `${spawned.length} new calls in ${stage.district} — rewards ×${stage.rewardMult}.`,
+      icon: def.icon,
+      duration: 6000,
+    });
+  };
+
+  /** Advance the live wave after one of its missions clears (player or city-handled). */
+  const advanceWaveAfterClear = (mission: { disasterId?: string; waveStage?: number; recovery?: boolean }) => {
+    const st = useGameStore.getState();
+    if (!mission.disasterId || !mission.waveStage || mission.recovery || !st.disasterWave) return;
+    if (st.disasterWave.defId !== mission.disasterId) return;
+    const adv = recordWaveCompletion(st.disasterWave, mission.waveStage);
+    st.setDisasterWave(adv.wave);
+    if (adv.completed) {
+      addNotification({
+        type: 'success',
+        title: 'Disaster wave contained',
+        message: `All ${adv.wave.stages.length} stages cleared — the city is stabilizing.`,
+        icon: '✅',
+        duration: 5000,
+      });
+    } else if (adv.advanced) {
+      void spawnNextWaveStage(adv.wave);
+    }
+  };
+
   // ── Disaster events (tornado / flood / wildfire) ──
   // Rolls every 20s against the player's disasterFrequency setting. When one
   // hits, spawn its template wave near the target zone, play the alert, and
@@ -880,11 +961,16 @@ function GameApp() {
         zone: origin,
       };
       st.setDisaster(disaster);
+      // Batch 3b: this disaster is a multi-stage wave — stage 1 hits the
+      // first unlocked district; later stages escalate from there.
+      const waveDistricts = unlockedDistricts(selectedCity.name, level);
+      const wave = startDisasterWave(def.id, waveDistricts);
+      st.setDisasterWave(wave);
       playDisasterAlert();
       addNotification({
         type: 'emergency',
         title: `${def.icon} ${def.name}`,
-        message: `City-wide emergency — ${def.templates.length} calls reported. Respond to all units.`,
+        message: `City-wide emergency — ${def.templates.length} calls reported in ${wave.stages[0].district}. Clear them and the wave escalates.`,
         icon: def.icon,
         duration: 6000,
       });
@@ -913,6 +999,8 @@ function GameApp() {
             origin,
           });
           mission.disasterId = def.id;
+          mission.district = wave.stages[0].district;
+          mission.waveStage = 1;
           st.addMission(mission);
           spawned.push(mission.id);
         } catch {
@@ -923,6 +1011,9 @@ function GameApp() {
       // spawn isn't clobbered by the stale local copy.
       const live = useGameStore.getState().activeDisaster;
       st.setDisaster({ ...(live ?? disaster), spawned: spawned.length });
+      // Batch 3b: stage 1's real spawn count drives its advance condition.
+      const liveWave = useGameStore.getState().disasterWave;
+      if (liveWave) st.setDisasterWave(recordWaveSpawned(liveWave, 1, spawned.length));
     };
 
     const interval = setInterval(() => { void check(); }, 20000);
@@ -1686,6 +1777,8 @@ function GameApp() {
                   );
                 }
               }
+              // Batch 3b: a city-handled clear advances a live wave the same way.
+              advanceWaveAfterClear(m);
               updateMission(m.id, { status: 'in_progress', progress: 100 });
               removeMission(m.id);
               // Tally the CPU-handled clear for this shift's debrief (v0.22.3)
@@ -1930,6 +2023,11 @@ function GameApp() {
               const stationRewardMult = stationRewardMultiplier(
                 currentStations, m.assignedUnits, unitStationIds, m.category,
               );
+              // Batch 3b: district trust + wave stage ride the reward stack.
+              const cityNameForRewards = selectedCity?.name ?? null;
+              const districtMultForRewards = m.district && cityNameForRewards
+                ? districtRewardMultiplier(satisfactionFor(useGameStore.getState().districtSatisfaction, cityNameForRewards, m.district))
+                : 1;
               const rewards = computeMissionRewards({
                 mission: m,
                 playerLevel: p.level,
@@ -1939,6 +2037,8 @@ function GameApp() {
                 stationRewardMult,
                 seasonalMult: seasonalRewardMult(),
                 premiumMult: premiumCreditMultiplier(p.isPremium ?? false),
+                districtRewardMult: districtMultForRewards,
+                waveRewardMult: waveRewardMultForStage(m.waveStage),
               });
               const { earnedCredits, earnedXp, speedBonus, chainBonus, isMutualAid } = rewards;
               // Batch 1 (P1-M6): client-reported alliance XP is retired — the
@@ -2059,6 +2159,21 @@ function GameApp() {
                       : { ...dis, completed: dis.completed + 1 }
                   );
                 }
+              }
+
+              // Batch 3b: a clear moves its district's satisfaction (response
+              // time), counts toward its adopted home base, and can advance
+              // a live disaster wave into its next stage.
+              {
+                const st = useGameStore.getState();
+                if (m.district && selectedCity) {
+                  st.setDistrictSatisfaction(applySatisfaction(
+                    st.districtSatisfaction, selectedCity.name, m.district,
+                    satisfactionDeltaForResponse(m.responseTimeSeconds, false),
+                  ));
+                  st.setAdoptedCities(recordAdoptedCityMission(st.adoptedCities, selectedCity.name));
+                }
+                advanceWaveAfterClear(m);
               }
 
               // Career stats: completed missions, lifetime credits/XP, streak.
@@ -2278,6 +2393,14 @@ function GameApp() {
             // Weekly snapshot: a failed call still counts toward calls run.
             const { weekly: weeklyFail, recordWeekly } = useGameStore.getState();
             recordWeekly({ callsRun: weeklyFail.callsRun + 1 });
+            // Batch 3b: an expired call costs its district the most trust (−8).
+            if (m.district && selectedCity) {
+              const fst = useGameStore.getState();
+              fst.setDistrictSatisfaction(applySatisfaction(
+                fst.districtSatisfaction, selectedCity.name, m.district,
+                satisfactionDeltaForResponse(null, true),
+              ));
+            }
             const { career: afterFail, weekly: weeklyAfterFail } = useGameStore.getState();
             syncCareerStats({
               missionsCompleted: afterFail.missionsCompleted,

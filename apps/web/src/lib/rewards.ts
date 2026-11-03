@@ -49,6 +49,10 @@ export interface MissionRewardInput {
   seasonalMult?: number;
   /** Premium membership credit multiplier (v0.31.0); defaults to 1. Credits only. */
   premiumMult?: number;
+  /** Batch 3b: district-satisfaction reward multiplier (districtRewardMultiplier); defaults to 1. */
+  districtRewardMult?: number;
+  /** Batch 3b: disaster-wave stage multiplier (waveRewardMultForStage); defaults to 1. */
+  waveRewardMult?: number;
 }
 
 export interface MissionRewards {
@@ -58,6 +62,10 @@ export interface MissionRewards {
   finalMult: number;
   speedBonus: number;
   chainBonus: number;
+  /** Batch 3b: district-satisfaction multiplier actually applied. */
+  districtMult: number;
+  /** Batch 3b: disaster-wave stage multiplier actually applied. */
+  waveMult: number;
   rankBonus: number;
   /** Per-level credit earning bonus (ECONOMY.levelBonus, v0.22.0) — credits only. */
   levelBonus: number;
@@ -91,6 +99,8 @@ export function computeMissionRewards(input: MissionRewardInput): MissionRewards
   const stationRewardMult = input.stationRewardMult ?? 1;
   const seasonalMult = input.seasonalMult ?? 1;
   const premiumMult = input.premiumMult ?? 1;
+  const districtRewardMult = input.districtRewardMult ?? 1;
+  const waveRewardMult = input.waveRewardMult ?? 1;
 
   const remainingRatio = Math.max(0, m.timeRemaining / (m.totalTime || 600));
   const speedBonus = 1 + remainingRatio * 0.5;
@@ -114,8 +124,8 @@ export function computeMissionRewards(input: MissionRewardInput): MissionRewards
   // Credits carry the level + premium bonuses; XP deliberately does not (the
   // membership accelerates credits, never progression — pay-to-accelerate, not
   // pay-to-win).
-  let creditMult = techRewardMult * speedBonus * chainBonus * rankBonus * levelBonus * commanderBonus * stationRewardMult * seasonalMult * premiumMult;
-  let xpMult = techRewardMult * speedBonus * chainBonus * rankBonus * commanderBonus * stationRewardMult * seasonalMult;
+  let creditMult = techRewardMult * speedBonus * chainBonus * rankBonus * levelBonus * commanderBonus * stationRewardMult * seasonalMult * premiumMult * districtRewardMult * waveRewardMult;
+  let xpMult = techRewardMult * speedBonus * chainBonus * rankBonus * commanderBonus * stationRewardMult * seasonalMult * districtRewardMult * waveRewardMult;
   if (isMutualAid) {
     creditMult *= 1.25;
     xpMult *= 1.25;
@@ -140,6 +150,8 @@ export function computeMissionRewards(input: MissionRewardInput): MissionRewards
     finalMult: creditMult,
     speedBonus,
     chainBonus,
+    districtMult: districtRewardMult,
+    waveMult: waveRewardMult,
     rankBonus,
     levelBonus,
     premiumMult,

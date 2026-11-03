@@ -77,6 +77,11 @@ export interface Mission {
   /** Disaster events: set on missions spawned by a city-wide disaster. */
   disasterId?: string;
 
+  /** Batch 3b: district this mission belongs to (district unlocks + satisfaction). */
+  district?: string;
+  /** Batch 3b: 1-based multi-stage disaster-wave stage this mission belongs to. */
+  waveStage?: number;
+
   /** Recovery phase: a low-stakes restoration call spawned after a disaster window closes. */
   recovery?: boolean;
 

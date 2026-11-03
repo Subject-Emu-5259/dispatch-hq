@@ -5,6 +5,7 @@ import { Building2, UserX, ShieldCheck, Scale, Clock, Calendar, Search, DoorOpen
 import { broadcastRadioMessage } from '@/utils/radioEvents';
 import { useGameStore } from '@/stores/gameStore';
 import { jailCapacity, jailOccupancy } from '@/lib/jailCapacity';
+import { decideJailBooking } from '@/lib/capacityDecisions';
 import type { Inmate } from '@dispatch-hq/shared';
 
 const statusBadge: Record<string, string> = {
@@ -62,6 +63,9 @@ export default function CountyJailPanel() {
             County Jail Roster
           </div>
           <div className="text-[10px] text-gray-500">{jailOccupancy(inmates)} / {jailCapacity(stations)} housed</div>
+          <div className="text-[10px] text-gray-400 mt-0.5">
+            {(() => { const d = decideJailBooking(jailOccupancy(inmates), jailCapacity(stations)); return d.action === 'transfer' ? '⚠️ Jail full — next booking transfers out-of-county (half progression credit).' : `Next booking housed · ${d.cellsFree} cells free`; })()}
+          </div>
         </div>
         <div className="mt-2 flex items-center gap-2">
           {[

@@ -43,6 +43,7 @@ import {
 const CriminalRecordsPanel = lazy(() => import('./CriminalRecordsPanel'));
 const CountyJailPanel = lazy(() => import('./CountyJailPanel'));
 const CityHospitalPanel = lazy(() => import('./CityHospitalPanel'));
+const DistrictPanel = lazy(() => import('./DistrictPanel'));
 import FireMarshalPanel from './FireMarshalPanel';
 import { AllianceTreasury } from './AllianceTreasury';
 import { AllianceGifts } from './AllianceGifts';
@@ -52,11 +53,11 @@ import { AllianceActivity } from './AllianceActivity';
 
 // ── Types ──────────────────────────────────────────────
 
-type DispatchTab = 'calls' | 'board' | 'radio' | 'roster' | 'assistant' | 'alliance' | 'records' | 'jail' | 'hospital' | 'marshal';
+type DispatchTab = 'calls' | 'board' | 'radio' | 'roster' | 'assistant' | 'alliance' | 'records' | 'jail' | 'hospital' | 'marshal' | 'districts';
 type ServiceFilter = 'all' | 'fire' | 'police' | 'ems';
 
 /** Console tabs shared by every service. */
-const CORE_TABS: DispatchTab[] = ['calls', 'board', 'radio', 'roster', 'assistant', 'alliance'];
+const CORE_TABS: DispatchTab[] = ['calls', 'board', 'radio', 'roster', 'assistant', 'alliance', 'districts'];
 
 /** Service-specific agency systems — each department only sees its own. */
 const SERVICE_TABS: Record<'fire' | 'police' | 'ems', DispatchTab[]> = {
@@ -76,6 +77,7 @@ const TAB_META: Record<DispatchTab, { icon: any; label: string }> = {
   hospital: { icon: HeartPulse, label: 'Hospital' },
   alliance: { icon: Users, label: 'Alliance' },
   marshal: { icon: ClipboardList, label: 'Fire Marshal' },
+  districts: { icon: MapPin, label: 'Districts' },
 };
 
 interface IncomingCall {
@@ -1639,6 +1641,13 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
               {activeTab === 'marshal' && (
                 <div className="h-full min-w-0 overflow-hidden rounded-xl border border-white/5 bg-gray-950/40">
                   <FireMarshalPanel />
+                </div>
+              )}
+              {activeTab === 'districts' && (
+                <div className="h-full min-w-0 overflow-hidden rounded-xl border border-white/5 bg-gray-950/40">
+                  <Suspense fallback={<div className="h-full flex items-center justify-center text-[10px] text-gray-500">Loading districts…</div>}>
+                    <DistrictPanel />
+                  </Suspense>
                 </div>
               )}
             </div>

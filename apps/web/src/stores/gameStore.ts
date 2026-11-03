@@ -11,6 +11,9 @@ import { patrolZonesForCity, zoneIdForPoint } from '@/lib/patrol/patrolZones';
 import { setRadioCityContext } from '@/lib/radioDialogueEngine';
 import type { Poi } from '@/lib/pois';
 import type { Hospital, Helipad } from '@/lib/hospital';
+import type { SatisfactionRecord } from '@/lib/cityDistricts';
+import type { AdoptedCity } from '@/lib/adoptedCities';
+import type { DisasterWaveState } from '@/lib/disasterWaves';
 import type { ActiveWeather, ActiveWeatherEvent } from '@/lib/weather';
 
 export interface CityData {
@@ -213,6 +216,12 @@ interface GameState {
   weatherEvent: ActiveWeatherEvent | null;
   /** Active city-wide disaster (tornado/flood/wildfire) — see lib/disasters. */
   activeDisaster: import('@/lib/disasters').ActiveDisaster | null;
+  /** Batch 3b: citizen satisfaction per district, keyed `city::district` (see lib/cityDistricts). */
+  districtSatisfaction: SatisfactionRecord;
+  /** Batch 3b: adopted searched-city home bases with local progression (see lib/adoptedCities). */
+  adoptedCities: AdoptedCity[];
+  /** Batch 3b: live multi-stage disaster wave, if one is running (see lib/disasterWaves). */
+  disasterWave: DisasterWaveState | null;
 
   // Actions
   setPlayer: (player: Player) => void;
@@ -341,6 +350,12 @@ interface GameState {
   setWeather: (weather: ActiveWeather) => void;
   setWeatherEvent: (event: ActiveWeatherEvent | null) => void;
   setDisaster: (d: import('@/lib/disasters').ActiveDisaster | null) => void;
+  /** Batch 3b: set one district's satisfaction rating (already clamped by lib/cityDistricts). */
+  setDistrictSatisfaction: (record: SatisfactionRecord) => void;
+  /** Batch 3b: replace the adopted-cities atlas (adoptCity/recordAdoptedCityMission output). */
+  setAdoptedCities: (cities: AdoptedCity[]) => void;
+  /** Batch 3b: set/clear the live disaster wave. */
+  setDisasterWave: (wave: DisasterWaveState | null) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -432,6 +447,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   weather: 'clear',
   weatherEvent: null,
   activeDisaster: null,
+  districtSatisfaction: {},
+  adoptedCities: [],
+  disasterWave: null,
 
   // Actions
   setPlayer: (player) => set({ player }),
@@ -458,6 +476,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     defaultPatrolMode: 'zone',
     // A different player never inherits the previous account's tour position.
     onboardingStep: 0,
+    // Batch 3b state is per-campaign/per-player — never inherited.
+    districtSatisfaction: {},
+    adoptedCities: [],
+    disasterWave: null,
     // Clear career records so a different player never sees stale stats.
     career: { ...EMPTY_CAREER },
     weekly: emptyWeekly(),
@@ -474,6 +496,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     patients: [],
     // A fresh campaign restarts the tour from step 1 (replayable later).
     onboardingStep: 0,
+    // Batch 3b: fresh campaign resets district trust + any live wave.
+    // The adopted-cities atlas is deliberately KEPT — home bases persist across campaigns.
+    districtSatisfaction: {},
+    disasterWave: null,
   hospital: null,
   helipad: null,
   placedPois: [],
@@ -826,6 +852,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   setWeather: (weather) => set({ weather }),
   setWeatherEvent: (event) => set({ weatherEvent: event }),
   setDisaster: (d) => set({ activeDisaster: d }),
+  setDistrictSatisfaction: (record) => set({ districtSatisfaction: record }),
+  setAdoptedCities: (cities) => set({ adoptedCities: cities }),
+  setDisasterWave: (wave) => set({ disasterWave: wave }),
   setShowDispatchCenter: (show: boolean) => set({ showDispatchCenter: show }),
 }));
 

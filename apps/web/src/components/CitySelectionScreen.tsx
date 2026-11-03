@@ -16,6 +16,7 @@ import {
   RELOCATE_PER_UNIT,
 } from '@/lib/cityProgression';
 import { itchPromoLabel } from '@/lib/itchPromo';
+import { adoptCity } from '@/lib/adoptedCities';
 import { getCityTrait } from '@/lib/cityTraits';
 
 interface GeocodingResult {
@@ -163,6 +164,13 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
     if (precise) {
       city.bounds = precise.bounds;
       city.boundary = precise.rings;
+    }
+    // Batch 3b adopt-a-city: a searched city (not on the popular roster)
+    // becomes a persistent home base with local progression — not a
+    // one-off visit. Roster cities are already permanent and skip this.
+    if (!POPULAR_CITIES.some((c) => c.name === city.name)) {
+      const st = useGameStore.getState();
+      st.setAdoptedCities(adoptCity(st.adoptedCities, city));
     }
     setSelectedCity(city);
     setStep('service');
