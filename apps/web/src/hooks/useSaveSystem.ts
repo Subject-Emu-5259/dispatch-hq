@@ -46,6 +46,10 @@ import { parseAdoptedCities, type AdoptedCity } from '@/lib/adoptedCities';
 import type { DisasterWaveState } from '@/lib/disasterWaves';
 import { parseChallengeState, type ChallengeState } from '@/lib/challenges';
 import { parseFogRevealed } from '@/lib/fogExploration';
+import {
+  parsePhotoGallery, parseTutorialCampaign,
+  type MissionHistoryEntry, type PhotoSnapshot, type TutorialCampaignState,
+} from '@/lib/batch3e';
 import { classifySaveError, dispatchSaveQueued, type SaveFailureKind } from '@/lib/saveFailure';
 
 const AUTOSAVE_INTERVAL = 60000; // 60 seconds
@@ -217,6 +221,13 @@ interface SaveData {
   // saves restore to fresh challenges / no zones revealed.
   challenges?: ChallengeState;
   fogRevealed?: string[];
+  // Batch 3e: shift replay history + photo gallery + tutorial campaign.
+  // All optional — legacy saves restore to empty history/gallery and an
+  // inactive campaign. The replay history is per-shift (resetShift clears
+  // it); the gallery is a profile record and is kept across campaigns.
+  missionHistory?: MissionHistoryEntry[];
+  snapshots?: PhotoSnapshot[];
+  tutorialCampaign?: TutorialCampaignState;
 }
 
 /** Card preview shown on the main-menu Load Game screen. */
@@ -502,6 +513,9 @@ function buildSaveData(): SaveData {
     disasterWave: state.disasterWave,
     challenges: state.challenges,
     fogRevealed: [...state.fogRevealed],
+    missionHistory: [...state.missionHistory],
+    snapshots: [...state.snapshots],
+    tutorialCampaign: { ...state.tutorialCampaign },
     settings: loadSettings(),
   };
 }
@@ -551,6 +565,10 @@ function stateSignature(): string {
     s.onboardingStep,
     JSON.stringify(s.challenges),
     s.fogRevealed.length,
+    s.missionHistory.length,
+    s.snapshots.length,
+    s.tutorialCampaign.stepIndex,
+    s.tutorialCampaign.active ? 1 : 0,
     missionState,
     unitState,
     settingsState,
@@ -824,6 +842,11 @@ function restoreSave(save: SaveData): void {
   guard('batch3d', () => {
     store.setChallenges(parseChallengeState(save.challenges));
     store.setFogRevealed(parseFogRevealed(save.fogRevealed));
+  });
+  guard('batch3e', () => {
+    store.setMissionHistory(Array.isArray(save.missionHistory) ? save.missionHistory : []);
+    store.setSnapshots(parsePhotoGallery(save.snapshots));
+    store.setTutorialCampaign(parseTutorialCampaign(save.tutorialCampaign));
   });
   guard('gameClock', () => {
     if (typeof save.gameMinutes === 'number' && Number.isFinite(save.gameMinutes)) {

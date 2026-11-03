@@ -10,7 +10,7 @@
 //
 // Deliberately NOT a boundary-file feature: there is no boundary file
 // that isn't already playable, and live missions come from spawn logic,
-// not the dead missionGenerator. Adoption is persistence + progression
+// Live missions come from spawn.ts, not a separate generator module. Adoption is persistence + progression
 // for searched cities, nothing more.
 
 export interface AdoptedCity {

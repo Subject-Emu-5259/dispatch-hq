@@ -195,7 +195,7 @@ Dispatch HQ is a real-time emergency-dispatch simulation game. Players build fir
 - `servers/game-server/` — Hono/Bun backend
 - `servers/game-server/src/serve-combined.ts` — single-server static + API + WS entrypoint
 - `packages/shared/` — shared types and utilities
-- `packages/game-engine/` — simulation engine logic
+- `packages/shared/` — shared types and utilities (the `packages/game-engine/` simulation package was deleted in Batch 3e — zero importers, see trash record)
 
 ## Build & Deploy
 ```bash
@@ -210,12 +210,13 @@ pnpm --filter @dispatch-hq/web build
 pnpm --filter @dispatch-hq/game-server build
 ```
 
-> **Deploying to Zo?** Run `scripts/deploy.sh <VERSION> <files...>` from the main checkout — it builds the tarball, uploads (with host fallback), and prints the Zo API command, restart request, and verification. The full runbook — backup, byte-exact transfer, build, restart, and rollback — lives in `plans/RELEASES.md` under *"🚀 Zo Deploy & Rollback Runbook"*. Follow it end-to-end; do not improvise.
+> **Deploying:** push to GitHub `main` — Render auto-deploys from it (Dockerfile builds web + game-server, then serves `dist/serve-combined.js` under Bun). There is no Zo deploy step anymore; the old `scripts/deploy.sh` Zo flow and the `plans/RELEASES.md` Zo runbook are historical only.
 
-# Production (Zo instance)
-# Service: svc_Y_8aCyzZr5M (port 3001)
-# Entrypoint: bun run /home/workspace/Projects/dispatch-hq/servers/game-server/dist/serve-combined.js
-# API: POST https://api.zo.computer/zo/ask with Bearer $ZO_API_KEY
+# Production (Render)
+# Live: https://dispatch-hq.onrender.com
+# Deploy source: GitHub main (Render auto-deploy)
+# Entrypoint: bun run servers/game-server/dist/serve-combined.js (Dockerfile CMD, after migrations)
+# Note (corrected 2026-11-03, Batch 3e): the Zo service id, port-3001 Zo instance, and Zo API references that used to sit here described a retired host. History is in git, not rewritten — this section now states the Render reality.
 
 ## Design Conventions
 - Tailwind CSS, dark-first UI (`bg-gray-950`, `text-white`)
@@ -228,4 +229,4 @@ pnpm --filter @dispatch-hq/game-server build
 https://dispatch-hq.onrender.com
 
 ## Last Updated
-2026-08-01
+2026-11-03 (Batch 3e: Zo deployment references corrected to Render/GitHub; game-engine package removed from Key Paths below)

@@ -4,10 +4,11 @@
 // In-game pause overlay with resume, settings, and quit options.
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Settings, Home, RotateCcw, ClipboardList, MapPinned, BookOpen, Newspaper, ExternalLink } from 'lucide-react';
+import { Play, Settings, Home, RotateCcw, ClipboardList, MapPinned, BookOpen, Newspaper, ExternalLink, Camera} from 'lucide-react';
 import { useState } from 'react';
 import { SettingsModal } from './SettingsModal';
 import { ShiftReportModal } from './ShiftReportModal';
+import { PhotoGalleryModal } from './PhotoGalleryModal';
 import { ReleaseNotesModal } from './ReleaseNotesModal';
 import { currentVersion } from '@/data/releaseNotes';
 import { saveGame, getActiveSlot, SLOT_LABELS, hadSaveAuthFailure, hadSaveTooLargeFailure, hadSaveStaleFailure, lastSaveFailure } from '../hooks/useSaveSystem';
@@ -31,6 +32,7 @@ interface PauseScreenProps {
 export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTutorial }: PauseScreenProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [showShiftReport, setShowShiftReport] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -131,6 +133,19 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
                     Shift Report
                   </p>
                   <p className="text-[11px] text-gray-500">Session stats for this shift</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { playClick(); setShowGallery(true); }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-800/40 border border-gray-700/30
+                                 hover:bg-gray-800/60 transition-colors group">
+                <Camera className="w-5 h-5 text-dispatch-cyan" />
+                <div className="text-center flex-1">
+                  <p className="text-sm font-semibold text-white group-hover:text-dispatch-cyan transition-colors">
+                    Photo Gallery
+                  </p>
+                  <p className="text-[11px] text-gray-500">Snapshots saved from shift reports</p>
                 </div>
               </button>
 
@@ -264,6 +279,7 @@ export function PauseScreen({ isOpen, onResume, onQuit, onRelocate, onReplayTuto
     </AnimatePresence>
     <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     <ShiftReportModal isOpen={showShiftReport} onClose={() => setShowShiftReport(false)} />
+    <PhotoGalleryModal isOpen={showGallery} onClose={() => setShowGallery(false)} />
     <ReleaseNotesModal isOpen={showReleaseNotes} onClose={() => setShowReleaseNotes(false)} />
     </>
   );

@@ -3,7 +3,7 @@
 // Shared by the store, the TechTree UI, and runtime modifiers.
 // ============================================
 
-export type TechBranch = 'response' | 'efficiency' | 'technology' | 'training';
+export type TechBranch = 'response' | 'efficiency' | 'technology' | 'training' | 'operations';
 
 export interface TechNode {
   id: string;
@@ -28,7 +28,10 @@ export type TechEffectKey =
   | 'patrol_sight'
   | 'unit_effectiveness'
   | 'specialization'
-  | 'elite_units';
+  | 'elite_units'
+  | 'scene_sizeup'
+  | 'hazmat_team'
+  | 'k9_unit';
 
 export const TECH_TREE: TechNode[] = [
   // Response — faster response
@@ -86,6 +89,22 @@ export const TECH_TREE: TechNode[] = [
     id: 'tr3', name: 'Elite Squad', description: 'Unlock veteran unit upgrades for new purchases', branch: 'training', tier: 3, cost: 28000,
     requires: ['tr2'], effect: 'Veteran units (+20% stats)', icon: '⭐', applies: 'elite_units',
   },
+
+  // Operations — Batch 3e expansion (audit feature 15). Three standalone
+  // branch heads (no prerequisites): each is its own long-term goal, not a
+  // chain — a commander can buy K9 before drone recon and vice versa.
+  {
+    id: 'op-drone', name: 'Drone Recon', description: 'Aerial scene size-up: units clear every call type 25% faster', branch: 'operations', tier: 1, cost: 16000,
+    effect: '+25% clear speed (all calls)', icon: '🛸', applies: 'scene_sizeup',
+  },
+  {
+    id: 'op-hazmat', name: 'Hazmat Team', description: 'A dedicated hazmat team: hazmat calls clear 30% faster', branch: 'operations', tier: 1, cost: 20000,
+    effect: '+30% clear speed (hazmat)', icon: '☣️', applies: 'hazmat_team',
+  },
+  {
+    id: 'op-k9', name: 'K9 Unit', description: 'A trained K9 unit: police calls clear 20% faster', branch: 'operations', tier: 1, cost: 18000,
+    effect: '+20% clear speed (police)', icon: '🐕', applies: 'k9_unit',
+  },
 ];
 
 export const TECH_BY_ID: Record<string, TechNode> = Object.fromEntries(TECH_TREE.map((t) => [t.id, t]));
@@ -96,4 +115,5 @@ export const BRANCH_CONFIG: Record<TechBranch, { label: string; color: string; b
   efficiency: { label: 'Efficiency', color: 'text-dispatch-green', bg: 'bg-dispatch-green/20', border: 'border-dispatch-green/30' },
   technology: { label: 'Technology', color: 'text-dispatch-cyan', bg: 'bg-dispatch-cyan/20', border: 'border-dispatch-cyan/30' },
   training: { label: 'Training', color: 'text-dispatch-yellow', bg: 'bg-dispatch-yellow/20', border: 'border-dispatch-yellow/30' },
+  operations: { label: 'Operations', color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/30' },
 };

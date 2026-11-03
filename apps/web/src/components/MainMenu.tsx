@@ -24,6 +24,7 @@ import { ReleaseNotesModal } from './ReleaseNotesModal';
 import { RELEASE_NOTES, currentVersion } from '@/data/releaseNotes';
 import { getActiveSlot, listSaveSlots, type SaveSlotId } from '@/hooks/useSaveSystem';
 import { TUTORIAL_STEP_COUNT } from './OnboardingOverlay';
+import { TUTORIAL_MISSION_CHAIN } from '@/lib/batch3e';
 import { itchPromoLabel } from '@/lib/itchPromo';
 
 // One-time guest-upgrade prompt: keyed by guest id so a brand-new guest (or a
@@ -143,6 +144,13 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
   const activePreview = listSaveSlots().find((s) => s.slot === getActiveSlot())?.preview ?? null;
   const tourStep = activePreview?.onboardingStep ?? -1;
   const tourWaiting = tourStep >= 0 && tourStep < TUTORIAL_STEP_COUNT;
+  // Batch 3e: first-run flag + campaign progress on the menu. A fresh
+  // account (no save) is told the tour ends in a guided first shift; a
+  // mid-campaign return to the menu shows the chain's current step.
+  const tutorialCampaign = useGameStore((st) => st.tutorialCampaign);
+  const campaignStep = tutorialCampaign.active
+    ? TUTORIAL_MISSION_CHAIN[tutorialCampaign.stepIndex] ?? null
+    : null;
 
   return (
     <motion.div
@@ -341,6 +349,20 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
                   {item.label}
                 </p>
                 <p className="text-[11px] text-gray-500 truncate">{item.description}</p>
+                {item.id === 'continue' && campaignStep && (
+                  <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md
+                                    bg-dispatch-cyan/10 border border-dispatch-cyan/30
+                                    text-[11px] font-bold text-dispatch-cyan">
+                    🎓 First Shift — step {tutorialCampaign.stepIndex + 1} of {TUTORIAL_MISSION_CHAIN.length}: {campaignStep.name}
+                  </span>
+                )}
+                {item.id === 'new' && !hasSave && (
+                  <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md
+                                    bg-dispatch-cyan/10 border border-dispatch-cyan/30
+                                    text-[11px] font-bold text-dispatch-cyan">
+                    🎓 First run — the tour ends with a guided first shift
+                  </span>
+                )}
                 {item.id === 'continue' && tourWaiting && (
                   <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md
                                     bg-amber-500/10 border border-amber-500/30

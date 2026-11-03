@@ -13,6 +13,7 @@ import {
 import { useGameStore } from '../stores/gameStore';
 import { playSuccess } from '../utils/sound';
 import { markTutorialCompleted } from '../lib/tutorialSeen';
+import { startTutorialCampaign, TUTORIAL_MISSION_CHAIN } from '../lib/batch3e';
 
 interface TutorialStep {
   id: string;
@@ -292,6 +293,10 @@ export function OnboardingOverlay({ onComplete, initialStep }: OnboardingOverlay
   const [currentStep, setCurrentStep] = useState(() =>
     clampTutorialStep(initialStep ?? useGameStore.getState().onboardingStep ?? 0),
   );
+  // Batch 3e onboarding campaign: finishing the tour offers the guided
+  // first-shift mission chain (tutorial mission pool in lib/batch3e).
+  // Skipping the tour skips the campaign offer too — skip means skip.
+  const [showCampaignIntro, setShowCampaignIntro] = useState(false);
   const [isDismissing, setIsDismissing] = useState(false);
   const [spotlight, setSpotlight] = useState<Rect | null>(null);
   // Completion celebration (v0.22.x): fires ONCE when the ring first hits
@@ -406,6 +411,14 @@ export function OnboardingOverlay({ onComplete, initialStep }: OnboardingOverlay
 
   const advanceStep = () => {
     if (isLastStep) {
+      // Tour finished via the final step (not via Skip): offer the guided
+      // first-shift chain instead of closing straight into free play — but
+      // only once per campaign (an active/completed chain never re-offers).
+      const camp = useGameStore.getState().tutorialCampaign;
+      if (!camp.active && camp.completedAt == null && !showCampaignIntro) {
+        setShowCampaignIntro(true);
+        return;
+      }
       handleComplete();
     } else {
       setCurrentStep((prev) => Math.min(prev + 1, TUTORIAL_STEPS.length - 1));
@@ -428,7 +441,52 @@ export function OnboardingOverlay({ onComplete, initialStep }: OnboardingOverlay
 
   return (
     <AnimatePresence>
-      {!isDismissing && (
+      {showCampaignIntro ? (
+        <motion.div
+          key="campaign-intro"
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="fixed inset-0 z-[85] bg-black/40 flex items-center justify-center p-4"
+        >
+          <div className="w-[380px] max-w-[calc(100vw-2rem)] bg-gray-900/95 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="px-5 pt-4 pb-3 border-b border-gray-800/60 bg-gradient-to-br from-dispatch-cyan/15 via-gray-900 to-dispatch-red/10">
+              <h3 className="text-sm font-bold text-white leading-tight">🎓 Guided First Shift</h3>
+              <p className="text-[11px] text-gray-400 mt-1">Three tutorial calls, in order. Clear each type and the chain advances — your grades land in the shift report replay tab.</p>
+            </div>
+            <div className="p-5 space-y-3">
+              {TUTORIAL_MISSION_CHAIN.map((step, i) => (
+                <div key={step.id} className="flex items-start gap-3 p-3 rounded-xl bg-gray-800/50 border border-gray-700/40">
+                  <span className="w-6 h-6 shrink-0 rounded-full bg-dispatch-red/20 border border-dispatch-red/40 text-dispatch-red text-[11px] font-black flex items-center justify-center">{i + 1}</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-white">{step.name}</p>
+                    <p className="text-[11px] text-gray-400 leading-relaxed mt-0.5">{step.hint}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 px-5 pb-4">
+              <button
+                onClick={handleComplete}
+                className="px-3 py-2 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Not now
+              </button>
+              <div className="flex-1" />
+              <button
+                onClick={() => {
+                  useGameStore.getState().setTutorialCampaign(startTutorialCampaign());
+                  handleComplete();
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-dispatch-red hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition-all active:scale-[0.98] shadow-lg shadow-red-500/20"
+              >
+                Start First Shift
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      ) : !isDismissing && (
         <>
           {/* Backdrop overlay — pointer-events-none so users can still interact with the game */}
           <motion.div

@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Dispatch HQ — Emergency Dispatch Simulation Game",
   "scripts": {
-    "dev": "turbo dev --filter=@dispatch-hq/web --filter=@dispatch-hq/game-server --filter=@dispatch-hq/game-engine",
+    "dev": "turbo dev --filter=@dispatch-hq/web --filter=@dispatch-hq/game-server",
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck && pnpm check:docs",

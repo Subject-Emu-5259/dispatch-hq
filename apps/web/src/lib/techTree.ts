@@ -10,6 +10,7 @@ import type { ServiceType } from '@dispatch-hq/shared';
 import { loadSettings } from '@/utils/settings';
 import { type TechNode, type TechEffectKey, TECH_TREE, TECH_BY_ID, BRANCH_CONFIG } from './techData';
 import { getCityTrait } from './cityTraits';
+import { batch3eClearMultiplier, droneClearMultiplier } from './batch3e';
 
 export type { TechNode, TechEffectKey, TechBranch } from './techData';
 export { TECH_TREE, TECH_BY_ID, BRANCH_CONFIG };
@@ -152,7 +153,15 @@ export function getClearSpeedMultiplier(unitType: string, missionCategory?: stri
   let mult = getUnitEffectivenessMultiplier();
   mult *= getSpecializationMultiplier(unitType, missionCategory);
   if (hasTech('tr3')) mult *= 1.20;
+  // Batch 3e operations branch: drone recon (all calls), hazmat team
+  // (hazmat calls), K9 unit (police calls) — see lib/batch3e.
+  mult *= batch3eClearMultiplier(missionCategory, useGameStore.getState().techPurchased);
   return Math.max(0.5, mult);
+}
+
+/** Batch 3e: scene size-up multiplier from drone recon (1.25 when owned). */
+export function getSceneSizeUpMultiplier(): number {
+  return droneClearMultiplier(useGameStore.getState().techPurchased);
 }
 
 export function getPurchasedTechs(): Set<string> {

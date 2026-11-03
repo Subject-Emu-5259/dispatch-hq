@@ -1,5 +1,14 @@
 # Dispatch HQ — Project Status Report
 
+> Correction note (2026-11-03, Batch 3e — history not rewritten): this is a
+> historical snapshot of v0.47.0 as written 2026-08-27. Two claims in it are
+> stale and are corrected here, not silently edited out of the body: the
+> header's "live on Zo" is superseded — production is now Render
+> (https://dispatch-hq.onrender.com, auto-deployed from GitHub main) — and
+> the §desktop "STALE" stamp is superseded — desktop is at 0.4.1 on itch
+> (Dispatch HQ desktop v0.4.1 live since 2026-10-24).
+
+
 **Version:** 0.47.0 (live on Zo)
 **Date:** August 27, 2026
 **URL:** https://dispatch-hq-deandrewharris.zocomputer.io

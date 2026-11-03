@@ -1,3 +1,16 @@
+// ============================================
+// DEPRECATED entrypoint (Batch 3e, 2026-11-03) — DO NOT USE FOR PRODUCTION.
+// Production serves dist/serve-combined.js (see Dockerfile CMD), which
+// mounts the full route set (alliances, treasury, gifts, shared stations,
+// loans, activity, seasonal, daily-bonus, promo, admin-maintenance).
+// This file (pnpm start / dist/index.js) serves a FEATURE-STRIPPED server
+// that disagrees with production and must never be mistaken for it.
+// It is kept (not deleted) only because `pnpm start` in
+// servers/game-server/package.json still points at it; removing it is a
+// one-line follow-up once that script is repointed. If you start this
+// file, the console warning below tells you so on every boot.
+// ============================================
+
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
@@ -158,6 +171,7 @@ startGuestPruneJob({
 // Commander membership stops showing premium everywhere.
 startPremiumExpiryJob();
 
+console.warn('[DEPRECATED] servers/game-server/src/index.ts is a feature-stripped dev entrypoint — production serves dist/serve-combined.js (see Dockerfile CMD).');
 console.log(`Dispatch HQ Server starting on ${config.host}:${config.port}`);
 const server = serve({
   fetch: app.fetch,

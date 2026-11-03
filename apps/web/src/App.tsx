@@ -65,6 +65,7 @@ import { spawnChainStage } from '@/lib/missionChains';
 import { computeMissionRewards, missionService } from '@/lib/rewards';
 import { unlockedDistricts, satisfactionFor, satisfactionDeltaForResponse, applySatisfaction, districtRewardMultiplier, pickDistrictForSpawn } from '@/lib/cityDistricts';
 import { startDisasterWave, recordWaveSpawned, recordWaveCompletion, currentWaveStage, waveRewardMultForStage, type DisasterWaveState } from '@/lib/disasterWaves';
+import { advanceTutorialCampaign, TUTORIAL_MISSION_CHAIN } from '@/lib/batch3e';
 import { recordAdoptedCityMission } from '@/lib/adoptedCities';
 import { CPU_UNIT_NAME, cpuWorkSeconds, cpuMutualAidPayout, partnerAgencyServices, cityAnswersCall, partnerCallAnswerable } from '@/lib/cpuMutualAid';
 import { unitCanPatrol } from '@/lib/dispatchLogic';
@@ -2154,6 +2155,48 @@ function GameApp() {
                 tierCounts,
               });
 
+              // Batch 3e: replay history + onboarding campaign. Every clear
+              // lands in this shift's history (the replay tab renders grades
+              // from it), and a clear of the campaign's current step type
+              // advances the guided first-shift chain.
+              useGameStore.getState().appendMissionHistory({
+                id: m.id,
+                name: m.name,
+                category: m.category,
+                resolvedAt: Date.now(),
+                responseSec: typeof m.responseTimeSeconds === 'number' ? m.responseTimeSeconds : null,
+                cleared: true,
+                creditsEarned: earnedCredits,
+                xpEarned: earnedXp,
+              });
+              {
+                const camp = useGameStore.getState().tutorialCampaign;
+                const adv = advanceTutorialCampaign(camp, m.category);
+                if (adv.advanced) {
+                  useGameStore.getState().setTutorialCampaign(adv.state);
+                  if (adv.completed) {
+                    addNotification({
+                      type: 'levelup',
+                      title: 'First Shift Complete!',
+                      message: 'You cleared your guided first-shift chain — the shift report replay tab has your grades.',
+                      icon: '🎓',
+                      duration: 5000,
+                    });
+                  } else {
+                    const next = TUTORIAL_MISSION_CHAIN[adv.state.stepIndex];
+                    if (next) {
+                      addNotification({
+                        type: 'dispatch',
+                        title: `First Shift — next: ${next.name}`,
+                        message: next.hint,
+                        icon: '🎓',
+                        duration: 5000,
+                      });
+                    }
+                  }
+                }
+              }
+
               // Track disaster-wave / recovery completions for the end-of-event
               // bonus and the RECOVERY banner progress.
               if (m.disasterId) {
@@ -2397,6 +2440,18 @@ function GameApp() {
             setFailedMissions(prev => prev + 1);
             const s = useGameStore.getState().shift;
             useGameStore.getState().recordShiftStats({ missionsFailed: s.missionsFailed + 1 });
+            // Batch 3e: expired missions land in the replay history too,
+            // graded F — a shift review that hides failures would lie.
+            useGameStore.getState().appendMissionHistory({
+              id: m.id,
+              name: m.name,
+              category: m.category,
+              resolvedAt: Date.now(),
+              responseSec: typeof m.responseTimeSeconds === 'number' ? m.responseTimeSeconds : null,
+              cleared: false,
+              creditsEarned: 0,
+              xpEarned: 0,
+            });
             // Career stats: a failed mission breaks the completion streak.
             const { career, recordCareerStats } = useGameStore.getState();
             recordCareerStats({ missionsFailed: career.missionsFailed + 1, currentStreak: 0 });

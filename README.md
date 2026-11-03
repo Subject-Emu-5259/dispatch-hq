@@ -51,15 +51,15 @@ Local dev servers:
 | Run everything in dev | `pnpm dev` |
 | Typecheck all workspaces | `pnpm typecheck` |
 | Build all workspaces | `pnpm build` |
-| Test all workspaces | `pnpm --filter <pkg> test` (web/shared/server/engine) |
+| Test all workspaces | `pnpm --filter <pkg> test` (web/shared/server) |
 | Build the desktop DMG | `pnpm --filter @dispatch-hq/desktop package` |
-| Deploy to the Zo server | `scripts/deploy.sh <VERSION> <files...>` (see `plans/RELEASES.md` runbook) |
+| Deploy to production (Render) | Push to GitHub `main` — Render auto-deploys (Dockerfile). The old `scripts/deploy.sh` Zo flow is retired; see `plans/RELEASES.md` only as history. |
 
 ## Docs
 
 - [docs/](docs/) — architecture, development guide, and the desktop app + update mechanism
 - [plans/ROADMAP-v1.0.md](plans/ROADMAP-v1.0.md) — the shipped path to v1.0 and what's queued beyond it
-- [plans/RELEASES.md](plans/RELEASES.md) — the deploy & rollback runbook (used by `scripts/deploy.sh`)
+- [plans/RELEASES.md](plans/RELEASES.md) — the historical deploy & rollback runbook (Zo-era; production now deploys via Render from GitHub main)
 - [plans/AUDIT-v1.0.0.md](plans/AUDIT-v1.0.0.md) — the v0.17.9 feature/endpoint audit
 
 ## Tech stack

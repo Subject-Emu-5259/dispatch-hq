@@ -15,6 +15,10 @@ import type { SatisfactionRecord } from '@/lib/cityDistricts';
 import type { AdoptedCity } from '@/lib/adoptedCities';
 import type { DisasterWaveState } from '@/lib/disasterWaves';
 import { emptyChallengeState, type ChallengeState } from '@/lib/challenges';
+import {
+  EMPTY_TUTORIAL_CAMPAIGN, recordMissionHistory, addPhotoSnapshot, removePhotoSnapshot,
+  type MissionHistoryEntry, type PhotoSnapshot, type TutorialCampaignState,
+} from '@/lib/batch3e';
 import type { ActiveWeather, ActiveWeatherEvent } from '@/lib/weather';
 
 export interface CityData {
@@ -227,6 +231,12 @@ interface GameState {
   challenges: ChallengeState;
   /** Batch 3d: revealed fog zone ids (see lib/fogExploration). */
   fogRevealed: string[];
+  /** Batch 3e: this shift's resolved missions, for the replay tab (see lib/batch3e). */
+  missionHistory: MissionHistoryEntry[];
+  /** Batch 3e: profile photo gallery — share-card data, re-rendered on view (see lib/batch3e). */
+  snapshots: PhotoSnapshot[];
+  /** Batch 3e: guided first-shift mission chain (see lib/batch3e). */
+  tutorialCampaign: TutorialCampaignState;
 
   // Actions
   setPlayer: (player: Player) => void;
@@ -365,6 +375,18 @@ interface GameState {
   setChallenges: (c: ChallengeState) => void;
   /** Batch 3d: replace the revealed fog zone list. */
   setFogRevealed: (ids: string[]) => void;
+  /** Batch 3e: append one resolved mission to this shift's replay history (capped). */
+  appendMissionHistory: (entry: MissionHistoryEntry) => void;
+  /** Batch 3e: replace the replay history (save restore). */
+  setMissionHistory: (history: MissionHistoryEntry[]) => void;
+  /** Batch 3e: save a photo snapshot to the profile gallery (capped). */
+  addSnapshot: (snapshot: PhotoSnapshot) => void;
+  /** Batch 3e: delete one gallery snapshot. */
+  removeSnapshot: (id: string) => void;
+  /** Batch 3e: replace the gallery (save restore). */
+  setSnapshots: (snapshots: PhotoSnapshot[]) => void;
+  /** Batch 3e: replace the tutorial campaign state. */
+  setTutorialCampaign: (campaign: TutorialCampaignState) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -461,6 +483,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   disasterWave: null,
   challenges: emptyChallengeState(),
   fogRevealed: [],
+  missionHistory: [],
+  snapshots: [],
+  tutorialCampaign: { ...EMPTY_TUTORIAL_CAMPAIGN },
 
   // Actions
   setPlayer: (player) => set({ player }),
@@ -493,6 +518,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     disasterWave: null,
     challenges: emptyChallengeState(),
     fogRevealed: [],
+    missionHistory: [],
+    snapshots: [],
+    tutorialCampaign: { ...EMPTY_TUTORIAL_CAMPAIGN },
     // Clear career records so a different player never sees stale stats.
     career: { ...EMPTY_CAREER },
     weekly: emptyWeekly(),
@@ -513,6 +541,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     // The adopted-cities atlas is deliberately KEPT — home bases persist across campaigns.
     districtSatisfaction: {},
     disasterWave: null,
+    // Batch 3e: a fresh campaign restarts the shift replay + tutorial chain.
+    // The photo gallery is deliberately KEPT — it is a profile gallery, not a campaign record.
+    missionHistory: [],
+    tutorialCampaign: { ...EMPTY_TUTORIAL_CAMPAIGN },
   hospital: null,
   helipad: null,
   placedPois: [],
@@ -543,6 +575,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     shift: { ...state.shift, ...updates },
   })),
   resetShift: () => set({
+    missionHistory: [],
     shift: { startedAt: Date.now(), missionsCompleted: 0, missionsFailed: 0, creditsEarned: 0, xpEarned: 0, levelUps: 0, dutiesHandled: 0, patrolDistanceKm: 0, patrolShifts: 0, zoneStats: {}, unitShiftStats: {}, tierCounts: {}, crewHoursRidden: 0, peakFatigue: 0, overworkEvents: 0, moraleBoosts: 0, restEvents: 0, seasonalClears: 0, seasonalEventId: null, cpuHandledCalls: 0, emsCleared: 0, wardExpansions: 0, wardBedsAdded: 0, wardCreditsSpent: 0 },
   }),
   recordCareerStats: (updates) => set((state) => ({
@@ -870,6 +903,12 @@ export const useGameStore = create<GameState>((set, get) => ({
   setDisasterWave: (wave) => set({ disasterWave: wave }),
   setChallenges: (c) => set({ challenges: c }),
   setFogRevealed: (ids) => set({ fogRevealed: ids }),
+  appendMissionHistory: (entry) => set((state) => ({ missionHistory: recordMissionHistory(state.missionHistory, entry) })),
+  setMissionHistory: (history) => set({ missionHistory: history }),
+  addSnapshot: (snapshot) => set((state) => ({ snapshots: addPhotoSnapshot(state.snapshots, snapshot) })),
+  removeSnapshot: (id) => set((state) => ({ snapshots: removePhotoSnapshot(state.snapshots, id) })),
+  setSnapshots: (snapshots) => set({ snapshots }),
+  setTutorialCampaign: (campaign) => set({ tutorialCampaign: campaign }),
   setShowDispatchCenter: (show: boolean) => set({ showDispatchCenter: show }),
 }));
 

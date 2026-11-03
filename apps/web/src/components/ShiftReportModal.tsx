@@ -26,6 +26,8 @@ import {
   CARD_WIDTH, CARD_HEIGHT,
 } from '@/lib/shareCard';
 import { useNotifications } from './NotificationCenter';
+import { PhotoGalleryModal } from './PhotoGalleryModal';
+import { shiftReplayStats, gradeForEntry, type MissionHistoryEntry } from '@/lib/batch3e';
 import { playClick } from '../utils/sound';
 
 interface ShiftReportModalProps {
@@ -54,6 +56,14 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
   const mapBounds = useGameStore((s) => s.mapBounds);
   const selectedCity = useGameStore((s) => s.selectedCity);
   const [showDebrief, setShowDebrief] = useState(false);
+  // Batch 3e: report vs replay tabs + photo gallery. The replay tab renders
+  // this shift's resolved missions (grades + response times) from the
+  // mission history the App completion/expire hooks record.
+  const [tab, setTab] = useState<'report' | 'replay'>('report');
+  const [showGallery, setShowGallery] = useState(false);
+  const missionHistory = useGameStore((s) => s.missionHistory);
+  const addSnapshot = useGameStore((s) => s.addSnapshot);
+  useEffect(() => { if (isOpen) setTab('report'); }, [isOpen]);
   const [copied, setCopied] = useState(false);
   const [sharedAsImage, setSharedAsImage] = useState<'clipboard' | 'download' | null>(null);
   // Best-effort total standing in the live contest (fetched when the debrief opens).
@@ -219,7 +229,7 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
             exit={{ scale: 0.92, y: 12, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-gray-900/95 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden"
+            className="w-full max-w-md bg-gray-900/95 border border-gray-700/50 rounded-2xl shadow-2xl max-h-[88vh] overflow-y-auto"
           >
             {/* Header */}
             <div className="relative bg-gradient-to-br from-dispatch-red/20 via-gray-900 to-gray-900 px-6 pt-6 pb-5 border-b border-gray-800">
@@ -236,6 +246,24 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
               </div>
             </div>
 
+            {/* Batch 3e tabs: report vs replay */}
+            <div className="px-5 pt-4 flex gap-2">
+              <button
+                onClick={() => setTab('report')}
+                className={`flex-1 p-2 rounded-lg text-xs font-bold transition-colors ${tab === 'report' ? 'bg-dispatch-red/20 border border-dispatch-red/30 text-white' : 'bg-gray-800/40 border border-gray-700/30 text-gray-400 hover:text-white'}`}
+              >
+                Shift Report
+              </button>
+              <button
+                onClick={() => setTab('replay')}
+                className={`flex-1 p-2 rounded-lg text-xs font-bold transition-colors ${tab === 'replay' ? 'bg-dispatch-cyan/20 border border-dispatch-cyan/30 text-white' : 'bg-gray-800/40 border border-gray-700/30 text-gray-400 hover:text-white'}`}
+              >
+                Replay · {missionHistory.length}
+              </button>
+            </div>
+
+            {tab === 'report' ? (
+            <>
             {/* Stats grid */}
             <div className="p-5 grid grid-cols-2 gap-3">
               {stats.map((s) => (
@@ -342,8 +370,41 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
               </div>
             )}
 
+            </>
+            ) : (
+              <ReplayTab history={missionHistory} />
+            )}
+
             {/* Footer */}
             <div className="px-6 pb-6 pt-2 space-y-2">
+              <button
+                onClick={() => {
+                  playClick();
+                  addSnapshot({
+                    id: `snap-${Date.now()}`,
+                    capturedAt: Date.now(),
+                    title: `${selectedCity?.name ?? 'Dispatch'} shift · ${new Date().toLocaleDateString()}`,
+                    card: shareData,
+                  });
+                  addNotification({
+                    type: 'success',
+                    title: 'Snapshot saved',
+                    message: 'This shift moment is in your photo gallery (Pause → Photo Gallery).',
+                    icon: '📸',
+                  });
+                }}
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-dispatch-cyan/20 border border-dispatch-cyan/30
+                           text-white text-sm font-semibold hover:bg-dispatch-cyan/30 transition-colors"
+              >
+                📸 Save Snapshot to Gallery
+              </button>
+              <button
+                onClick={() => { playClick(); setShowGallery(true); }}
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-800/40 border border-gray-700/30
+                           text-white text-sm font-semibold hover:bg-gray-800/60 transition-colors"
+              >
+                🖼️ View Photo Gallery
+              </button>
               <button
                 onClick={() => { playClick(); setShowDebrief(true); }}
                 className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-dispatch-cyan/20 border border-dispatch-cyan/30
@@ -362,6 +423,8 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
               </button>
             </div>
           </motion.div>
+
+          <PhotoGalleryModal isOpen={showGallery} onClose={() => setShowGallery(false)} />
 
           {/* End-of-shift debrief overlay */}
           <DebriefOverlay
@@ -384,6 +447,68 @@ export function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+// Batch 3e replay tab: this shift's resolved missions with grades and
+// response times, rendered from the persisted mission history — not from
+// live mission objects (finished missions leave the board).
+function ReplayTab({ history }: { history: MissionHistoryEntry[] }) {
+  const stats = shiftReplayStats(history);
+  const gradeColor: Record<string, string> = {
+    S: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    A: 'bg-dispatch-cyan/20 text-dispatch-cyan border-dispatch-cyan/40',
+    B: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    C: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+    D: 'bg-red-500/20 text-red-300 border-red-500/40',
+    F: 'bg-gray-700/40 text-gray-400 border-gray-600/40',
+  };
+  return (
+    <div className="p-5 space-y-3">
+      <div className="grid grid-cols-3 gap-2">
+        <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3 text-center">
+          <p className="text-[11px] uppercase tracking-wider text-gray-500">Clearance</p>
+          <p className="text-lg font-bold text-dispatch-green">{stats.clearancePct}%</p>
+        </div>
+        <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3 text-center">
+          <p className="text-[11px] uppercase tracking-wider text-gray-500">Avg Response</p>
+          <p className="text-lg font-bold text-white">{stats.avgResponseSec != null ? formatTimer(Math.round(stats.avgResponseSec)) : '--:--'}</p>
+        </div>
+        <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-3 text-center">
+          <p className="text-[11px] uppercase tracking-wider text-gray-500">Best Response</p>
+          <p className="text-lg font-bold text-white">{stats.bestResponseSec != null ? formatTimer(stats.bestResponseSec) : '--:--'}</p>
+        </div>
+      </div>
+      {history.length === 0 ? (
+        <p className="text-sm text-gray-400 leading-relaxed">
+          No resolved missions this shift yet — clear or expire a call and it appears here with its
+          grade and response time.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {[...history].reverse().map((e) => {
+            const grade = gradeForEntry(e);
+            return (
+              <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/40 border border-gray-700/30">
+                <span className={`w-8 h-8 shrink-0 rounded-lg border flex items-center justify-center text-sm font-black ${gradeColor[grade]}`}>
+                  {grade}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-white truncate">{e.name}</p>
+                  <p className="text-[11px] text-gray-500 capitalize">
+                    {e.category} · {e.cleared ? 'cleared' : 'expired'}
+                    {e.cleared ? ` · +$${e.creditsEarned.toLocaleString()} · +${e.xpEarned} XP` : ''}
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-gray-300 shrink-0">
+                  {e.responseSec != null ? formatTimer(e.responseSec) : '--:--'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

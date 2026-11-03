@@ -5,6 +5,12 @@
 // are sent automatically by the browser during the handshake, so no token
 // management is required on the client.
 
+import {
+  enqueueOfflineAction, drainOfflineQueue, dispatchActionEvent,
+  ACTION_QUEUED_EVENT, ACTION_FLUSHED_EVENT, ACTION_DROPPED_EVENT,
+  type QueuedAction,
+} from './batch3e';
+
 type MessageHandler = (message: any) => void;
 
 function getDefaultWsUrl(): string {
@@ -28,6 +34,14 @@ class WsClient {
   // (presence + unit relay working) could still read as "Offline" on the chip.
   // This fires on EVERY socket open/close so the UI mirrors reality.
   private connectionListener: ((connected: boolean) => void) | null = null;
+  // Batch 3e offline action queue (feature 19): messages sent while the
+  // socket is down queue in memory (FIFO, cap 50, max 3 attempts each)
+  // and flush on reconnect instead of failing silently. LIMITS, stated
+  // honestly: the queue is in-memory — a reload drops it (saves have the
+  // browser mirror; socket actions do not) — and a dropped entry is
+  // reported via ACTION_DROPPED_EVENT, never silently swallowed.
+  private offlineQueue: QueuedAction[] = [];
+  private queueSeq = 0;
 
   /** Begin a connection. The auth cookie is sent automatically. */
   connect() {
@@ -59,6 +73,8 @@ class WsClient {
       this.connected = true;
       this.reconnectAttempts = 0;
       this.connectionListener?.(true);
+      // Batch 3e: reconnect flushes the offline action queue (see limits above).
+      this.flushOfflineQueue();
     };
 
     this.ws.onmessage = (event) => {
@@ -123,6 +139,51 @@ class WsClient {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
     }
+  }
+
+  /**
+   * Batch 3e: send, or queue for the reconnect flush when offline. Returns
+   * 'sent' | 'queued' | 'rejected' (queue full — the caller must surface
+   * this; the action is NOT silently dropped). Queued entries fire
+   * ACTION_QUEUED_EVENT so the offline banner can count them.
+   */
+  sendOrQueue(message: any, kind: string = 'message'): 'sent' | 'queued' | 'rejected' {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+      return 'sent';
+    }
+    const res = enqueueOfflineAction(this.offlineQueue, {
+      id: `q-${Date.now()}-${this.queueSeq++}`,
+      kind,
+      payload: message,
+    });
+    if (!res.ok) return 'rejected';
+    this.offlineQueue = res.queue;
+    dispatchActionEvent(ACTION_QUEUED_EVENT);
+    return 'queued';
+  }
+
+  /** Queued offline actions waiting for a reconnect flush. */
+  getQueuedActionCount(): number {
+    return this.offlineQueue.length;
+  }
+
+  /** Flush the offline queue over the live socket (also runs on open). */
+  flushOfflineQueue(): void {
+    if (this.offlineQueue.length === 0) return;
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    const ws = this.ws;
+    const result = drainOfflineQueue(this.offlineQueue, (action) => {
+      try {
+        ws.send(JSON.stringify(action.payload));
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    this.offlineQueue = result.remaining;
+    if (result.sent.length > 0) dispatchActionEvent(ACTION_FLUSHED_EVENT);
+    if (result.dropped.length > 0) dispatchActionEvent(ACTION_DROPPED_EVENT);
   }
 
   /** Report a unit's live position for the multiplayer relay (throttled by the caller). */
