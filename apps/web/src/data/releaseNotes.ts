@@ -17,6 +17,16 @@ export function currentVersion(): string {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.55.0',
+    date: '2026-11-03',
+    title: 'City-select fix: scrollable city list, Back button, working search',
+    items: [
+      'The city list on Choose Your City now scrolls within the viewport — the full list is reachable and the heading is no longer clipped at the top.',
+      'A Back button is now on the city step (it was genuinely missing): back to the main menu for a new campaign, back to the live game for a relocation.',
+      'City search fixed: Enter was a dead key and empty results rendered nothing. Typing now filters the popular cities instantly, remote results merge below, Enter confirms the first match, and a search with no matches says so honestly.',
+    ],
+  },
+  {
     version: '0.54.0',
     date: '2026-11-03',
     title: 'Own-agency stations + CAD console overhaul: trooper & sheriff stations, Incoming, Radio, Assistant, Board',

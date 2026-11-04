@@ -3421,6 +3421,10 @@ function GameApp() {
             setRelocating(false);
             setGameScreen('playing');
           }}
+          onBack={() => {
+            setRelocating(false);
+            setGameScreen(relocating ? 'playing' : 'menu');
+          }}
         />
       </Suspense>
     );

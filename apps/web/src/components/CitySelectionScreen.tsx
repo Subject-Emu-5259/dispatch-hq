@@ -2,7 +2,7 @@
 // Dispatch HQ — City Selection Start Screen
 // ============================================
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, type KeyboardEvent } from 'react';
 import { useGameStore, type CityData } from '../stores/gameStore';
 import type { ServiceType } from '@dispatch-hq/shared';
 import { STATION_CONFIGS } from '@dispatch-hq/shared';
@@ -37,6 +37,8 @@ interface CitySelectionScreenProps {
   mode?: 'new' | 'relocate';
   /** Only used in relocate mode — returns to the game without moving. */
   onCancelRelocate?: () => void;
+  /** Return to the previous screen: the main menu for a new campaign, the live game for a relocation. */
+  onBack?: () => void;
 }
 
 const SERVICE_OPTIONS: { type: ServiceType; label: string; icon: string; color: string; description: string }[] = [
@@ -100,7 +102,7 @@ function estimateCityBounds(lat: number, lng: number): [[number, number], [numbe
   ];
 }
 
-export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocate }: CitySelectionScreenProps) {
+export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocate, onBack }: CitySelectionScreenProps) {
   const isRelocating = mode === 'relocate';
   const [step, setStep] = useState<'city' | 'service' | 'briefing'>('city');
   const [query, setQuery] = useState('');
@@ -180,6 +182,54 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
     setStep('service');
   };
 
+  // Instant roster filter: typing matches the 18 popular cities synchronously,
+  // so the list feels alive even while the remote geocode request is in flight
+  // — and if that request fails, local matches still show (the error line does
+  // not wipe them).
+  const localMatches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return POPULAR_CITIES.filter((c) => c.name.toLowerCase().includes(q));
+  }, [query]);
+
+  const selectRemoteResult = (r: GeocodingResult) => {
+    const parts = r.display_name.split(', ');
+    const city: CityData = {
+      name: parts[0],
+      state: r.address?.state,
+      country: r.address?.country || '',
+      lat: parseFloat(r.lat),
+      lng: parseFloat(r.lon),
+      population: undefined,
+    };
+    const precise = boundaryForCityData(city);
+    if (precise) {
+      city.bounds = precise.bounds;
+      city.boundary = precise.rings;
+    }
+    handleCitySelect(city);
+  };
+
+  const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    // Enter confirms the first match: roster match first, then remote result.
+    // With no match yet, flush the debounce and search immediately instead of
+    // doing nothing (the old behavior: Enter was a dead key).
+    if (localMatches.length > 0) {
+      handleCitySelect(localMatches[0]);
+      return;
+    }
+    if (results.length > 0) {
+      selectRemoteResult(results[0]);
+      return;
+    }
+    if (query.trim().length >= 2) {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+      searchCities(query.trim());
+    }
+  };
+
   const handleServiceSelect = (service: ServiceType) => {
     setSelectedService(service);
   };
@@ -249,7 +299,12 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-950">
+      {/* Scroll root: the old flex-centered column had no scroll path, so a
+          list taller than the viewport clipped at both ends (heading cut at
+          the top, cities unreachable at the bottom). The min-h-full flex
+          wrapper below centers short content and grows past the viewport for
+          tall content, letting this root scroll. */}
       {/* Background with animated gradient */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950" />
@@ -257,7 +312,8 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-dispatch-blue/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-lg mx-4">
+      <div className="relative z-10 min-h-full flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-lg">
         {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black text-white tracking-tight">
@@ -278,6 +334,15 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
         {/* City Selection Step */}
         {step === 'city' && (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="px-4 py-2 bg-gray-800 text-gray-400 hover:text-white border border-gray-700
+                           rounded-xl font-medium transition-colors"
+              >
+                ← Back
+              </button>
+            )}
             <h2 className="text-xl font-bold text-white text-center">
               {isRelocating ? 'Relocate Your Command' : 'Choose Your City'}
             </h2>
@@ -296,6 +361,7 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
                 type="text"
                 value={query}
                 onChange={(e) => handleQueryChange(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Search for a city..."
                 className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white
                            placeholder-gray-500 focus:outline-none focus:border-dispatch-red focus:ring-1
@@ -308,44 +374,56 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
               )}
             </div>
 
-            {/* Search Results */}
-            {results.length > 0 && (
+            {/* Search Results: roster matches first (instant, no network),
+                then remote geocode matches, de-duplicated by city name. */}
+            {(localMatches.length > 0 || results.length > 0) && (
               <div className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden max-h-48 overflow-y-auto">
-                {results.map((r) => {
-                  const parts = r.display_name.split(', ');
-                  const name = parts[0];
-                  const region = parts.slice(1, 3).join(', ');
-                  return (
-                    <button
-                      key={r.place_id}
-                      onClick={() => {
-                        const city: CityData = {
-                          name,
-                          state: r.address?.state,
-                          country: r.address?.country || '',
-                          lat: parseFloat(r.lat),
-                          lng: parseFloat(r.lon),
-                          population: undefined,
-                        };
-                        const precise = boundaryForCityData(city);
-                        if (precise) {
-                          city.bounds = precise.bounds;
-                          city.boundary = precise.rings;
-                        }
-                        handleCitySelect(city);
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-700/50
-                                 border-b border-gray-700/50 last:border-0 transition-colors text-left"
-                    >
-                      <span className="text-lg">📍</span>
-                      <div className="min-w-0">
-                        <div className="text-white font-medium truncate">{name}</div>
-                        <div className="text-gray-400 text-xs truncate">{region}</div>
+                {localMatches.map((city) => (
+                  <button
+                    key={`local-${city.name}`}
+                    onClick={() => handleCitySelect(city)}
+                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-700/50
+                               border-b border-gray-700/50 last:border-0 transition-colors text-left"
+                  >
+                    <span className="text-lg">📍</span>
+                    <div className="min-w-0">
+                      <div className="text-white font-medium truncate">{city.name}</div>
+                      <div className="text-gray-400 text-xs truncate">
+                        {city.state ? `${city.state}, ` : ''}{city.country}
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
+                {results
+                  .filter((r) => !localMatches.some((c) => c.name.split(',')[0].toLowerCase() === r.display_name.split(', ')[0].toLowerCase()))
+                  .map((r) => {
+                    const parts = r.display_name.split(', ');
+                    const name = parts[0];
+                    const region = parts.slice(1, 3).join(', ');
+                    return (
+                      <button
+                        key={r.place_id}
+                        onClick={() => selectRemoteResult(r)}
+                        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-700/50
+                                   border-b border-gray-700/50 last:border-0 transition-colors text-left"
+                      >
+                        <span className="text-lg">📍</span>
+                        <div className="min-w-0">
+                          <div className="text-white font-medium truncate">{name}</div>
+                          <div className="text-gray-400 text-xs truncate">{region}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
+            )}
+
+            {/* Honest empty state: a search that matched nothing says so
+                instead of rendering nothing (the old behavior). */}
+            {query.trim().length >= 2 && !isSearching && !error && localMatches.length === 0 && results.length === 0 && (
+              <p className="text-gray-400 text-xs text-center">
+                No cities found for “{query.trim()}” — try a popular city below.
+              </p>
             )}
 
             {error && (
@@ -566,6 +644,7 @@ export function CitySelectionScreen({ onGameStart, mode = 'new', onCancelRelocat
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
