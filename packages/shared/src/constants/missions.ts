@@ -265,7 +265,86 @@ export const FIRE_MISSIONS: MissionTemplate[] = [
     estimatedDuration: 300,
     poiTypes: ['park', 'road', 'residential'],
   },
+  // ── Staged batch (Addition 6): fire depth ──────────────────────────────
+  // Apartment fires (multi-unit residential), electrical fires, and a
+  // chemical-plant fire — the fire side's thin spots were high-density
+  // housing and industrial/hazmat-adjacent work, not another small fire.
+  {
+    id: 'apartment_fire',
+    spawnWeight: 0.9,
+    name: 'Apartment Fire',
+    description: 'Fire on an upper floor of a multi-unit apartment building',
+    category: 'fire',
+    icon: '🏢',
+    baseCredits: 900,
+    baseXp: 150,
+    difficulty: 5,
+    requirements: [
+      { unitType: 'engine', count: 2, minTrainingLevel: 1 },
+      { unitType: 'ladder', count: 1, minTrainingLevel: 1 },
+    ],
+    estimatedDuration: 300,
+    poiTypes: ['residential', 'high_rise'],
+  },
+  {
+    id: 'electrical_fire',
+    spawnWeight: 1.0,
+    name: 'Electrical Fire',
+    description: 'Faulty wiring sparked a fire inside the walls',
+    category: 'fire',
+    icon: '⚡',
+    baseCredits: 300,
+    baseXp: 60,
+    difficulty: 3,
+    requirements: [{ unitType: 'engine', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 180,
+    poiTypes: ['residential', 'commercial'],
+  },
+  {
+    id: 'chemical_plant_fire',
+    spawnWeight: 0.6,
+    name: 'Chemical Plant Fire',
+    description: 'Fire at an industrial site with chemical storage on premises',
+    category: 'fire',
+    icon: '☣️',
+    baseCredits: 1000,
+    baseXp: 170,
+    difficulty: 5,
+    requirements: [
+      { unitType: 'engine', count: 2, minTrainingLevel: 1 },
+      { unitType: 'ladder', count: 1, minTrainingLevel: 1 },
+    ],
+    estimatedDuration: 360,
+    poiTypes: ['industrial', 'warehouse'],
+  },
 ];
+
+// ── Staged batch (Addition 6): organized-crime layer ─────────────────────
+// Game-only fictional gangs. A gang is an identity + color that gang-linked
+// templates (gangId) attach to missions and suspect records; activity is
+// DERIVED from those records and mission history (lib/gangs), never stored
+// as a separate turf simulation. Territory is deliberately city-wide, not
+// district-bound: the game has no verified district-gang mapping, and
+// inventing one would be fabrication. Names are fictional by design —
+// never real-world groups.
+/** A gang identity for the organized-crime layer. */
+export interface Gang {
+  id: string;
+  name: string;
+  color: string;
+  blurb: string;
+}
+
+export const GANGS: Gang[] = [
+  { id: 'iron_vipers', name: 'Iron Vipers', color: '#65A30D', blurb: 'Vehicle-based crews — drive-bys and street hits.' },
+  { id: 'blackwood_crew', name: 'Blackwood Crew', color: '#7C3AED', blurb: 'Territory crews — turf disputes and group disturbances.' },
+  { id: 'copper_kings', name: 'Copper Kings', color: '#B45309', blurb: 'Business-facing crews — extortion and protection rackets.' },
+];
+
+export function gangById(id: string | null | undefined): Gang | null {
+  if (!id) return null;
+  return GANGS.find((g) => g.id === id) ?? null;
+}
 
 // Police Missions
 export const POLICE_MISSIONS: MissionTemplate[] = [
@@ -535,6 +614,253 @@ export const POLICE_MISSIONS: MissionTemplate[] = [
     ],
     estimatedDuration: 300,
     poiTypes: ['commercial', 'industrial', 'residential'],
+  },
+  // Staged batch: state trooper + county sheriff templates. These name the new
+  // unit types explicitly (requirement matching is exact) and use the existing
+  // road/highway poiTypes — they spawn on ordinary OSRM roads, exactly like
+  // today's highway-tagged calls. There is no real highway network in-game.
+  {
+    id: 'highway_pursuit',
+    spawnWeight: 0.5,
+    name: 'Highway Pursuit',
+    description: 'A fleeing vehicle is speeding along the highway corridor — troopers requested',
+    category: 'police',
+    icon: '🚔',
+    baseCredits: 650,
+    baseXp: 110,
+    difficulty: 5,
+    requirements: [{ unitType: 'trooper_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 240,
+    poiTypes: ['road', 'highway', 'intersection'],
+  },
+  {
+    id: 'commercial_vehicle_stop',
+    spawnWeight: 0.6,
+    name: 'Commercial Vehicle Stop',
+    description: 'A commercial vehicle inspection stop on the highway route',
+    category: 'police',
+    icon: '🚛',
+    baseCredits: 320,
+    baseXp: 55,
+    difficulty: 3,
+    requirements: [{ unitType: 'trooper_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 150,
+    poiTypes: ['road', 'highway'],
+  },
+  {
+    id: 'county_warrant_service',
+    spawnWeight: 0.6,
+    name: 'County Warrant Service',
+    description: 'Serve an outstanding county warrant at a rural address',
+    category: 'police',
+    icon: '📋',
+    baseCredits: 380,
+    baseXp: 65,
+    difficulty: 3,
+    requirements: [{ unitType: 'deputy_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 180,
+    poiTypes: ['residential', 'road', 'rural'],
+  },
+  {
+    id: 'county_patrol_call',
+    spawnWeight: 0.8,
+    name: 'County Patrol Call',
+    description: 'A disturbance outside city limits — sheriff deputies responding',
+    category: 'police',
+    icon: '⭐',
+    baseCredits: 240,
+    baseXp: 45,
+    difficulty: 2,
+    requirements: [{ unitType: 'deputy_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 120,
+    poiTypes: ['residential', 'rural', 'road'],
+  },
+  // ── Staged batch (Addition 6): crime depth ─────────────────────────────
+  // Home crime anchors to residential POIs, shopping crime to
+  // commercial/retail POIs (spawn anchors via template poiTypes; with no
+  // matching POI the road/zone point stands — see cityPois). Street crime
+  // sits on road/public/park points. Gang templates carry gangId, which
+  // buildMission copies to the mission and stamps on the linked suspect
+  // record — the organized-crime layer is data on the crime system, not a
+  // separate minigame. Traffic templates feed the stop-outcome mechanic
+  // (lib/trafficStops): cleared traffic missions resolve as citation,
+  // warning, or arrest from the linked record's real warrant state.
+  {
+    id: 'home_burglary',
+    spawnWeight: 1.0,
+    name: 'Home Burglary',
+    description: 'Break-in reported at a residence — suspects may still be nearby',
+    category: 'police',
+    icon: '🏠',
+    baseCredits: 190,
+    baseXp: 35,
+    difficulty: 2,
+    requirements: [{ unitType: 'patrol_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 120,
+    poiTypes: ['residential'],
+  },
+  {
+    id: 'home_invasion',
+    spawnWeight: 0.6,
+    name: 'Home Invasion',
+    description: 'Armed suspects forced entry into an occupied home',
+    category: 'police',
+    icon: '🚪',
+    baseCredits: 450,
+    baseXp: 90,
+    difficulty: 5,
+    requirements: [
+      { unitType: 'patrol_car', count: 2, minTrainingLevel: 1 },
+      { unitType: 'swat_van', count: 1, minTrainingLevel: 1 },
+    ],
+    estimatedDuration: 240,
+    poiTypes: ['residential'],
+  },
+  {
+    id: 'shoplifting',
+    spawnWeight: 1.1,
+    name: 'Shoplifting',
+    description: 'Store staff report a shoplifter in the aisles',
+    category: 'police',
+    icon: '🛍️',
+    baseCredits: 85,
+    baseXp: 16,
+    difficulty: 1,
+    requirements: [{ unitType: 'patrol_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 60,
+    poiTypes: ['commercial', 'retail'],
+  },
+  {
+    id: 'smash_and_grab',
+    spawnWeight: 0.7,
+    name: 'Smash and Grab',
+    description: 'Suspects smashed a storefront and grabbed merchandise',
+    category: 'police',
+    icon: '💎',
+    baseCredits: 350,
+    baseXp: 70,
+    difficulty: 4,
+    requirements: [{ unitType: 'patrol_car', count: 2, minTrainingLevel: 1 }],
+    estimatedDuration: 180,
+    poiTypes: ['commercial', 'retail'],
+  },
+  {
+    id: 'street_mugging',
+    spawnWeight: 1.0,
+    name: 'Street Mugging',
+    description: 'A pedestrian was robbed at street level',
+    category: 'police',
+    icon: '💰',
+    baseCredits: 150,
+    baseXp: 30,
+    difficulty: 2,
+    requirements: [{ unitType: 'patrol_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 90,
+    poiTypes: ['road', 'public'],
+  },
+  {
+    id: 'street_assault',
+    spawnWeight: 0.9,
+    name: 'Street Assault',
+    description: 'An assault in progress on the street — victim needs help',
+    category: 'police',
+    icon: '👊',
+    baseCredits: 280,
+    baseXp: 55,
+    difficulty: 3,
+    requirements: [{ unitType: 'patrol_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 120,
+    poiTypes: ['road', 'public', 'park'],
+  },
+  {
+    id: 'vandalism_spree',
+    spawnWeight: 0.9,
+    name: 'Vandalism Spree',
+    description: 'A group is damaging property across several storefronts',
+    category: 'police',
+    icon: '🖌️',
+    baseCredits: 140,
+    baseXp: 28,
+    difficulty: 2,
+    requirements: [{ unitType: 'patrol_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 90,
+    poiTypes: ['public', 'commercial'],
+  },
+  {
+    id: 'gang_drive_by',
+    spawnWeight: 0.6,
+    name: 'Gang Drive-By',
+    description: 'Shots fired from a passing vehicle — gang-linked incident',
+    category: 'police',
+    icon: '🚗',
+    baseCredits: 520,
+    baseXp: 105,
+    difficulty: 6,
+    requirements: [
+      { unitType: 'patrol_car', count: 2, minTrainingLevel: 1 },
+      { unitType: 'swat_van', count: 1, minTrainingLevel: 1 },
+    ],
+    estimatedDuration: 240,
+    poiTypes: ['road', 'commercial'],
+    gangId: 'iron_vipers',
+  },
+  {
+    id: 'gang_turf_dispute',
+    spawnWeight: 0.6,
+    name: 'Gang Turf Dispute',
+    description: 'Rival crews clashing over territory — large group disturbance',
+    category: 'police',
+    icon: '⚔️',
+    baseCredits: 460,
+    baseXp: 95,
+    difficulty: 5,
+    requirements: [{ unitType: 'patrol_car', count: 2, minTrainingLevel: 1 }],
+    estimatedDuration: 240,
+    poiTypes: ['commercial', 'public'],
+    gangId: 'blackwood_crew',
+  },
+  {
+    id: 'gang_extortion',
+    spawnWeight: 0.6,
+    name: 'Gang Extortion',
+    description: 'A business owner reports threats demanding protection money',
+    category: 'police',
+    icon: '💼',
+    baseCredits: 330,
+    baseXp: 65,
+    difficulty: 4,
+    requirements: [{ unitType: 'patrol_car', count: 2, minTrainingLevel: 1 }],
+    estimatedDuration: 180,
+    poiTypes: ['commercial', 'retail'],
+    gangId: 'copper_kings',
+  },
+  {
+    id: 'dui_roadside_stop',
+    spawnWeight: 0.8,
+    name: 'DUI Roadside Stop',
+    description: 'Officer stopped a swerving driver for a roadside check',
+    category: 'traffic',
+    icon: '🚓',
+    baseCredits: 260,
+    baseXp: 50,
+    difficulty: 3,
+    requirements: [{ unitType: 'patrol_car', count: 2, minTrainingLevel: 1 }],
+    estimatedDuration: 150,
+    poiTypes: ['road', 'highway'],
+  },
+  {
+    id: 'warrant_traffic_stop',
+    spawnWeight: 0.8,
+    name: 'Warrant Traffic Stop',
+    description: 'A plate check flagged a wanted subject — stop in progress',
+    category: 'traffic',
+    icon: '🔍',
+    baseCredits: 150,
+    baseXp: 30,
+    difficulty: 2,
+    requirements: [{ unitType: 'patrol_car', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 90,
+    poiTypes: ['road', 'highway', 'intersection'],
   },
 ];
 
@@ -842,6 +1168,52 @@ export const EMS_MISSIONS: MissionTemplate[] = [
     requirements: [{ unitType: 'ambulance', count: 1, minTrainingLevel: 1 }],
     estimatedDuration: 240,
     poiTypes: ['park', 'road'],
+  },
+  // ── Staged batch (Addition 6): EMS depth ───────────────────────────────
+  // The EMS side's thin spots were behavioral-health calls, street-crime
+  // victims (the police side's new street crime needs an EMS answer), and
+  // workplace injuries — not another generic medical call.
+  {
+    id: 'mental_health_crisis',
+    spawnWeight: 0.9,
+    name: 'Mental Health Crisis',
+    description: 'A person in crisis needs a calm, trained response',
+    category: 'ems',
+    icon: '🧠',
+    baseCredits: 220,
+    baseXp: 45,
+    difficulty: 2,
+    requirements: [{ unitType: 'paramedic_unit', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 150,
+    poiTypes: ['public', 'residential'],
+  },
+  {
+    id: 'assault_victim_care',
+    spawnWeight: 0.9,
+    name: 'Assault Victim Care',
+    description: 'A street-assault victim needs on-scene treatment',
+    category: 'ems',
+    icon: '🩹',
+    baseCredits: 300,
+    baseXp: 60,
+    difficulty: 3,
+    requirements: [{ unitType: 'ambulance', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 150,
+    poiTypes: ['road', 'public'],
+  },
+  {
+    id: 'workplace_injury',
+    spawnWeight: 0.8,
+    name: 'Workplace Injury',
+    description: 'A worker was injured on the factory floor',
+    category: 'ems',
+    icon: '🏭',
+    baseCredits: 320,
+    baseXp: 62,
+    difficulty: 3,
+    requirements: [{ unitType: 'ambulance', count: 1, minTrainingLevel: 1 }],
+    estimatedDuration: 150,
+    poiTypes: ['industrial', 'warehouse'],
   },
 ];
 

@@ -23,7 +23,7 @@ interface StationsPanelProps {
 
 const STATION_UNITS: Record<string, string[]> = {
   fire_station: ['engine', 'ladder', 'rescue', 'battalion_chief'],
-  police_station: ['patrol_car', 'swat_van', 'k9_unit', 'police_suv'],
+  police_station: ['patrol_car', 'swat_van', 'k9_unit', 'police_suv', 'trooper_car', 'deputy_car'],
   ems_station: ['ambulance', 'paramedic_unit', 'ems_supervisor', 'fire_ambulance'],
 };
 
@@ -57,6 +57,8 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
       ownerId: player.id,
       stationId: station.id,
       type: unitTypeKey as any,
+      // Staged batch: jurisdiction follows the unit type (legacy types = city).
+      jurisdiction: unitTypeKey === 'trooper_car' ? 'state' as const : unitTypeKey === 'deputy_car' ? 'county' as const : 'city' as const,
       name: `${config.name} ${Math.floor(Math.random() * 99)}`,
       status: 'available' as const,
       position: { ...station.position },

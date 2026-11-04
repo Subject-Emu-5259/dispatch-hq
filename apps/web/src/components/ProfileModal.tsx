@@ -5,16 +5,17 @@
 // settings blob), rank badge from the shared rank ladder, career records, and
 // account email — with a founder badge on the founder account.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, X, Crown, Star, Siren, Shield, HeartHandshake, Ticket, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useGameStore } from '@/stores/gameStore';
 import { rankForLevel, nextRank, advanceLevel } from '@dispatch-hq/shared';
 import { loadSettings, saveSettings, displayEmailFor } from '@/utils/settings';
 import { formatTimer } from '@/utils/timeFormat';
-import { redeemPromoCode, type PromoRewards } from '@/lib/apiClient';
+import { redeemPromoCode, fetchSocial, fetchMyAlliance, type PromoRewards, type SocialState, type AllianceSummary } from '@/lib/apiClient';
 import { setSavedPlayerBaseline } from '@/hooks/useSaveSystem';
-import { levelProgress } from '@/utils/levelProgress';
+import { levelProgress, lifetimeXpOf } from '@/utils/levelProgress';
+import { useExpandedMode } from '@/lib/expandedMode';
 import { GuestUpgradeCard } from './GuestUpgradeCard';
 import { FOUNDER_EMAIL } from '@/lib/founder';
 
@@ -29,6 +30,20 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const player = useGameStore((s) => s.player);
   const career = useGameStore((s) => s.career);
   const selectedService = useGameStore((s) => s.selectedService);
+  const shift = useGameStore((s) => s.shift);
+  const onlinePlayers = useGameStore((s) => s.onlinePlayers);
+  // Staged batch: expanded-only wider layout (main: always expanded; see
+  // lib/expandedMode). Compact/inline (Reddit) keeps max-w-md untouched.
+  const isExpanded = useExpandedMode();
+  const [social, setSocial] = useState<SocialState | null>(null);
+  const [alliance, setAlliance] = useState<AllianceSummary | null>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    // Real data only: on editions where these are stubs they resolve empty
+    // and the sections below stay hidden — never a fake friend/alliance.
+    fetchSocial().then(setSocial).catch(() => setSocial(null));
+    fetchMyAlliance().then((r) => setAlliance(r.alliance)).catch(() => setAlliance(null));
+  }, [isOpen]);
 
   const settings = loadSettings();
   const [name, setName] = useState(settings.profileName || player?.username || 'Commander');
@@ -126,7 +141,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           exit={{ scale: 0.92, opacity: 0 }}
           transition={{ type: 'spring', damping: 26, stiffness: 320 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-gray-900 border border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto"
+          className={`bg-gray-900 border border-gray-700/50 rounded-2xl shadow-2xl w-full ${isExpanded ? 'max-w-2xl' : 'max-w-md'} max-h-[85vh] overflow-y-auto`}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700/50">
             <div className="flex items-center gap-2.5">
@@ -147,7 +162,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             {/* Identity */}
             <div className="flex items-center gap-4">
               <div className="relative shrink-0">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 flex items-center justify-center text-3xl">
+                <div className="w-16 h-16 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-3xl">
                   {avatar}
                 </div>
                 {isFounder && (
@@ -237,12 +252,12 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               </div>
               <div className="mt-2 h-2 rounded-full bg-gray-900 overflow-hidden">
                 <div
-                  className={`h-full transition-all duration-500 ${atMaxLevel ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-dispatch-cyan to-dispatch-red'}`}
+                  className={`h-full transition-all duration-500 ${atMaxLevel ? 'bg-amber-400' : 'bg-dispatch-red'}`}
                   style={{ width: `${levelPct}%` }}
                 />
               </div>
               {!atMaxLevel && (
-                <p className="mt-1.5 text-[11px] text-gray-600">
+                <p className="mt-1.5 text-[11px] text-gray-500">
                   {(xpForNext - levelXp).toLocaleString()} XP to Level {level + 1}
                 </p>
               )}
@@ -261,19 +276,69 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-gray-900 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-dispatch-cyan to-dispatch-red"
+                  className="h-full bg-dispatch-red"
                   style={{ width: `${next ? Math.min(100, (level / next.minLevel) * 100) : 100}%` }}
                 />
               </div>
             </div>
 
             {/* Career records */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className={`grid ${isExpanded ? 'grid-cols-4' : 'grid-cols-2'} gap-2`}>
               <StatTile icon={<Siren className="w-3.5 h-3.5" />} label="Missions" value={String(career.missionsCompleted)} color="text-dispatch-green" />
               <StatTile icon={<Star className="w-3.5 h-3.5" />} label="Credits earned" value={career.totalCreditsEarned.toLocaleString()} color="text-amber-400" />
               <StatTile icon={<Shield className="w-3.5 h-3.5" />} label="Best response" value={fmtTime(career.bestResponseTime)} color="text-dispatch-cyan" />
               <StatTile icon={<HeartHandshake className="w-3.5 h-3.5" />} label="Mutual aid" value={String(career.mutualAidAnswered)} color="text-blue-400" />
+              {/* Staged batch: previously recorded but unshown career depth. */}
+              <StatTile icon={<AlertCircle className="w-3.5 h-3.5" />} label="Missions failed" value={String(career.missionsFailed)} color="text-dispatch-red" />
+              <StatTile icon={<Star className="w-3.5 h-3.5" />} label="Lifetime XP" value={lifetimeXpOf(player).toLocaleString()} color="text-amber-400" />
+              <StatTile icon={<Shield className="w-3.5 h-3.5" />} label="Streak" value={`${career.currentStreak} (best ${career.longestStreak})`} color="text-dispatch-cyan" />
+              <StatTile icon={<User className="w-3.5 h-3.5" />} label="Account age" value={player?.createdAt ? `${Math.max(0, Math.floor((Date.now() - new Date(player.createdAt).getTime()) / 86400000))} days` : '—'} color="text-gray-300" />
             </div>
+
+            {/* This shift (resets each shift — labeled as such, never lifetime). */}
+            <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">This Shift</p>
+              <p className="text-xs text-gray-300">
+                {shift.missionsCompleted} cleared · {shift.missionsFailed} failed · {shift.creditsEarned.toLocaleString()} credits · {shift.xpEarned.toLocaleString()} XP · {shift.patrolDistanceKm.toFixed(1)} km patrolled
+              </p>
+            </div>
+
+            {/* Commanders online now — real presence roster only. */}
+            {onlinePlayers.filter((p) => p.playerId !== player?.id).length > 0 && (
+              <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Commanders Online Now</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {onlinePlayers.filter((p) => p.playerId !== player?.id).slice(0, 12).map((p) => (
+                    <span key={p.playerId} className="text-[11px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">
+                      {p.username} · Lv {p.level}{p.city ? ` · ${p.city}` : ''} · {p.activity}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Friends + alliance — render ONLY when the server returns real
+                rows (main edition). Stubbed editions resolve empty and hide. */}
+            {social && social.friends.length > 0 && (
+              <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Friends ({social.friends.length})</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {social.friends.map((f) => (
+                    <span key={f.id} className="text-[11px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">
+                      {f.avatarEmoji} {f.username} · Lv {f.level}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {alliance && (
+              <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Alliance</p>
+                <p className="text-xs text-gray-300">
+                  {alliance.name} [{alliance.tag}] · Lv {alliance.level} · {alliance.memberCount} members · led by {alliance.leaderName}
+                </p>
+              </div>
+            )}
 
             {/* Redeem a promo code */}
             <div className="bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
@@ -303,7 +368,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   {redeemMsg.text}
                 </p>
               )}
-              <p className="mt-1.5 text-[11px] text-gray-600">
+              <p className="mt-1.5 text-[11px] text-gray-500">
                 Balance: {player?.credits?.toLocaleString() ?? 0} credits · {levelXp.toLocaleString()} XP into Lv {level}{atMaxLevel ? ' (max)' : ''}
               </p>
             </div>

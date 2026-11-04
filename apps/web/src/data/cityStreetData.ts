@@ -12,6 +12,10 @@ import { BERLIN_ZONE_STREETS, BERLIN_THROUGH_STREETS, BERLIN_CITY_LANDMARKS, BER
 import { TORONTO_STREETS } from './cityStreets.toronto';
 import { SYDNEY_STREETS } from './cityStreets.sydney';
 import { TOKYO_STREETS } from './cityStreets.tokyo';
+import { ST_LOUIS_ZONE_STREETS, ST_LOUIS_THROUGH_STREETS, ST_LOUIS_CITY_LANDMARKS, ST_LOUIS_ZONE_NAMES, ST_LOUIS_FALLBACK_STREETS } from './cityStreets.stLouis';
+import { DALLAS_ZONE_STREETS, DALLAS_THROUGH_STREETS, DALLAS_CITY_LANDMARKS, DALLAS_ZONE_NAMES, DALLAS_FALLBACK_STREETS } from './cityStreets.dallas';
+import { ATLANTA_ZONE_STREETS, ATLANTA_THROUGH_STREETS, ATLANTA_CITY_LANDMARKS, ATLANTA_ZONE_NAMES, ATLANTA_FALLBACK_STREETS } from './cityStreets.atlanta';
+import { SEATTLE_ZONE_STREETS, SEATTLE_THROUGH_STREETS, SEATTLE_CITY_LANDMARKS, SEATTLE_ZONE_NAMES, SEATTLE_FALLBACK_STREETS } from './cityStreets.seattle';
 
 import type { CityStreetPool } from './cityStreets';
 
@@ -160,5 +164,34 @@ export const CITY_STREET_POOLS: Record<string, CityStreetPool> = {
       Object.entries(TOKYO_STREETS).map(([k, v]: [string, { districts: string[] }]) => [k, v.districts[0] ?? k])
     ),
     fallbackStreets: ['Chūō-dōri', 'Shinjuku-dōri', 'Meiji-dōri', 'Ginza-dōri', 'Harumi-dōri', 'Yasukuni-dōri', 'Aoyama-dōri', 'Roppongi-dōri'],
+  },
+  // Staged batch: four new US cities (box-only bounds, no polygon yet).
+  'st. louis': {
+    zoneStreets: ST_LOUIS_ZONE_STREETS,
+    throughStreets: ST_LOUIS_THROUGH_STREETS,
+    cityLandmarks: ST_LOUIS_CITY_LANDMARKS,
+    zoneNames: ST_LOUIS_ZONE_NAMES,
+    fallbackStreets: ST_LOUIS_FALLBACK_STREETS,
+  },
+  'dallas': {
+    zoneStreets: DALLAS_ZONE_STREETS,
+    throughStreets: DALLAS_THROUGH_STREETS,
+    cityLandmarks: DALLAS_CITY_LANDMARKS,
+    zoneNames: DALLAS_ZONE_NAMES,
+    fallbackStreets: DALLAS_FALLBACK_STREETS,
+  },
+  'atlanta': {
+    zoneStreets: ATLANTA_ZONE_STREETS,
+    throughStreets: ATLANTA_THROUGH_STREETS,
+    cityLandmarks: ATLANTA_CITY_LANDMARKS,
+    zoneNames: ATLANTA_ZONE_NAMES,
+    fallbackStreets: ATLANTA_FALLBACK_STREETS,
+  },
+  'seattle': {
+    zoneStreets: SEATTLE_ZONE_STREETS,
+    throughStreets: SEATTLE_THROUGH_STREETS,
+    cityLandmarks: SEATTLE_CITY_LANDMARKS,
+    zoneNames: SEATTLE_ZONE_NAMES,
+    fallbackStreets: SEATTLE_FALLBACK_STREETS,
   },
 };

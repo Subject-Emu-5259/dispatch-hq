@@ -17,6 +17,28 @@ export function currentVersion(): string {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.53.0',
+    date: '2026-11-03',
+    title: 'Dispatch & crime expansion: auto-follow, POI-anchored crime, CAD, jail & court, troopers, new cities, law',
+    items: [
+      'Auto-follow unit: the camera follows a selected unit, toggleable and default OFF — manual pan or zoom breaks follow until you re-select or re-enable it.',
+      'Crime spawn audit: calls are now fieldability-gated (difficulty within level+2 and your fleet can staff every requirement), stacking can no longer put two calls on the same point, and suspect pools replenish below 25. A POI seam is built, but the registry ships empty pending a real POI export — no locations were fabricated; spawns still land on-map inside city bounds.',
+      'Crime system audit fixes: escalation capped at 1 per mission plus a 60s clock, jail occupancy no longer counts transferred inmates forever, and booking counts as an arrest carrying the arresting unit\u2019s jurisdiction.',
+      'Crime depth: 12 new police templates (home burglary/invasion, shoplifting, smash-and-grab, mugging, assault, vandalism, 3 gang, 2 traffic stops) with real outcomes — active warrant means arrest, otherwise 60% citation / 40% warning, recorded in history and career counters. 3 new fire templates and 3 new EMS templates for parity.',
+      'Gangs are fictional only (Iron Vipers, Blackwood Crew, Copper Kings); activity is derived from real records and live missions, never a separate turf sim.',
+      'CAD expansion: a modular tab registry — future tabs plug in as one registry entry plus one render branch.',
+      'Jail & court: pay bail, court hearings that re-sentence from the statute table, statute and disposition lines, and a Released tab that actually populates.',
+      'State Trooper and County Sheriff: trooper car (state, L6, highway pursuit) and deputy car (county, L2, warrant service); both satisfy patrol-car requirements and stamp jurisdiction on purchase and bookings.',
+      'Cities: St. Louis (L7), Dallas (L9), Atlanta (L13), Seattle (L17) — centres verified, bounds are estimate boxes, no polygon yet.',
+      'Law: 30 game-only charges (DHQ-101–DHQ-130); sentences and bail derive from the highest-class charge, risk only moves the value inside the range.',
+      'Admin completion: promo codes, broadcast to player inboxes, seasonal contests, coin ledger, and a real rate-limit card. Upgrades stay N/A and shop orders stay unavailable — no checkout exists, so no fake buttons.',
+      'Profile: modal widened in fullscreen only; profile depth from real records (missions failed, lifetime XP, streaks, account age, this-shift snapshot). Unit cards redesigned with a wrapping glance strip plus full unit profile blocks; sidebar and crime cards polished and expanded with real mission data.',
+      'CAD criminal records: sectioned detail view (identity, status & affiliation, charges & sentencing with visible codes, active incident, jail & court) — no more plain list, nothing invented.',
+      'Settings-save fix: settings had no notion of recency, so an old server row or an older save snapshot could overwrite your newer settings on return. Writes are now timestamped and newer wins — Audio, speed, patrol, and accessibility settings survive coming back.',
+      'Hotfixes: bonus grants keep the slot label and preview, save slots outside 1–3 are rejected, and the map proxies have timeouts, a 24h geocode cache, and per-IP caps.',
+    ],
+  },
+  {
     version: '0.52.0',
     date: '2026-11-03',
     title: 'Alliance activity feed — plus the November 2026 update',

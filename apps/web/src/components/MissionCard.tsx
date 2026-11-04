@@ -18,6 +18,7 @@ import { missionService } from '@/lib/rewards';
 import { requiredServicesForMission, unitCommittedElsewhere, dispatchPlanParts } from '@/lib/dispatchLogic';
 import type { Mission, Unit } from '@dispatch-hq/shared';
 import { difficultyTierFor, TIER_META } from '@dispatch-hq/shared';
+import { buildMissionCardDetail } from '@/lib/missionCardDetail';
 import { useNotifications } from './NotificationCenter';
 import { wsClient } from '@/lib/wsClient';
 
@@ -194,6 +195,11 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
 
   const progressPercent = mission.progress || 0;
 
+  // Staged batch (Addition 9): the collapsed-visible detail row — crime
+  // type, severity, place, gang link, escalation, responding units — all
+  // derived from this mission record (see lib/missionCardDetail).
+  const detail = buildMissionCardDetail(mission);
+
   return (
     <motion.div
       key={mission.id}
@@ -220,7 +226,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
       className={`
         p-3 rounded-xl cursor-pointer transition-all duration-200
         ${isSelected 
-          ? 'bg-dispatch-red/20 border border-dispatch-red/50 shadow-lg shadow-dispatch-red/10' 
+          ? 'bg-dispatch-red/20 border border-dispatch-red/50' 
           : 'bg-gray-800/60 border border-gray-700/30 hover:bg-gray-800/80 hover:border-gray-600/50'
         }
         ${isExpired ? 'opacity-50' : ''}
@@ -328,6 +334,41 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
           <Clock className="w-3 h-3" />
           <span className="text-[11px] font-mono">{formatTimer(mission.timeRemaining)}</span>
         </div>
+      </div>
+
+      {/* Staged batch (Addition 9): detail row — type, severity, place,
+          gang link, escalation, responding units. Visible collapsed (not
+          expanded-only) so the board reads at a glance; every chip comes
+          from this mission's own record, and absent data shows no chip. */}
+      <div className="mt-1.5 flex flex-wrap items-center gap-1">
+        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-300 border border-gray-700/40">
+          {detail.categoryLabel}
+        </span>
+        {detail.priority && detail.priorityTone && (
+          <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded border capitalize ${detail.priorityTone}`}>
+            {detail.priority} priority
+          </span>
+        )}
+        {detail.poiLabel && (
+          <span className="text-[11px] px-1.5 py-0.5 rounded bg-gray-800/80 text-gray-400 border border-gray-700/40">
+            📍 {detail.poiLabel}
+          </span>
+        )}
+        {detail.gangName && detail.gangColor && (
+          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded border" style={{ color: detail.gangColor, borderColor: `${detail.gangColor}55`, backgroundColor: `${detail.gangColor}14` }}>
+            {detail.gangName}
+          </span>
+        )}
+        {detail.escalated && (
+          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/30">
+            ⚠️ Escalated
+          </span>
+        )}
+        {detail.respondingCount > 0 && (
+          <span className="text-[11px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/25">
+            {detail.respondingCount} unit{detail.respondingCount === 1 ? '' : 's'} responding
+          </span>
+        )}
       </div>
 
       {/* Expanded details with unit picker */}
@@ -492,7 +533,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
               disabled={selectedUnitIds.size === 0 || isRouting}
               className={`w-full mt-2 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
                 selectedUnitIds.size > 0 && !isRouting
-                  ? 'bg-dispatch-red text-white hover:bg-red-700 active:scale-[0.98] shadow-lg shadow-red-500/20'
+                  ? 'bg-dispatch-red text-white hover:bg-red-700 active:scale-[0.98]'
                   : 'bg-gray-700/50 text-gray-500 cursor-not-allowed border border-gray-700/30'
               }`}
             >              <Send className="w-3.5 h-3.5" />

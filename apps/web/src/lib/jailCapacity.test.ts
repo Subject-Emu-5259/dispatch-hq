@@ -17,10 +17,13 @@ describe('jailCapacity', () => {
 });
 
 describe('jailOccupancy', () => {
-  it('counts only non-released inmates', () => {
+  it('counts only inmates physically in the jail (released and transferred excluded)', () => {
     expect(jailOccupancy(inmates(3))).toBe(3);
     expect(jailOccupancy([...inmates(2), ...inmates(2, 'released')])).toBe(2);
-    expect(jailOccupancy(inmates(1, 'transferred'))).toBe(1);
+    // Staged batch fix: transferred inmates are out-of-county, not in a
+    // cell. The old expectation (1) encoded the bug — a transferred inmate
+    // held a cell forever, so a full jail could never drain.
+    expect(jailOccupancy(inmates(1, 'transferred'))).toBe(0);
     expect(jailOccupancy([])).toBe(0);
   });
 });

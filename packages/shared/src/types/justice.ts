@@ -24,10 +24,14 @@ export interface CriminalRecord {
   arrestCount: number;
   /** Link to an active mission/report when present. */
   missionId?: string;
+  /** Staged batch (Addition 6): gang affiliation stamped when a gang-linked
+   * mission links this record (see GANGS). Absent = no gang affiliation
+   * produced by the game's own systems — never invented. */
+  gangId?: string;
   notes: string;
 }
 
-export type InmateStatus = 'booking' | 'held' | 'released' | 'transferred';
+export type InmateStatus = 'booking' | 'held' | 'released' | 'transferred' | 'awaiting_trial';
 
 export interface Inmate {
   id: string;
@@ -44,6 +48,10 @@ export interface Inmate {
   bailAmount: number;
   status: InmateStatus;
   riskLevel: RiskLevel;
+  /** Staged batch: jurisdiction of the booking agency ('city' when unset). */
+  bookedByJurisdiction?: 'city' | 'county' | 'state';
+  /** Staged batch: court hearing outcome, once a hearing has been held. */
+  verdict?: 'pending' | 'guilty' | 'dismissed';
 }
 
 // ── EMS: patient transport & city hospital ──

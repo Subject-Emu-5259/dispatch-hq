@@ -12,7 +12,7 @@ import {
   Phone, Cpu, Layers, Bug, Activity, Keyboard, BookOpen, ShieldCheck, Users,
   CloudRain, CloudFog, Flame, Radar, TriangleAlert,
   X, Compass, Zap, Handshake, Mail,
-  Wifi, Wrench, Hospital, Plane, Landmark, Gift, Clock, ArrowLeftRight, Inbox,
+  Wifi, Wrench, Hospital, Plane, Landmark, Gift, Clock, ArrowLeftRight, Inbox, History, Camera,
   GraduationCap, Globe, BadgeDollarSign,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -253,6 +253,9 @@ export function TopBar({
       { icon: BookOpen, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Shift Report', desc: 'End every shift with the debrief — per-zone heat, patrol coverage, crew fatigue, CPU-handled calls, and a shareable recap card.' },
       { icon: Gift, tint: 'bg-emerald-500/15 text-emerald-400', title: 'Daily login bonus', desc: 'Claim free coins on the main menu every day — Commander members get 5 coins, free players get 2. The bonus resets at midnight UTC.' },
       { icon: BadgeDollarSign, tint: 'bg-amber-500/15 text-amber-400', title: 'Shop & membership', desc: 'Tap the coin balance to open the Shop — buy Commander membership ($9.99/mo) for ×2 credits and ×2 training speed, or grab coin packs for instant upgrades. Try promo code WELCOME-50 for 50 free coins.' },
+      { icon: Compass, tint: 'bg-teal-500/15 text-teal-400', title: 'Guided First Shift', desc: 'Finish the tour and take the Guided First Shift — a traffic → fire → EMS tutorial chain that tracks your progress in your save.' },
+      { icon: Clock, tint: 'bg-blue-500/15 text-blue-400', title: 'Shift scheduling', desc: 'Set day, night, and weekend shifts per unit — covered shifts clear faster, uncovered shifts run slower, and coverage shows in the shift report.' },
+      { icon: Wifi, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Offline queue', desc: 'Actions queue (up to 50) and flush when the socket reopens — the banner counts queued actions. A reload drops queued non-save actions.' },
     ],
     gameplay: [
       { icon: CloudRain, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Weather shifts tactics', desc: 'Storms boost water and road rescues, fog slows response times, heatwaves drive medical calls.' },
@@ -262,11 +265,25 @@ export function TopBar({
       { icon: ArrowLeftRight, tint: 'bg-blue-500/15 text-blue-400', title: 'Relocate Command', desc: 'Move your fleet to another city from the pause menu (level-gated). A briefing shows exactly what carries over before you commit — cost scales with fleet size.' },
       { icon: Globe, tint: 'bg-emerald-500/15 text-emerald-400', title: 'City traits shape gameplay', desc: 'Every city has a unique trait that changes how it plays: Paris has Urban Density (more fires), London has Congestion Zone (slower response), Tokyo has Megacity Pulse (faster spawns). City choice is strategy, not just flavor.' },
       { icon: Radio, tint: 'bg-amber-500/15 text-amber-400', title: 'City-flavored radio', desc: 'Radio dispatch sounds like the city you\'re in — London says \'Acknowledged\', Paris says \'Reçu\', Tokyo says \'Shōchi\', Berlin says \'Verstanden\'. Call signs, codes, and dispatcher names change too.' },
+      { icon: ShieldCheck, tint: 'bg-green-500/15 text-green-400', title: 'Veterancy', desc: 'Units earn XP and ranks as they clear calls — veterans clear faster.' },
+      { icon: GraduationCap, tint: 'bg-purple-500/15 text-purple-400', title: 'Training academy', desc: '3 free courses finish on the game clock and grant cert-tier bonuses. Certs boost, never gate.' },
+      { icon: Activity, tint: 'bg-orange-500/15 text-orange-400', title: 'Fatigue matters', desc: 'Rested crews clear faster, exhausted crews run slower. Rest between shifts.' },
+      { icon: Map, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Districts', desc: 'Each city unlocks 8 districts — satisfaction per district shifts response times, call volume, and rewards.' },
+      { icon: TriangleAlert, tint: 'bg-dispatch-red/15 text-dispatch-red', title: 'Disaster waves', desc: 'Disasters roll in 3 stages with growing missions and rewards, ending in a contained notice.' },
+      { icon: CloudRain, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Seasons', desc: 'Winter Storm (Jan 12–18) and Summer Wildfire (Aug 10–16) bring seasonal badges and achievements.' },
+      { icon: Trophy, tint: 'bg-amber-500/15 text-amber-400', title: 'Daily & weekly challenges', desc: 'Daily challenges pay 100 XP, weekly challenges pay 500 XP — check the tracker.' },
+      { icon: Layers, tint: 'bg-pink-500/15 text-pink-400', title: 'Station livery', desc: 'Paint stations with livery and 5 patches.' },
+      { icon: CloudFog, tint: 'bg-gray-500/15 text-gray-400', title: 'Fog, deeper', desc: 'Fog clears zone by zone as you explore — full clears pay a bonus.' },
+      { icon: Cpu, tint: 'bg-purple-500/15 text-purple-400', title: 'Tech tree: Operations', desc: 'Drone Recon (+25% clear speed, all calls), Hazmat Team (+30% hazmat), K9 Unit (+20% police).' },
+      { icon: History, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Incident replay', desc: 'The Shift Report Replay tab grades every resolved mission S–F with response times and clearance %.' },
+      { icon: Camera, tint: 'bg-amber-500/15 text-amber-400', title: 'Photo gallery', desc: 'Save shift-report snapshots (up to 12) and view them from the Shift Report footer or the pause menu.' },
+      { icon: Radio, tint: 'bg-amber-500/15 text-amber-400', title: 'Radio follows missions', desc: 'Radio lines now follow mission state (text-first, no new audio).' },
     ],
     aid: [
       { icon: Handshake, tint: 'bg-blue-500/15 text-blue-400', title: 'Cross-service calls', desc: 'Partner-agency requests land in the blue Mutual Aid section of the Dispatch Board — never mixed silently into your queue.' },
       { icon: Zap, tint: 'bg-amber-500/15 text-amber-400', title: '25% bonus', desc: 'Answering a Mutual Aid request pays a 25% bonus and counts toward the Mutual Aid leaderboard stat.' },
       { icon: Cpu, tint: 'bg-purple-500/15 text-purple-400', title: 'Let the city answer', desc: 'Enable "City Answers Mutual Aid Calls" in Settings and partner-agency calls are handled by simulated units for a token payout.' },
+      { icon: Handshake, tint: 'bg-blue-500/15 text-blue-400', title: 'Live mutual aid', desc: 'Shared calls relay live with a 60/40 split and CLEARED BY badges.' },
     ],
     facilities: [
       { icon: Landmark, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Place Landmarks', desc: 'Build POIs (schools, parks, gas stations, government buildings) from the Place Landmark button — they anchor new EMS, fire, and police calls with radio callouts.' },
@@ -274,6 +291,8 @@ export function TopBar({
       { icon: Plane, tint: 'bg-blue-500/15 text-blue-400', title: 'Air Ambulance Helipad', desc: 'Critical patients only airlift when you build the helipad — Remote Rescue and Highway Trauma calls bring the criticals for a faster flight to your pad.' },
       { icon: Radar, tint: 'bg-green-500/15 text-green-400', title: 'Coverage & gaps', desc: 'Toggle Station Coverage to see each station\u2019s effective radius (perks included), or Coverage Gaps to spot neighborhoods beyond every station\u2019s reach.' },
       { icon: Building2, tint: 'bg-amber-500/15 text-amber-400', title: 'Stations & upgrades', desc: 'Build fire, police, and EMS stations on the map — each has 5 upgrade levels that grow capacity, crew, and response radius.' },
+      { icon: Hospital, tint: 'bg-dispatch-red/15 text-dispatch-red', title: 'Capacity decisions', desc: 'Hospitals and jails have capacity calls — divert (−3 trust) or transfer (0.5× credit).' },
+      { icon: Globe, tint: 'bg-emerald-500/15 text-emerald-400', title: 'Adopt-a-city', desc: 'Searched cities persist in your atlas (cap 24) and level up as you clear calls there.' },
     ],
     online: [
       { icon: Wifi, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Online Gameplay', desc: 'Multiplayer runs on the Dispatch HQ server: other commanders\u2019 units appear on your map, with live chat and presence. Toggle it in Settings → Network — Off is a private single-player session that keeps saving either way.' },
@@ -283,6 +302,7 @@ export function TopBar({
       { icon: Handshake, tint: 'bg-blue-500/15 text-blue-400', title: 'Recruitment board', desc: 'Leaders post listings with a tag, description, and min-level requirement — browse the directory and request to join an open alliance.' },
       { icon: Users, tint: 'bg-dispatch-red/15 text-dispatch-red', title: 'Co-op dispatch', desc: 'Shared missions broadcast in real time to your alliance — respond from the Alliance tab. When an ally clears a call, you see a CLEARED BY badge. Level 2+ to view the board, Level 3+ to dispatch, Level 4+ for cross-service.' },
       { icon: Inbox, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Inbox', desc: 'Admin broadcasts (PSAs, notices, messages) land as durable inbox messages — the bell icon shows your unread count.' },
+      { icon: Wifi, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Reconnect', desc: 'If the socket drops, the client retries with capped 30s backoff and the health poll re-arms it — or hit the reconnect button.' },
     ],
     social: [
       { icon: User, tint: 'bg-dispatch-cyan/15 text-dispatch-cyan', title: 'Your profile', desc: 'Rank, career records, and an editable display name + avatar.' },
@@ -309,6 +329,8 @@ export function TopBar({
         icon: Mail, tint: 'bg-blue-500/15 text-blue-400', title: 'Talk to the founder', desc: 'Direct line to the Dispatch HQ team for feedback and feature ideas.',
         action: { label: 'Email the founder', onClick: () => { window.location.href = `mailto:${FOUNDER_EMAIL}`; } },
       },
+      { icon: TriangleAlert, tint: 'bg-amber-500/15 text-amber-400', title: 'Save failures, honestly', desc: 'If a save fails you see what failed — stale write, transport, or size — with a retry path, never a silent fall to local-only.' },
+      { icon: Users, tint: 'bg-purple-500/15 text-purple-400', title: 'Main menu community', desc: 'Community links are Reddit-only now — the Facebook button is gone and the Reddit button spans the full row.' },
     ],
   };
 

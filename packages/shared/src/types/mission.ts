@@ -33,7 +33,20 @@ export interface MissionTemplate {
   poiTypes: string[];
   /** How often this template is selected during mission generation. Higher = more common. */
   spawnWeight?: number;
+  /**
+   * Staged batch (Addition 6): organized-crime layer. When set, missions
+   * from this template belong to that gang (see GANGS): the mission carries
+   * the gangId, the linked suspect record is stamped with it, and gang
+   * activity derives from those records + mission history. Game-only
+   * fictional gangs — never real-world groups.
+   */
+  gangId?: string;
 }
+
+/** Traffic-stop resolution (staged batch, Addition 6): how a cleared
+ * traffic mission ends, resolved from the linked record's real data
+ * (active warrant → arrest) or the citation/warning roll. */
+export type TrafficStopOutcome = 'citation' | 'warning' | 'arrest';
 
 export interface MissionRequirement {
   unitType: string;
@@ -71,8 +84,14 @@ export interface Mission {
 
   /** Chain missions: stable chain id + 1-based stage (spawned by nextChainMission). */
   chainId?: string;
+  /** Staged batch: how many times this mission has escalated (capped at 1). */
+  escalations?: number;
   chainStage?: number;
   chainTotal?: number;
+  /** Staged batch (Addition 6): gang this incident belongs to (see GANGS). */
+  gangId?: string;
+  /** Staged batch (Addition 6): how a cleared traffic mission resolved. */
+  stopOutcome?: TrafficStopOutcome;
 
   /** Disaster events: set on missions spawned by a city-wide disaster. */
   disasterId?: string;

@@ -100,6 +100,10 @@ export interface CareerStats {
   longestStreak: number;
   /** Cross-service Mutual Aid requests answered (bonus payouts). */
   mutualAidAnswered: number;
+  /** Staged batch (Addition 6): traffic-stop outcomes on cleared stops. */
+  citationsIssued: number;
+  trafficWarnings: number;
+  stopArrests: number;
 }
 
 export const EMPTY_CAREER: CareerStats = {
@@ -111,6 +115,9 @@ export const EMPTY_CAREER: CareerStats = {
   currentStreak: 0,
   longestStreak: 0,
   mutualAidAnswered: 0,
+  citationsIssued: 0,
+  trafficWarnings: 0,
+  stopArrests: 0,
 };
 
 interface GameState {
@@ -142,6 +149,10 @@ interface GameState {
   // Missions
   missions: Mission[];
   selectedMissionId: string | null;
+  /** Staged batch: unit the map camera follows (null = no follow). Kept in
+   *  the store — not App-local — so MapView, SelectedUnitPanel, and CAD can
+   *  all read/clear it. Default null (off); follow is explicit opt-in. */
+  followedUnitId: string | null;
 
   // Patrol
   patrolRoutes: PatrolRoute[];
@@ -280,6 +291,7 @@ interface GameState {
   setHelipad: (helipad: Helipad | null) => void;
   setMissions: (missions: Mission[]) => void;
   selectMission: (id: string | null) => void;
+  setFollowedUnitId: (id: string | null) => void;
 
   // Patrol
   addPatrolRoute: (route: PatrolRoute) => void;
@@ -410,6 +422,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Missions
   missions: [],
   selectedMissionId: null,
+  followedUnitId: null,
 
   // City & Service
   selectedCity: null,
@@ -566,6 +579,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     weekly: emptyWeekly(),
     selectedStationId: null,
     selectedMissionId: null,
+    followedUnitId: null,
     defaultPostMissionBehavior: 'auto',
     defaultPatrolMode: 'zone',
     cooperationEnabled: true,
@@ -756,6 +770,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   })),
   setMissions: (missions) => set({ missions }),
   selectMission: (id) => set({ selectedMissionId: id }),
+  setFollowedUnitId: (id) => set({ followedUnitId: id }),
 
   addPatrolRoute: (route) => set((state) => ({
     patrolRoutes: [...state.patrolRoutes, route],
@@ -818,8 +833,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       i.id === id ? { ...i, ...updates } : i
     ),
   })),
+  // Staged batch fix: release MARKS the row 'released' instead of deleting
+  // it, so the CountyJailPanel Released tab can actually populate.
+  // Occupancy already excludes 'released', so this frees the cell.
   releaseInmate: (id) => set((state) => ({
-    inmates: state.inmates.filter((i) => i.id !== id),
+    inmates: state.inmates.map((i) => (i.id === id ? { ...i, status: 'released' as const } : i)),
   })),
 
   // EMS: patient transport & city hospital

@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useGameStore } from '@/stores/gameStore';
 import { bookInmate } from '@/lib/jailCapacity';
+import { buildRecordDetail } from '@/lib/recordDetail';
+import { gangById } from '@dispatch-hq/shared';
 import { broadcastRadioMessage } from '@/utils/radioEvents';
 import type { CriminalRecord } from '@dispatch-hq/shared';
 
@@ -32,6 +34,7 @@ export default function CriminalRecordsPanel() {
   const [selected, setSelected] = useState<CriminalRecord | null>(null);
   const [filter, setFilter] = useState<FilterMode>('all');
   const addInmate = useGameStore((s) => s.addInmate);
+  const updateCriminalRecord = useGameStore((s) => s.updateCriminalRecord);
   const stations = useGameStore((s) => s.stations);
   const inmates = useGameStore((s) => s.inmates);
 
@@ -60,7 +63,10 @@ export default function CriminalRecordsPanel() {
     if (!selectedCity) return;
     setSelected(null);
     const { inmate, transferred } = bookInmate(record, selectedCity.name, stations, inmates);
-    addInmate(inmate);
+    // Staged batch: manual booking marks the warrant served, counts the
+    // arrest, and stamps the booking as a city booking (no unit context).
+    updateCriminalRecord(record.id, { warrantStatus: 'served', arrestCount: (record.arrestCount ?? 0) + 1 });
+    addInmate({ ...inmate, bookedByJurisdiction: 'city' });
     broadcastRadioMessage({
       from: selectedCity?.name ? `${selectedCity.name} PD` : 'Dispatch',
       to: 'All Units',
@@ -140,7 +146,7 @@ export default function CriminalRecordsPanel() {
 
       <div className="flex-1 overflow-y-auto p-2 space-y-2">
         {filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-600">
+          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <FileSearch className="w-8 h-8 mb-2 opacity-40" />
             <p className="text-xs">No records match.</p>
           </div>
@@ -189,7 +195,7 @@ function RecordRow({
       layout
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`w-full text-left bg-gray-900/40 border rounded-lg p-2.5 transition-colors ${
+      className={`w-full text-left bg-gray-900/40 border rounded-lg p-3 transition-colors ${
         selected ? 'border-dispatch-red/60 bg-dispatch-red/5' : 'border-white/5 hover:bg-gray-800/50'
       }`}
     >
@@ -200,7 +206,7 @@ function RecordRow({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium text-white truncate">{record.lastName}, {record.firstName}</span>
+              <span className="text-sm font-semibold text-white truncate">{record.lastName}, {record.firstName}</span>
               <span className="text-[11px] text-gray-500">{record.dateOfBirth} • {record.citizenship}</span>
             </div>
             <div className="text-[11px] text-gray-400 truncate flex items-center gap-1">
@@ -220,6 +226,14 @@ function RecordRow({
           <span className={`text-[11px] px-1.5 py-0.5 rounded border ${riskStyles[record.riskLevel]}`}>
             {riskLabels[record.riskLevel]}
           </span>
+          {(() => {
+            const gang = gangById(record.gangId);
+            return gang ? (
+              <span className="text-[11px] px-1.5 py-0.5 rounded border" style={{ color: gang.color, borderColor: `${gang.color}55`, backgroundColor: `${gang.color}14` }}>
+                {gang.name}
+              </span>
+            ) : null;
+          })()}
           {record.warrantStatus === 'active' && (
             <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1">
               <AlertTriangle className="w-2.5 h-2.5" /> Warrant
@@ -256,6 +270,13 @@ function RecordDetailModal({
   onBook: () => void;
   onFlag: () => void;
 }) {
+  // Staged batch (Addition 7): the detail view joins the record to the
+  // rest of the game — active incident, jail/court state, gang affiliation,
+  // computed sentence/bail — through buildRecordDetail, so every section
+  // below renders stored data, never invented flavor.
+  const missions = useGameStore((s) => s.missions);
+  const inmates = useGameStore((s) => s.inmates);
+  const detail = useMemo(() => buildRecordDetail(record, missions, inmates), [record, missions, inmates]);
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -269,12 +290,12 @@ function RecordDetailModal({
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-white/10 flex items-center justify-center text-2xl font-bold text-white">
+            <div className="w-14 h-14 rounded-full bg-gray-800 border-2 border-white/10 flex items-center justify-center text-2xl font-bold text-white">
               {record.firstName[0]}{record.lastName[0]}
             </div>
             <div>
               <h3 className="text-base font-bold text-white">{record.lastName}, {record.firstName}</h3>
-              <div className="text-[11px] text-gray-400">Record {record.id.split('_')[1]?.toUpperCase()} • {record.city}</div>
+              <div className="text-[11px] text-gray-400">Record {record.id.split('_')[1]?.toUpperCase()} • {record.city}, {record.state}</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -285,6 +306,8 @@ function RecordDetailModal({
           </div>
         </div>
 
+        {/* Section: Identity */}
+        <SectionTitle>Identity</SectionTitle>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
           <InfoBox icon={<Calendar className="w-3 h-3" />} label="DOB" value={record.dateOfBirth} />
           <InfoBox icon={<Ruler className="w-3 h-3" />} label="Height" value={`${Math.floor(record.heightIn / 12)}' ${record.heightIn % 12}"`} />
@@ -296,20 +319,9 @@ function RecordDetailModal({
           )}
         </div>
 
-        <div className="mt-4">
-          <div className="text-[11px] text-gray-500 mb-1 flex items-center gap-1"><Gavel className="w-3 h-3" /> Charges</div>
-          <div className="flex flex-wrap gap-1.5">
-            {record.charges.map((c, i) => (
-              <span key={i} className="text-[11px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">{c}</span>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="bg-gray-950 border border-white/5 rounded-lg p-2">
-            <div className="text-[11px] text-gray-500 mb-0.5">Prior Arrests</div>
-            <div className="text-base font-semibold text-white">{record.arrestCount}</div>
-          </div>
+        {/* Section: Status & affiliation */}
+        <SectionTitle>Status &amp; Affiliation</SectionTitle>
+        <div className="grid grid-cols-2 gap-2">
           <div className="bg-gray-950 border border-white/5 rounded-lg p-2">
             <div className="text-[11px] text-gray-500 mb-0.5">Warrant Status</div>
             <div className={`text-sm font-semibold flex items-center gap-1 ${record.warrantStatus === 'active' ? 'text-red-400' : 'text-green-400'}`}>
@@ -317,7 +329,71 @@ function RecordDetailModal({
               {record.warrantStatus === 'active' ? 'Active Warrant' : 'No Active Warrant'}
             </div>
           </div>
+          <div className="bg-gray-950 border border-white/5 rounded-lg p-2">
+            <div className="text-[11px] text-gray-500 mb-0.5">Prior Arrests</div>
+            <div className="text-base font-semibold text-white">{record.arrestCount}</div>
+          </div>
+          <div className="bg-gray-950 border border-white/5 rounded-lg p-2 col-span-2">
+            <div className="text-[11px] text-gray-500 mb-0.5">Gang Affiliation</div>
+            {detail.gang ? (
+              <div className="text-sm font-semibold" style={{ color: detail.gang.color }}>{detail.gang.name} <span className="text-[11px] font-normal text-gray-400">— {detail.gang.blurb}</span></div>
+            ) : (
+              <div className="text-sm text-gray-400">None on file</div>
+            )}
+          </div>
         </div>
+
+        {/* Section: Charges & sentencing (game codes, visible — not tooltips) */}
+        <SectionTitle>Charges &amp; Sentencing</SectionTitle>
+        <div className="space-y-1.5">
+          {detail.chargeLines.map((line, i) => (
+            <div key={i} className="flex items-center justify-between gap-2 bg-gray-950 border border-white/5 rounded-lg px-2.5 py-1.5">
+              <span className="text-xs text-gray-200">{line.charge}</span>
+              {line.statute ? (
+                <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                  {line.statute.code} · {line.statute.class} · {line.statute.sentenceMinDays}–{line.statute.sentenceMaxDays} days · bail ${line.statute.bailMin.toLocaleString()}–${line.statute.bailMax.toLocaleString()}
+                </span>
+              ) : (
+                <span className="text-[11px] text-gray-500 whitespace-nowrap">No game statute on file</span>
+              )}
+            </div>
+          ))}
+          <div className="text-[11px] text-gray-400 pt-1">
+            {detail.computed
+              ? <>Computed from top charge: <span className="text-gray-200 font-medium">{detail.computed.sentenceDays} days · ${detail.computed.bailAmount.toLocaleString()} bail</span> (game codes DHQ-###, not real law)</>
+              : <>No computed sentence — none of these charges has a game statute on file.</>}
+          </div>
+        </div>
+
+        {/* Section: Active incident */}
+        <SectionTitle>Active Incident</SectionTitle>
+        {detail.linkedMission ? (
+          <div className="bg-gray-950 border border-white/5 rounded-lg p-2.5 text-xs">
+            <div className="text-sm font-medium text-white">{detail.linkedMission.name}</div>
+            <div className="text-gray-400 mt-0.5 capitalize">{detail.linkedMission.category} · status: {detail.linkedMission.status}</div>
+          </div>
+        ) : (
+          <div className="text-xs text-gray-500">No active incident linked to this record.</div>
+        )}
+
+        {/* Section: Jail & court */}
+        <SectionTitle>Jail &amp; Court</SectionTitle>
+        {detail.inmate ? (
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <InfoBox icon={<Building2 className="w-3 h-3" />} label="Status" value={detail.inmate.status} />
+            <InfoBox icon={<Building2 className="w-3 h-3" />} label="Booking #" value={detail.inmate.bookingNumber} />
+            <InfoBox icon={<Building2 className="w-3 h-3" />} label="Cell Block" value={detail.inmate.cellBlock} />
+            <InfoBox icon={<Building2 className="w-3 h-3" />} label="Jurisdiction" value={detail.inmate.bookedByJurisdiction ?? 'city'} />
+            <InfoBox icon={<Gavel className="w-3 h-3" />} label="Sentence" value={`${detail.inmate.sentenceDays} days`} />
+            <InfoBox icon={<Gavel className="w-3 h-3" />} label="Bail" value={`$${detail.inmate.bailAmount.toLocaleString()}`} />
+            <div className="col-span-2 bg-gray-950 border border-white/5 rounded-lg p-2">
+              <div className="text-[11px] text-gray-500 mb-0.5">Disposition</div>
+              <div className="text-[11px] text-gray-200">{detail.disposition}</div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs text-gray-500">Not in custody — no jail record for this subject.</div>
+        )}
 
         {record.notes && (
           <div className="mt-3 bg-dispatch-red/5 border border-dispatch-red/20 rounded-lg p-2 text-xs text-gray-300">
@@ -337,6 +413,10 @@ function RecordDetailModal({
       </motion.div>
     </motion.div>
   );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <div className="mt-4 mb-1.5 text-xs font-semibold text-gray-500">{children}</div>;
 }
 
 function InfoBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {

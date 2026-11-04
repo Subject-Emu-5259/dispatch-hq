@@ -49,9 +49,11 @@ const PlayersPanel = lazy(() => import('./components/PlayersPanel').then((m) => 
 import type { CityData } from './stores/gameStore';
 import { generateInitialRoster, autoAssignCrew } from '@/lib/employees';
 import { bookInmate } from '@/lib/jailCapacity';
+import { topStatuteForCharges } from '@/lib/chargeStatutes';
 import { analyticsSessionStart, analyticsMissionCompleted, analyticsSessionEnd } from '@/lib/analytics';
 import { buildPatientFromMission, buildInvestigationFromMission } from '@/lib/agencies';
 import { buildMission, buildTrafficDutyMission, getCityRadiusKm, activeMissionCap } from '@/lib/spawn';
+import { resolveTrafficStopOutcome } from '@/lib/trafficStops';
 import { serviceCanAnswerMission, backupServicesFor, serviceDisplayName, dispatchUnitToMission, findNearestBackupUnit } from '@/lib/dispatchLogic';
 import { getWeatherEffects, currentWeather } from '@/lib/weather';
 import { getCityTrait } from '@/lib/cityTraits';
@@ -2159,6 +2161,14 @@ function GameApp() {
               // lands in this shift's history (the replay tab renders grades
               // from it), and a clear of the campaign's current step type
               // advances the guided first-shift chain.
+              // Staged batch (Addition 6): traffic-stop outcomes + gang
+              // attribution ride on the same history entry, resolved from
+              // real data — the linked suspect record's warrant state for
+              // stops, the mission's own gangId for gang incidents.
+              const stopRecord = m.category === 'traffic'
+                ? useGameStore.getState().criminalRecords.find((r) => r.missionId === m.id) ?? null
+                : null;
+              const stopResolution = m.category === 'traffic' ? resolveTrafficStopOutcome(stopRecord) : null;
               useGameStore.getState().appendMissionHistory({
                 id: m.id,
                 name: m.name,
@@ -2168,7 +2178,18 @@ function GameApp() {
                 cleared: true,
                 creditsEarned: earnedCredits,
                 xpEarned: earnedXp,
+                gangId: m.gangId,
+                stopOutcome: stopResolution?.outcome,
               });
+              if (stopResolution?.outcome === 'arrest') {
+                addNotification({
+                  type: 'info',
+                  title: 'Traffic Stop → Arrest',
+                  message: stopResolution.reason,
+                  icon: '🚓',
+                  duration: 5000,
+                });
+              }
               {
                 const camp = useGameStore.getState().tutorialCampaign;
                 const adv = advanceTutorialCampaign(camp, m.category);
@@ -2238,6 +2259,10 @@ function GameApp() {
                 currentStreak: career.currentStreak + 1,
                 longestStreak: Math.max(career.longestStreak, career.currentStreak + 1),
                 mutualAidAnswered: career.mutualAidAnswered + (isMutualAid ? 1 : 0),
+                // Staged batch (Addition 6): traffic-stop outcomes.
+                citationsIssued: career.citationsIssued + (stopResolution?.outcome === 'citation' ? 1 : 0),
+                trafficWarnings: career.trafficWarnings + (stopResolution?.outcome === 'warning' ? 1 : 0),
+                stopArrests: career.stopArrests + (stopResolution?.outcome === 'arrest' ? 1 : 0),
               });
               // Weekly snapshot: this clear counts toward the Friends leaderboard.
               const { weekly, recordWeekly } = useGameStore.getState();
@@ -2353,9 +2378,14 @@ function GameApp() {
                 updateCriminalRecord(linked.id, { warrantStatus: 'served' });
                 // 50% chance subject is booked (traffic/low risk = citation, high/violent = booked).
                 if (linked.riskLevel === 'high' || linked.riskLevel === 'violent' || (linked.charges.length > 0 && Math.random() > 0.5)) {
-                  const { stations: jailStations, inmates: jailInmates } = useGameStore.getState();
+                  const { stations: jailStations, inmates: jailInmates, units: jailUnits, updateCriminalRecord: bumpRecord } = useGameStore.getState();
                   const booking = bookInmate(linked, selectedCity.name, jailStations, jailInmates);
-                  addInmate(booking.inmate);
+                  // Staged batch: booking counts as an arrest, and the
+                  // booking carries the arresting unit's jurisdiction
+                  // (first assigned police unit, else city).
+                  bumpRecord(linked.id, { arrestCount: (linked.arrestCount ?? 0) + 1 });
+                  const arresting = m.assignedUnits.map((uid) => jailUnits.find((u) => u.id === uid)).find((u) => u && (u.type === 'patrol_car' || u.type === 'police_suv' || u.type === 'trooper_car' || u.type === 'deputy_car' || u.type === 'swat_van' || u.type === 'k9_unit'));
+                  addInmate({ ...booking.inmate, bookedByJurisdiction: arresting?.jurisdiction ?? 'city' });
                   broadcastRadioMessage({
                     from: selectedCity.name ? `${selectedCity.name} PD` : 'Dispatch',
                     to: 'All Units',
@@ -2369,7 +2399,7 @@ function GameApp() {
                   broadcastRadioMessage({
                     from: selectedCity.name ? `${selectedCity.name} PD` : 'Dispatch',
                     to: 'All Units',
-                    text: `Subject ${linked.firstName} ${linked.lastName} cited and released for ${linked.charges.slice(0, 2).join(', ')}${linked.charges.length > 2 ? '...' : ''}.`,
+                    text: `Subject ${linked.firstName} ${linked.lastName} cited and released for ${linked.charges.slice(0, 2).join(', ')}${linked.charges.length > 2 ? '...' : ''}${(() => { const st = topStatuteForCharges(linked.charges); return st ? ` (game code ${st.code})` : ''; })()}.`,
                     type: 'broadcast',
                     service: 'police',
                   });
@@ -2421,9 +2451,12 @@ function GameApp() {
 
         // Countdown active undispatched missions
         if (m.status === 'active') {
-          // Mission escalation: standing unresolved calls can intensify
-          if (m.timeRemaining < (m.totalTime || 600) * 0.5 && Math.random() < 0.03 && m.difficulty < 10) {
-            updateMission(m.id, { difficulty: m.difficulty + 1, creditsReward: Math.round(m.creditsReward * 1.15), xpReward: Math.round(m.xpReward * 1.15), priority: getMissionPriority(m.difficulty + 1, m.category, m.totalTime) });
+          // Mission escalation (staged batch: capped at ONE escalation per
+          // mission, and the clock gains 60s so the harder call stays
+          // answerable — previously difficulty rose repeatedly with no
+          // extra time and no requirement change).
+          if (m.timeRemaining < (m.totalTime || 600) * 0.5 && Math.random() < 0.03 && m.difficulty < 10 && (m.escalations ?? 0) < 1) {
+            updateMission(m.id, { difficulty: m.difficulty + 1, creditsReward: Math.round(m.creditsReward * 1.15), xpReward: Math.round(m.xpReward * 1.15), priority: getMissionPriority(m.difficulty + 1, m.category, m.totalTime), escalations: (m.escalations ?? 0) + 1, timeRemaining: m.timeRemaining + 60 });
             addNotification({ type: 'emergency', title: 'Situation Escalating', message: `${m.name} situation is worsening. Send units now.`, icon: '⚠️', duration: 4000 });
             // Desktop push: only fires while the tab is hidden and push is enabled.
             if (m.assignedUnits.length === 0) notify('Critical call unassigned', `${m.name} needs units now`);
@@ -2451,6 +2484,7 @@ function GameApp() {
               cleared: false,
               creditsEarned: 0,
               xpEarned: 0,
+              gangId: m.gangId,
             });
             // Career stats: a failed mission breaks the completion streak.
             const { career, recordCareerStats } = useGameStore.getState();
@@ -3824,7 +3858,7 @@ function GameApp() {
 
       {selectedUnitId && (
         <Suspense fallback={null}>
-          <SelectedUnitPanel unitId={selectedUnitId} onClose={() => setSelectedUnitId(null)} onOpenEmployees={() => setShowEmployeesPanel(true)} />
+          <SelectedUnitPanel unitId={selectedUnitId} onClose={() => { setSelectedUnitId(null); useGameStore.getState().setFollowedUnitId(null); }} onOpenEmployees={() => setShowEmployeesPanel(true)} />
         </Suspense>
       )}
 

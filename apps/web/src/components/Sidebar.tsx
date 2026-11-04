@@ -1167,7 +1167,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-3 pb-3 space-y-1">
+                    <div className="px-3 pb-3 space-y-2">
                       {/* Tab switch: Global vs Friends vs Alliances vs Seasonal */}
                       <div className="flex items-center gap-1.5 px-3 pb-2">
                         {(['global', 'friends', 'alliances', 'seasonal'] as const).map((tab) => (

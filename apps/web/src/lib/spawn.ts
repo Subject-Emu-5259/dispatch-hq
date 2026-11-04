@@ -15,6 +15,8 @@ import { snapPointToRoad } from '@/utils/routing';
 import { patrolZonesForCity } from '@/lib/patrol/patrolZones';
 import { getWeatherEffects, currentWeather } from '@/lib/weather';
 import { findAnchorPoi, POI_TYPE_META, type Poi } from '@/lib/pois';
+import { builtInPoisForCity } from '@/lib/cityPois';
+import { generateRecordPool } from '@/lib/justice';
 import { adaptAirliftTemplate, emsAirliftEligible } from '@/lib/cpuMutualAid';
 import { getCityTrait } from '@/lib/cityTraits';
 import type { Unit } from '@dispatch-hq/shared';
@@ -199,15 +201,69 @@ function missionZonesForCity(city: CityData | null, center: GeoPoint, radiusKm: 
  * Attach a suspect from the records pool to a law-enforcement call so clearing
  * the scene can flow into an arrest/booking. Runs inside buildMission for every
  * police/traffic mission (incl. traffic duties and Aftermath follow-ups).
+ * Returns the linked record id (or null) so callers can stamp further
+ * affiliation data — e.g. the gang layer (Addition 6).
  */
-export function attachSuspectToMission(mission: Pick<Mission, 'id' | 'category'>): void {
-  if (mission.category !== 'police' && mission.category !== 'traffic') return;
+export function attachSuspectToMission(mission: Pick<Mission, 'id' | 'category'>): string | null {
+  if (mission.category !== 'police' && mission.category !== 'traffic') return null;
   const st = useGameStore.getState();
-  const pool = st.criminalRecords.filter((r) => !r.missionId);
-  if (pool.length === 0) return;
+  let pool = st.criminalRecords.filter((r) => !r.missionId);
+  // Staged batch fix: the 250-record pool used to shrink monotonically and
+  // arrests silently stopped once exhausted. Replenish when it runs low.
+  if (pool.length < 25) {
+    const city = st.selectedCity;
+    const fresh = generateRecordPool(city?.name ?? 'West Memphis', city?.state ?? '', 50, st.criminalRecords.length);
+    st.setCriminalRecords([...st.criminalRecords, ...fresh]);
+    pool = [...pool, ...fresh.filter((r) => !r.missionId)];
+  }
+  if (pool.length === 0) return null;
   const rec = pool[Math.floor(Math.random() * pool.length)];
   st.linkCriminalRecordToMission(rec.id, mission.id);
   st.updateCriminalRecord(rec.id, { warrantStatus: 'active' });
+  return rec.id;
+}
+
+/**
+ * Staged batch (Addition 6): stamp the gang affiliation on the suspect
+ * record linked to a gang mission. The record keeps its own identity,
+ * charges, and warrant state — only the affiliation is added, and only
+ * when the mission itself is gang-linked. No affiliation is ever invented
+ * for a non-gang mission.
+ */
+export function stampGangAffiliation(missionId: string, gangId: string): void {
+  const st = useGameStore.getState();
+  const rec = st.criminalRecords.find((r) => r.missionId === missionId);
+  if (rec) st.updateCriminalRecord(rec.id, { gangId });
+}
+
+/** Staged batch: can the player's fleet field this template? Difficulty must
+ *  be within level+2 (the chain-seed rule) and every requirement must be met
+ *  by owned units at the required training level. Trooper/deputy cars count
+ *  toward patrol_car requirements (see dispatchLogic alias). Pure — testable. */
+export function canFieldTemplate(
+  template: Pick<MissionTemplate, 'difficulty' | 'requirements'>,
+  units: Pick<Unit, 'type' | 'trainingLevel'>[],
+  level: number,
+): boolean {
+  if (template.difficulty > level + 2) return false;
+  return template.requirements.every((req) => {
+    const count = units.filter((u) =>
+      u.trainingLevel >= req.minTrainingLevel &&
+      (u.type === req.unitType ||
+        (req.unitType === 'patrol_car' && (u.type === 'trooper_car' || u.type === 'deputy_car'))),
+    ).length;
+    return count >= req.count;
+  });
+}
+
+/** Staged batch: minimum separation between live missions (km). A candidate
+ *  landing on top of a live call is nudged once; the clamp keeps it in-bounds. */
+export const MISSION_STACK_MIN_KM = 0.1;
+
+export function stackingShift(location: GeoPoint, liveLocations: GeoPoint[]): GeoPoint {
+  const collides = liveLocations.some((p) => haversineKm(location, p) < MISSION_STACK_MIN_KM);
+  if (!collides) return location;
+  return { lat: location.lat + 0.0015, lng: location.lng + 0.0015 };
 }
 
 function clampLocationToBounds(point: GeoPoint, bounds?: [[number, number], [number, number]] | null): GeoPoint {
@@ -457,6 +513,20 @@ export async function buildMission(
     const st = useGameStore.getState();
     template = adaptAirliftTemplate(template, getMissionsForService('ems'), emsAirliftEligible(st.units, st.helipad));
   }
+  // Staged batch: organic picks must be answerable — difficulty within
+  // level+2 and requirements fieldable by the owned fleet. Re-roll a few
+  // times; if nothing passes, keep the original (never block spawning).
+  // Seasonal forced templates are exempt (they are supposed to repeat).
+  if (!opts.template && !seasonalForced) {
+    const st = useGameStore.getState();
+    const playerLevel = st.player?.level ?? 1;
+    if (!canFieldTemplate(template, st.units, playerLevel)) {
+      for (let r = 0; r < 8; r++) {
+        const alt = capTemplateRarity(service, cityName);
+        if (canFieldTemplate(alt, st.units, playerLevel)) { template = alt; break; }
+      }
+    }
+  }
   const extraDifficulty = Math.random() < 0.08 && level > 2 ? 1 : 0;
   const difficulty = Math.min(10, template.difficulty + extraDifficulty);
   // City trait reward multipliers (v0.35.0): harder cities pay better.
@@ -468,17 +538,29 @@ export async function buildMission(
 
   const location = await pickMissionLocation(service, template.poiTypes, city, opts.origin);
 
-  // ── POI anchoring (v0.22.10) ─────────────────────────────────────────────
-  // When a PLAYER-PLACED named place (v0.22.12) suits the call type and sits
-  // near the chosen location, the mission attaches to it: the marker sits on
-  // the POI, the description names it, and radio traffic references it (see
-  // radioDialogueEngine missionName). Pure road calls never anchor. With no
-  // landmarks placed yet, calls stay street-level.
+  // ── POI anchoring (v0.22.10, staged batch: built-in seam) ─────────────
+  // Placed POIs first (player intent wins), then built-in POIs from the
+  // verified registry (cityPois — ships empty until a real OSM/Nominatim
+  // export is added, so behavior is unchanged until then). An anchor that
+  // would teleport the call outside the city boundary is rejected and the
+  // road-snapped point stands. Pure road calls never anchor.
   let anchorPoi: Poi | null = null;
   if (!opts.origin) {
-    anchorPoi = findAnchorPoi(useGameStore.getState().placedPois, location, template.poiTypes);
+    const builtIns: Poi[] = builtInPoisForCity(city?.name ?? '').map((b) => ({
+      id: `builtin:${b.name}`, type: b.type as Poi['type'], name: b.name, position: b.position, buckets: b.buckets,
+    }));
+    anchorPoi = findAnchorPoi([...useGameStore.getState().placedPois, ...builtIns], location, template.poiTypes);
+    if (anchorPoi && city?.boundary && !isPointInBoundary(anchorPoi.position, city.boundary)) anchorPoi = null;
   }
-  const missionLocation = anchorPoi ? anchorPoi.position : location;
+  let missionLocation = anchorPoi ? anchorPoi.position : location;
+  // Staged batch: never stack two live calls on the same point/POI.
+  {
+    const live = useGameStore.getState().missions
+      .filter((m) => m.status !== 'completed' && m.status !== 'failed')
+      .map((m) => m.location);
+    const shifted = stackingShift(missionLocation, live);
+    if (shifted !== missionLocation) missionLocation = clampLocationToBounds(shifted, city?.bounds ?? null);
+  }
 
   const name = opts.prefix ? `${opts.prefix}${template.name}` : template.name;
   const description = opts.originDescription
@@ -509,9 +591,17 @@ export async function buildMission(
     createdAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + template.estimatedDuration * 1000).toISOString(),
     priority: getMissionPriority(difficulty, template.category, template.estimatedDuration),
+    // Staged batch (Addition 6): gang-linked templates carry their gang.
+    gangId: template.gangId,
   };
 
-  if (!opts.skipSuspect) attachSuspectToMission(mission);
+  if (!opts.skipSuspect) {
+    attachSuspectToMission(mission);
+    // Gang affiliation lands on the linked suspect record — the same record
+    // the CAD records view (Addition 7) reads, so mission, record, and
+    // gang activity always agree.
+    if (template.gangId) stampGangAffiliation(mission.id, template.gangId);
+  }
 
   // ~8% of normal spawns seed a chain so staged sequences appear naturally.
   // The first stage must match the city's service (so it lands on the main board)

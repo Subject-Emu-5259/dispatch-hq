@@ -58,6 +58,10 @@ export interface MissionHistoryEntry {
   cleared: boolean;
   creditsEarned: number;
   xpEarned: number;
+  /** Staged batch (Addition 6): gang this resolved incident belonged to. */
+  gangId?: string;
+  /** Staged batch (Addition 6): how a cleared traffic mission resolved. */
+  stopOutcome?: 'citation' | 'warning' | 'arrest';
 }
 
 /** Cap: the replay tab shows one shift, not a career archive. */

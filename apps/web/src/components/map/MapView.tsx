@@ -354,7 +354,13 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
     patrolRoutes, nearbyStations, nearbyUnits, showPatrolHeat, showStationCoverage, showCoverageGap,
     selectedCity, gameMinutes, myAlliance, showAlliesOnMap,
     placedPois, hospital, helipad, setHospital, setHelipad,
+    followedUnitId, setFollowedUnitId,
   } = useGameStore();
+  // Staged batch (auto-follow): true while the camera move in flight was
+  // issued by follow itself, so movestart from that move does not cancel
+  // the follow it came from. Cleared on moveend.
+  const programmaticMoveRef = useRef(false);
+  const lastFollowCenterRef = useRef<string | null>(null);
 
   // Night styling: derived from the virtual game clock (see lib/gameClock).
   const night = isNight(gameMinutes);
@@ -484,8 +490,16 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
     m.on('moveend', sendViewport);
     m.on('load', sendViewport);
     sendViewport();
+    // Staged batch: any MANUAL camera move breaks auto-follow. movestart
+    // fires for drag, wheel, touch, and NavigationControl zoom — all user
+    // moves — but also for programmatic easeTo/flyTo, hence the guard.
+    const onUserMove = () => {
+      if (programmaticMoveRef.current) return;
+      if (useGameStore.getState().followedUnitId) useGameStore.getState().setFollowedUnitId(null);
+    };
+    m.on('movestart', onUserMove);
 
-    return () => { m.off('moveend', sendViewport); m.off('zoomend', onZoomEnd); m.remove(); map.current = null; };
+    return () => { m.off('moveend', sendViewport); m.off('movestart', onUserMove); m.off('zoomend', onZoomEnd); m.remove(); map.current = null; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Fly to city when bounds are first set ──
@@ -655,6 +669,28 @@ export function MapView({ onMapClick, onUnitClick, onStationClick, onZoneClick, 
     prevFollowRef.current = key;
     map.current.flyTo({ center: [followTarget.lng, followTarget.lat], zoom: 16, duration: 1000 });
   }, [followTarget, mapLoaded]);
+
+  // ── Staged batch: auto-follow a unit (default OFF, explicit opt-in) ──
+  // Centers on the followed unit as it moves, preserving the player's zoom
+  // (no re-flyTo zoom 16 every tick). Breaks on: manual pan/zoom (movestart
+  // above), unit despawn, unit returning to available (hidden in station),
+  // or explicit toggle-off. Selecting a different unit switches the target
+  // (the panel sets followedUnitId alongside selection).
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+    const clearProgrammatic = () => { programmaticMoveRef.current = false; };
+    map.current.on('moveend', clearProgrammatic);
+    if (!followedUnitId) { lastFollowCenterRef.current = null; return () => { map.current?.off('moveend', clearProgrammatic); }; }
+    const unit = units.find((u) => u.id === followedUnitId);
+    if (!unit) { setFollowedUnitId(null); return () => { map.current?.off('moveend', clearProgrammatic); }; }
+    if (unit.status === 'available' || !unit.position) { setFollowedUnitId(null); return () => { map.current?.off('moveend', clearProgrammatic); }; }
+    const key = `${unit.position.lat.toFixed(5)},${unit.position.lng.toFixed(5)}`;
+    if (lastFollowCenterRef.current === key) return () => { map.current?.off('moveend', clearProgrammatic); };
+    lastFollowCenterRef.current = key;
+    programmaticMoveRef.current = true;
+    map.current.easeTo({ center: [unit.position.lng, unit.position.lat], duration: 300 });
+    return () => { map.current?.off('moveend', clearProgrammatic); };
+  }, [followedUnitId, units, mapLoaded]);
 
   // ── Update map style ──
   useEffect(() => {

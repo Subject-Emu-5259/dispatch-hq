@@ -7,17 +7,20 @@
 
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Truck, Radio, RotateCcw, MapPin, Gauge, ArrowRight, GraduationCap } from 'lucide-react';
+import { Truck, Radio, RotateCcw, MapPin, ArrowRight, GraduationCap } from 'lucide-react';
 import { useGameStore } from '@/stores/gameStore';
 import { UNIT_CONFIGS } from '@dispatch-hq/shared';
 import type { Unit, UnitStatus } from '@dispatch-hq/shared';
 import { isTraining, trainingRemainingSec } from '@/lib/training';
 import { veterancyRankFor, veterancyXpToNext, ACADEMY_COURSES, enrollAcademy, academyRemainingGameMin } from '@/lib/unitsStaff';
+import { crewReadiness } from '@/lib/personnel';
+import { loadSettings } from '@/utils/settings';
 import { formatTimer } from '@/utils/timeFormat';
 import { getUnitServiceType } from '@/utils/routing';
 import { getUnitCurrentSpeedMph } from '@/lib/techTree';
 import { LiveryPicker } from './LiveryPicker';
 import { InlineRename } from './InlineRename';
+import { UnitGlanceStrip } from './UnitGlanceStrip';
 
 const STATUS_META: Record<UnitStatus, { label: string; color: string; dot: string }> = {
   available: { label: 'Available', color: 'text-green-400', dot: 'bg-green-400' },
@@ -28,11 +31,20 @@ const STATUS_META: Record<UnitStatus, { label: string; color: string; dot: strin
   patrolling: { label: 'Patrolling', color: 'text-blue-400', dot: 'bg-blue-400 animate-pulse' },
 };
 
-function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
-  const { missions, updateUnit, updateMission, selectMission, setUnitLivery, gameMinutes } = useGameStore();
+export function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
+  const { missions, stations, updateUnit, updateMission, selectMission, setUnitLivery, gameMinutes } = useGameStore();
   const config = UNIT_CONFIGS[unit.type];
   const meta = STATUS_META[unit.status];
   const assignedMission = unit.missionId ? missions.find((m) => m.id === unit.missionId) : null;
+  // Staged batch (Addition 8): the glance strip's inputs come from the same
+  // tracked data the profile builder reads — station join, crew readiness
+  // (fatigue-off shows no readiness chip, never a fake one).
+  const station = stations.find((s) => s.id === unit.stationId) ?? null;
+  const crew = (station?.employees ?? []).filter((e) => unit.crewIds?.includes(e.id));
+  const fatigueMode = loadSettings().fatigueMode ?? 'full';
+  const readiness = crew.length > 0 && fatigueMode !== 'off'
+    ? (() => { const r = crewReadiness(crew); return r ? { label: r.label, pct: Math.round(r.avgEffectiveness * 100) } : null; })()
+    : null;
 
   // Route progress for the en_route ETA bar (0..1).
   const etaTotal = unit.etaTotal ?? unit.eta ?? 0;
@@ -68,13 +80,17 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.18 }}
-      className={`rounded-lg p-2 border transition-colors cursor-pointer
+      className={`rounded-lg p-3 border transition-colors cursor-pointer
         ${unit.status === 'available' ? 'bg-green-500/5 border-green-500/20 hover:border-green-500/40'
           : unit.status === 'en_route' ? 'bg-cyan-500/5 border-cyan-500/25 hover:border-cyan-400/50'
           : unit.status === 'on_scene' ? 'bg-red-500/5 border-red-500/25 hover:border-red-400/50'
           : 'bg-gray-800/40 border-gray-700/30'}`}
       onClick={() => { onClick?.(); handleLocate(); }}
     >
+      {/* Row 1 — identity + status only. The old header packed the name +
+          three badges on one non-wrapping row and overflowed the narrow
+          sidebar card; status/service/readiness now live in the wrapping
+          glance strip below (Addition 8 size fix). */}
       <div className="flex items-center gap-2">
         <div className="relative shrink-0">
           <span className="text-xl leading-none">{config?.icon || '🚛'}</span>
@@ -82,7 +98,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">
-            <p className="text-[11px] font-semibold text-white truncate">{unit.name}</p>
+            <p className="text-sm font-semibold text-white truncate">{unit.name}</p>
             <InlineRename
               value={unit.name}
               onSave={(name) => updateUnit(unit.id, { name })}
@@ -90,27 +106,27 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
               buttonClassName="p-0.5 rounded hover:bg-white/10 text-gray-500 hover:text-gray-200 transition-colors shrink-0"
             />
           </div>
-          <p className="text-[11px] text-gray-500 truncate flex items-center gap-1">
-            <span>{config?.name || unit.type}</span>
-            <span className="text-gray-700">·</span>
-            <Gauge className="w-2.5 h-2.5" />
-            <span>{getUnitCurrentSpeedMph(unit)} mph</span>
-          </p>
         </div>
-        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${meta.color} ${
+        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded shrink-0 ${meta.color} ${
           unit.status === 'available' ? 'bg-green-500/15'
             : unit.status === 'en_route' ? 'bg-cyan-500/15'
             : unit.status === 'on_scene' ? 'bg-red-500/15'
             : 'bg-gray-700/40'}`}>
           {meta.label.toUpperCase()}
         </span>
-        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">
-          Lv {unit.trainingLevel}
-        </span>
-        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25" title={`Veterancy XP: ${unit.veterancyXp ?? 0}${veterancyXpToNext(unit.veterancyXp) != null ? ` · ${veterancyXpToNext(unit.veterancyXp)} XP to next rank` : ' · max rank'}`}>
-          {veterancyRankFor(unit.veterancyXp).toUpperCase()}
-        </span>
       </div>
+
+      {/* Row 2 — at-a-glance strip: service, station, level, rank, readiness, speed */}
+      <UnitGlanceStrip
+        service={getUnitServiceType(unit.type)}
+        serviceLabel={config?.name || unit.type}
+        stationName={station?.name ?? 'Unassigned'}
+        level={unit.trainingLevel}
+        rank={veterancyRankFor(unit.veterancyXp)}
+        xpToNext={veterancyXpToNext(unit.veterancyXp)}
+        readiness={readiness}
+        speedMph={getUnitCurrentSpeedMph(unit)}
+      />
 
       {/* Training — unit is off-duty at its station */}
       {isTraining(unit) && (
@@ -161,7 +177,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
           </div>
           <div className="h-1.5 bg-gray-700/70 rounded-full overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-300"
+              className="h-full rounded-full bg-cyan-400"
               animate={{ width: `${Math.round(progress * 100)}%` }}
               transition={{ duration: 0.4 }}
             />
@@ -178,7 +194,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
           </div>
           <div className="h-1.5 bg-gray-700/70 rounded-full overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-red-500 to-amber-400"
+              className="h-full rounded-full bg-red-500"
               animate={{ width: `${assignedMission.progress || 0}%` }}
               transition={{ duration: 0.4 }}
             />
@@ -213,7 +229,7 @@ function UnitCard({ unit, onClick }: { unit: Unit; onClick?: () => void }) {
         className="mt-1.5 flex items-center justify-between gap-2 px-1"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-[11px] text-gray-600 uppercase tracking-wider">Livery</span>
+        <span className="text-[11px] text-gray-500 uppercase tracking-wider">Livery</span>
         <LiveryPicker
           service={getUnitServiceType(unit.type)}
           value={unit.liveryId}
@@ -246,7 +262,7 @@ export function UnitPanel({ onUnitClick }: { onUnitClick?: (unit: Unit) => void 
 
   if (units.length === 0) {
     return (
-      <div className="text-center py-5 text-gray-600">
+      <div className="text-center py-5 text-gray-500">
         <div className="mx-auto mb-2 opacity-40"><Truck className="w-6 h-6" /></div>
         <p className="text-xs font-medium text-gray-400">No units yet</p>
         <p className="text-[11px] text-gray-700 mt-0.5">Build a station to receive your first units</p>
@@ -255,7 +271,7 @@ export function UnitPanel({ onUnitClick }: { onUnitClick?: (unit: Unit) => void 
   }
 
   return (
-    <div className="px-3 pb-3 space-y-3">
+    <div className="px-3 pb-3 space-y-2">
       {/* Fleet summary */}
       <div className="grid grid-cols-4 gap-1.5">
         <SummaryTile value={counts.total} label="Total" tone="text-white" />
@@ -297,7 +313,7 @@ function UnitGroup({
         <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500 font-mono">{units.length}</span>
         <div className="flex-1 h-px bg-gray-800/60" />
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <AnimatePresence mode="popLayout">
           {units.map((u) => <UnitCard key={u.id} unit={u} onClick={() => onUnitClick?.(u)} />)}
         </AnimatePresence>

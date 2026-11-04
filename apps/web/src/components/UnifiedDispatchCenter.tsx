@@ -52,33 +52,10 @@ import { AllianceLoans } from './AllianceLoans';
 import { AllianceActivity } from './AllianceActivity';
 
 // ── Types ──────────────────────────────────────────────
-
-type DispatchTab = 'calls' | 'board' | 'radio' | 'roster' | 'assistant' | 'alliance' | 'records' | 'jail' | 'hospital' | 'marshal' | 'districts';
+// Staged batch: tab registry lives in dispatch-center/tabs.ts.
+import type { DispatchTab } from './dispatch-center/tabs';
+import { TAB_META, visibleTabsFor } from './dispatch-center/tabs';
 type ServiceFilter = 'all' | 'fire' | 'police' | 'ems';
-
-/** Console tabs shared by every service. */
-const CORE_TABS: DispatchTab[] = ['calls', 'board', 'radio', 'roster', 'assistant', 'alliance', 'districts'];
-
-/** Service-specific agency systems — each department only sees its own. */
-const SERVICE_TABS: Record<'fire' | 'police' | 'ems', DispatchTab[]> = {
-  police: [...CORE_TABS, 'records', 'jail'],
-  ems: [...CORE_TABS, 'hospital'],
-  fire: [...CORE_TABS, 'marshal'],
-};
-
-const TAB_META: Record<DispatchTab, { icon: any; label: string }> = {
-  calls: { icon: Phone, label: 'Incoming' },
-  board: { icon: List, label: 'Board' },
-  radio: { icon: Radio, label: 'Radio' },
-  roster: { icon: Users, label: 'Roster' },
-  assistant: { icon: Brain, label: 'Assistant' },
-  records: { icon: Database, label: 'Records' },
-  jail: { icon: Landmark, label: 'County Jail' },
-  hospital: { icon: HeartPulse, label: 'Hospital' },
-  alliance: { icon: Users, label: 'Alliance' },
-  marshal: { icon: ClipboardList, label: 'Fire Marshal' },
-  districts: { icon: MapPin, label: 'Districts' },
-};
 
 interface IncomingCall {
   id: string;
@@ -329,10 +306,7 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
 
   // Only show the tabs for the department the player runs: police gets
   // Records + County Jail, EMS gets the Hospital, fire gets Fire Marshal.
-  const visibleTabs = useMemo<DispatchTab[]>(() => {
-    if (!selectedService) return [...CORE_TABS, 'records', 'jail', 'hospital', 'marshal'];
-    return SERVICE_TABS[selectedService];
-  }, [selectedService]);
+  const visibleTabs = useMemo<DispatchTab[]>(() => visibleTabsFor(selectedService), [selectedService]);
 
   // If the active tab belongs to another department (or the service changed),
   // bounce back to the Calls tab.

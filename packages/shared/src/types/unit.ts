@@ -5,8 +5,12 @@
 import type { GeoPoint } from './station';
 
 export type UnitType = 'engine' | 'ladder' | 'rescue' | 'battalion_chief'
-  | 'patrol_car' | 'swat_van' | 'k9_unit' | 'police_suv'
+  | 'patrol_car' | 'swat_van' | 'k9_unit' | 'police_suv' | 'trooper_car' | 'deputy_car'
   | 'ambulance' | 'paramedic_unit' | 'ems_supervisor' | 'fire_ambulance';
+
+/** Staged batch: jurisdiction layer (display/filter only in v1 — dispatch is
+ *  NOT gated on it). Unset on legacy units means city (the pre-batch default). */
+export type Jurisdiction = 'city' | 'county' | 'state';
 
 export type UnitStatus = 'available' | 'dispatched' | 'en_route' | 'on_scene' | 'returning' | 'patrolling';
 
@@ -40,6 +44,8 @@ export interface Unit {
   eta: number | null;     // seconds
   missionId: string | null;
   trainingLevel: number;
+  /** Staged batch: jurisdiction of this unit ('city' default when unset). */
+  jurisdiction?: Jurisdiction;
   trainingEndsAt?: number; // epoch ms — unit is unavailable while set (training in progress)
   /** Batch 3a veterancy: XP earned per cleared mission (rank derived). */
   veterancyXp?: number;

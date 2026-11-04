@@ -19,9 +19,12 @@ export function jailCapacity(stations: Pick<Station, 'perks'>[]): number {
   return BASE_JAIL_CAPACITY + capacityBonusFor(stations, 'jail_capacity');
 }
 
-/** Inmates currently occupying the jail (released inmates don't count). */
+/** Inmates currently occupying the jail. Released inmates don't count, and
+ *  transferred inmates don't either — they were moved out of county (staged
+ *  batch fix: transferred rows used to occupy cells forever until manual
+ *  release). */
 export function jailOccupancy(inmates: Pick<Inmate, 'status'>[]): number {
-  return inmates.filter((i) => i.status !== 'released').length;
+  return inmates.filter((i) => i.status !== 'released' && i.status !== 'transferred').length;
 }
 
 export interface BookingResult {

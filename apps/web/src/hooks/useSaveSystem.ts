@@ -37,7 +37,7 @@ import type { Player, Station, Unit, Mission, ServiceType, CriminalRecord, Inmat
 import { emptyWeekly } from '@dispatch-hq/shared';
 import { EMPTY_CAREER, type CityData, type PatrolRoute, type PostMissionBehavior, type PatrolMode, type CareerStats } from '@/stores/gameStore';
 import { getUnitServiceType } from '@/utils/routing';
-import { loadSettings, saveSettings, getSettingsSource } from '@/utils/settings';
+import { loadSettings, saveSettings, shouldApplySaveSnapshot } from '@/utils/settings';
 import type { DispatchSettings } from '@/utils/settings';
 import type { Poi } from '@/lib/pois';
 import type { Hospital, Helipad } from '@/lib/hospital';
@@ -872,12 +872,14 @@ function restoreSave(save: SaveData): void {
     if (save.defaultPatrolMode) store.setDefaultPatrolMode(save.defaultPatrolMode);
   });
   guard('settings', () => {
-    // Restore the save's preferences snapshot only when the live hydration did
-    // NOT come from a server row (fresh identity, lost row, or offline boot).
-    // The account row is authoritative when present — a save must never
-    // overwrite settings that changed after the save was written. saveSettings
-    // also re-pushes the restored snapshot so the row self-heals.
-    if (save.settings && getSettingsSource() !== 'server') {
+    // Staged batch (Addition 5): restore the save's preferences snapshot
+    // only when it BEATS the live settings by recency (see
+    // shouldApplySaveSnapshot) — or when live settings are untouched
+    // defaults (fresh identity). The old rule (apply whenever hydration
+    // did not come from a server row) let an older save snapshot clobber
+    // newer mirror settings on every return where the server row had
+    // never landed — the second broken link in Dre's settings-reset bug.
+    if (save.settings && shouldApplySaveSnapshot(save.settings)) {
       saveSettings(save.settings);
     }
   });

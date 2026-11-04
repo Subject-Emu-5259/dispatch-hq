@@ -103,6 +103,30 @@ export const UNIT_CONFIGS: Record<string, UnitConfig> = {
     unlockLevel: 4,
     trainingTime: 350,
   },
+  // Staged batch: state + county law-enforcement variants (police service).
+  // They patrol like any police unit; jurisdiction is a display/filter flag.
+  trooper_car: {
+    type: 'trooper_car',
+    name: 'State Trooper Car',
+    description: 'State-level highway patrol vehicle',
+    icon: '🚔',
+    speed: 18.9,
+    capacity: 2,
+    cost: 3200,
+    unlockLevel: 6,
+    trainingTime: 400,
+  },
+  deputy_car: {
+    type: 'deputy_car',
+    name: 'Sheriff Deputy Car',
+    description: 'County sheriff patrol vehicle',
+    icon: '🚔',
+    speed: 16.4,
+    capacity: 2,
+    cost: 1800,
+    unlockLevel: 2,
+    trainingTime: 250,
+  },
   // EMS units
   ambulance: {
     type: 'ambulance',
@@ -165,6 +189,8 @@ export const LIVERIES: Record<ServiceType, Livery[]> = {
     { id: 'black-white', name: 'Black & White', markerColor: '#1F2937', swatch: ['#111827', '#F9FAFB'] },
     { id: 'midnight', name: 'Midnight', markerColor: '#1E3A8A', swatch: ['#0F172A', '#1E3A8A'] },
     { id: 'county', name: 'County', markerColor: '#7C3AED', swatch: ['#6B21A8', '#FDE68A'] },
+    { id: 'state', name: 'State Trooper', markerColor: '#0E7490', swatch: ['#164E63', '#FDE68A'] },
+    { id: 'sheriff', name: 'Sheriff', markerColor: '#92400E', swatch: ['#451A03', '#FDE68A'] },
   ],
   fire: [
     { id: 'classic-red', name: 'Classic Red', markerColor: '#DC2626', swatch: ['#991B1B', '#F87171'] },

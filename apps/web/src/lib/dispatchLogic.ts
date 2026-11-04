@@ -154,7 +154,13 @@ export function requiredServicesForMission(mission: Pick<Mission, 'category' | '
 
 /** Whether a unit type satisfies any of a mission's requirements (cross-service included). */
 export function unitFulfillsRequirement(unitType: string, mission: Pick<Mission, 'requirements'>): boolean {
-  return mission.requirements.some((r) => r.unitType === unitType);
+  // Staged batch: trooper/deputy cars are police-service patrol vehicles, so
+  // they satisfy base patrol_car requirements (but NOT swat_van/k9_unit).
+  // Their own dedicated templates still name them explicitly.
+  return mission.requirements.some((r) =>
+    r.unitType === unitType ||
+    (r.unitType === 'patrol_car' && (unitType === 'trooper_car' || unitType === 'deputy_car')),
+  );
 }
 
 /**

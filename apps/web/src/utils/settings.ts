@@ -92,6 +92,11 @@ export interface DispatchSettings {
   // Anonymous analytics (v0.24.0): share session/mission counts (no PII). Off
   // by default — when off the client makes zero analytics network calls.
   analyticsEnabled: boolean;
+  // Staged batch (Addition 5): recency stamp. Every saveSettings() call
+  // stamps Date.now() here so hydration and save-restore can tell NEWER
+  // from OLDER instead of guessing by source. Absent = pre-fix era row
+  // (treated as older than any stamped row, newer than nothing).
+  updatedAtMs?: number;
 }
 
 const DEFAULTS: DispatchSettings = {
@@ -251,6 +256,46 @@ export function getSettingsSource(): SettingsSource {
   return source;
 }
 
+/**
+ * Staged batch (Addition 5) — the root-cause fix for Dre's "settings reset
+ * on return" bug. The old code picked by SOURCE priority (any non-empty
+ * server row beat the mirror; any non-'server' hydration let a save
+ * snapshot overwrite live settings) and nothing carried a timestamp, so a
+ * stale row or an older snapshot could always beat newer settings.
+ * Recency rule for replacing `current` with `candidate`:
+ * - both stamped → newer stamp wins;
+ * - only candidate stamped → candidate wins (stamped = post-fix era,
+ *   hence newer than any unstamped row);
+ * - only current stamped → current wins;
+ * - neither stamped → keep current (server-first priority preserved).
+ */
+export function shouldReplaceSettings(
+  current: Partial<DispatchSettings> | null | undefined,
+  candidate: Partial<DispatchSettings> | null | undefined,
+): boolean {
+  if (!candidate || typeof candidate !== 'object') return false;
+  const cStamp = typeof candidate.updatedAtMs === 'number' && Number.isFinite(candidate.updatedAtMs) ? candidate.updatedAtMs : undefined;
+  const uStamp = current && typeof current.updatedAtMs === 'number' && Number.isFinite(current.updatedAtMs) ? current.updatedAtMs : undefined;
+  if (cStamp !== undefined && uStamp !== undefined) return cStamp > uStamp;
+  if (cStamp !== undefined) return true;
+  if (uStamp !== undefined) return false;
+  return false;
+}
+
+/**
+ * Save-restore decision (used by useSaveSystem): a save's settings
+ * snapshot applies only when it beats the live settings by recency — or
+ * when live settings are untouched defaults (fresh identity: any snapshot
+ * is better than defaults). The old rule (apply whenever source !==
+ * 'server') let an older save snapshot clobber newer mirror settings on
+ * every return where the server row had never landed.
+ */
+export function shouldApplySaveSnapshot(save: Partial<DispatchSettings> | null | undefined): boolean {
+  if (!save || typeof save !== 'object') return false;
+  if (source === 'defaults') return true;
+  return shouldReplaceSettings(cache, save);
+}
+
 export async function loadSettingsAsync(): Promise<DispatchSettings> {
   await initSettings();
   return loadSettings();
@@ -268,18 +313,30 @@ export async function initSettings(): Promise<DispatchSettings> {
   if (hydratePromise) return hydratePromise;
   hydratePromise = (async () => {
     try {
-      const server = await getSettings<{ settings: DispatchSettings | null }>();
+      const server = await getSettings<DispatchSettings>();
       const row = server.settings;
+      const mirror = readLocalCache();
       if (row && typeof row === 'object' && Object.keys(row).length > 0) {
-        cache = { ...DEFAULTS, ...row };
-        source = 'server';
-        writeLocalCache(cache);
+        // Staged batch (Addition 5): recency, not source priority. A stale
+        // server row must NOT beat a newer mirror — the old code took the
+        // row unconditionally, which reset players whose last settings
+        // change never landed server-side (tab closed before the queued
+        // write flushed) back to previous values on every return.
+        if (mirror && shouldReplaceSettings(row, mirror)) {
+          cache = { ...DEFAULTS, ...mirror };
+          source = 'mirror';
+          writeLocalCache(cache);
+          queueServerWrite(cache);
+        } else {
+          cache = { ...DEFAULTS, ...row };
+          source = 'server';
+          writeLocalCache(cache);
+        }
       } else {
         // The server answered but has no row for this identity (first boot,
         // a lost write, a fresh guest). Prefer the browser mirror over
         // defaults so preferences never reset — and re-push the mirror to
         // the server so the row self-heals and the next boot is clean.
-        const mirror = readLocalCache();
         cache = { ...DEFAULTS, ...(mirror ?? {}) };
         source = mirror ? 'mirror' : 'defaults';
         writeLocalCache(cache);
@@ -301,7 +358,12 @@ export async function initSettings(): Promise<DispatchSettings> {
 }
 
 export function saveSettings(patch: Partial<DispatchSettings>): DispatchSettings {
-  cache = { ...cache, ...patch };
+  // Staged batch (Addition 5): stamp every live write so later hydration
+  // and save-restore decisions compare recency instead of source. The
+  // stamp is set here — not taken from the patch — because saveSettings
+  // means "these settings are live NOW" (including when applying a save
+  // snapshot: once applied, it IS the live setting).
+  cache = { ...cache, ...patch, updatedAtMs: Date.now() };
   // Optimistic 'server': the queued write retries until it lands, so the live
   // settings are authoritative immediately (a save-load must not overwrite
   // them with an older snapshot from a save blob).

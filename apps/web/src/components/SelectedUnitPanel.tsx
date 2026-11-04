@@ -26,6 +26,7 @@ import type { Unit, GeoPoint, Station, Player } from '@dispatch-hq/shared';
 import { getUnitMaxSpeedMph, getUnitCurrentSpeedMph } from '@/lib/techTree';
 import { LiveryPicker } from './LiveryPicker';
 import { InlineRename } from './InlineRename';
+import { buildUnitProfile } from '@/lib/unitProfile';
 
 interface Props {
   unitId: string;
@@ -51,7 +52,7 @@ function statusMeta(status: Unit['status']) {
 }
 
 export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
-  const { units, stations, missions, selectedMissionId, selectedCity, mapBounds, updateUnit, updateMission, addPatrolRoute, updatePatrolRoute, removePatrolRoute, patrolRoutes, updateUnitPatrolDefaults, isSidebarOpen, player, setUnitLivery, helipad } = useGameStore();
+  const { units, stations, missions, selectedMissionId, selectedCity, mapBounds, updateUnit, updateMission, addPatrolRoute, updatePatrolRoute, removePatrolRoute, patrolRoutes, updateUnitPatrolDefaults, isSidebarOpen, player, setUnitLivery, helipad, followedUnitId, setFollowedUnitId, shift, gameMinutes } = useGameStore();
   const unit = units.find((u) => u.id === unitId) || null;
   const [routing, setRouting] = useState(false);
   const [patrolMode, setPatrolMode] = useState<'station-beat' | 'zone' | 'hotspot' | 'city-sweep'>(unit?.patrolMode ?? 'city-sweep');
@@ -94,6 +95,15 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
   );
   const mission = useMemo(() => unit?.missionId ? missions.find((m) => m.id === unit.missionId) : null, [unit, missions]);
   const service = useMemo(() => unit ? getUnitServiceType(unit.type) : 'police', [unit]);
+  // Staged batch (Addition 8): the unit PROFILE card — service, station,
+  // jurisdiction, veterancy, certs/academy, crew readiness, and this
+  // shift's clears, all from tracked data (see lib/unitProfile). The game
+  // tracks no lifetime per-unit mission count, so none is shown.
+  const profile = useMemo(() => {
+    if (!unit) return null;
+    const crew = (station?.employees ?? []).filter((e) => unit.crewIds?.includes(e.id));
+    return buildUnitProfile(unit, station, service, shift?.unitShiftStats?.[unit.id] ?? 0, crew, loadSettings().fatigueMode ?? 'full', gameMinutes ?? 0);
+  }, [unit, station, service, shift, gameMinutes]);
   const meta = unit ? statusMeta(unit.status) : statusMeta('available');
   const config = unit ? UNIT_CONFIGS[unit.type] : null;
 
@@ -292,6 +302,41 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
             </span>
           </div>
 
+          {/* Staged batch (Addition 8): unit PROFILE card */}
+          {profile && (
+            <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2 space-y-1.5">
+              <p className="text-xs text-gray-500 font-semibold">Unit Profile</p>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 border border-gray-700 capitalize">{profile.service}</span>
+                <span className="text-[11px] text-gray-400 truncate">{profile.stationName}</span>
+                <span className="text-[11px] text-gray-500 capitalize">· {profile.jurisdiction}</span>
+                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">Lv {profile.level}</span>
+                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25" title={profile.xpToNext != null ? `${profile.xpToNext} XP to next rank` : 'Max rank'}>
+                  {profile.rank.toUpperCase()}
+                </span>
+                {profile.readiness && (
+                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                    {profile.readiness.label} · {profile.readiness.pct}%
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-gray-400">
+                Crew {profile.crewSize}{profile.crewCapacity ? ` / ${profile.crewCapacity}` : ''} · {profile.shiftClears} clear{profile.shiftClears === 1 ? '' : 's'} this shift
+                {profile.patrolSummary ? ` · Patrol: ${profile.patrolSummary}` : ''}
+              </p>
+              {profile.certs.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {profile.certs.map((c) => (
+                    <span key={c} className="text-[11px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/25 font-bold">{c.toUpperCase()} ✓</span>
+                  ))}
+                </div>
+              )}
+              {profile.academy && (
+                <p className="text-[11px] text-purple-200">Academy: {profile.academy.course} — {profile.academy.remainingGameMin} game-min left</p>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2">
               <p className="text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" /> Station</p>
@@ -302,7 +347,7 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
               <p className="text-gray-300 font-medium">
                 {getUnitCurrentSpeedMph(unit)} mph
               </p>
-              <p className="text-[11px] text-gray-600">max {getUnitMaxSpeedMph(unit.speed || 13.9)} mph</p>
+              <p className="text-[11px] text-gray-500">max {getUnitMaxSpeedMph(unit.speed || 13.9)} mph</p>
             </div>
             {unit.eta != null && unit.eta > 0 && (
               <div className="rounded-md bg-gray-900/60 border border-gray-800/40 p-2">
@@ -444,6 +489,16 @@ export function SelectedUnitPanel({ unitId, onClose, onOpenEmployees }: Props) {
                 <Crosshair className="w-3 h-3" /> RECALL
               </button>
             )}
+            {/* Staged batch: auto-follow toggle. Default off; following is
+                explicit per unit. Manual pan/zoom breaks it (MapView). */}
+            {unit.status !== 'available' && (
+              <button
+                onClick={() => setFollowedUnitId(followedUnitId === unit.id ? null : unit.id)}
+                className={`flex-1 min-w-[80px] px-2 py-1.5 rounded-md border text-[11px] font-bold flex items-center justify-center gap-1 ${followedUnitId === unit.id ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700'}`}
+              >
+                <Crosshair className="w-3 h-3" /> {followedUnitId === unit.id ? 'FOLLOWING ✓' : 'FOLLOW'}
+              </button>
+            )}
           </div>
         </div>
       </motion.div>
@@ -555,7 +610,7 @@ function CrewBlock({ station, unit, onOpenEmployees }: { station: Station | null
             return (
               <div key={e.id} className="text-[11px]">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 truncate">{e.name} <span className="text-gray-600">• {e.role} Lv {e.level}</span></span>
+                  <span className="text-gray-300 truncate">{e.name} <span className="text-gray-500">• {e.role} Lv {e.level}</span></span>
                   <span className={`text-[11px] ${fatigue >= 85 ? 'text-red-400 font-semibold' : fatigue >= 60 ? 'text-orange-400' : 'text-gray-500'}`}>{fatigueActive ? fatigueLabel(fatigue) : ''}</span>
                 </div>
                 <div className="mt-0.5 flex items-center gap-1.5">
@@ -577,7 +632,7 @@ function CrewBlock({ station, unit, onOpenEmployees }: { station: Station | null
       {readiness?.level === 'exhausted' && (
         <p className="text-[11px] text-red-400/90 mt-1.5">⚠ Exhausted crew — response time and clear speed are reduced. Rest them in Personnel Command.</p>
       )}
-      <p className="text-[11px] text-gray-600 mt-1">{crew.length}{max ? ` / ${max}` : ''} {short > 0 ? `(${short} open seat${short === 1 ? '' : 's'})` : ''}</p>
+      <p className="text-[11px] text-gray-500 mt-1">{crew.length}{max ? ` / ${max}` : ''} {short > 0 ? `(${short} open seat${short === 1 ? '' : 's'})` : ''}</p>
       {onOpenEmployees && (
         <button
           onClick={onOpenEmployees}

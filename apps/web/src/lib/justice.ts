@@ -3,6 +3,7 @@
 // ============================================
 
 import type { CriminalRecord, Inmate, RiskLevel, WarrantStatus } from '@dispatch-hq/shared';
+import { sentenceAndBailForCharges } from '@/lib/chargeStatutes';
 
 const FIRST_NAMES = [
   'James','Robert','John','Michael','David','William','Richard','Joseph','Thomas','Charles',
@@ -114,6 +115,14 @@ function bookingNumber(): string {
 }
 
 export function buildInmateFromRecord(record: CriminalRecord, city: string): Inmate {
+  // Staged batch: sentence/bail derive from the charge statute table
+  // (highest-class charge), risk only moving the value inside the range.
+  // Unknown charges fall back to the legacy risk-only formula.
+  const fromStatute = sentenceAndBailForCharges(record.charges, record.riskLevel);
+  const sentenceDays = fromStatute ? fromStatute.sentenceDays
+    : 1 + Math.floor(Math.random() * 180) + (record.riskLevel === 'violent' ? 180 : record.riskLevel === 'high' ? 60 : 0);
+  const bailAmount = fromStatute ? fromStatute.bailAmount
+    : record.riskLevel === 'violent' ? 50000 + Math.floor(Math.random()*50000) : record.riskLevel === 'high' ? 10000 + Math.floor(Math.random()*15000) : 500 + Math.floor(Math.random()*2500);
   return {
     id: makeId('inmate'),
     recordId: record.id,
@@ -122,13 +131,14 @@ export function buildInmateFromRecord(record: CriminalRecord, city: string): Inm
     dateOfBirth: record.dateOfBirth,
     photoSeed: record.photoSeed,
     charges: record.charges,
-    sentenceDays: 1 + Math.floor(Math.random() * 180) + (record.riskLevel === 'violent' ? 180 : record.riskLevel === 'high' ? 60 : 0),
+    sentenceDays,
     bookingNumber: bookingNumber(),
     bookingTime: Date.now(),
     cellBlock: `${seededChoice(record.id.length, CELL_BLOCKS)}-${Math.ceil(Math.random()*9)}`,
-    bailAmount: record.riskLevel === 'violent' ? 50000 + Math.floor(Math.random()*50000) : record.riskLevel === 'high' ? 10000 + Math.floor(Math.random()*15000) : 500 + Math.floor(Math.random()*2500),
+    bailAmount,
     status: 'booking',
     riskLevel: record.riskLevel,
+    verdict: 'pending',
   };
 }
 

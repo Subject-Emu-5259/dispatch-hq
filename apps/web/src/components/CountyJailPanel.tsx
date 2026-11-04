@@ -6,10 +6,12 @@ import { broadcastRadioMessage } from '@/utils/radioEvents';
 import { useGameStore } from '@/stores/gameStore';
 import { jailCapacity, jailOccupancy } from '@/lib/jailCapacity';
 import { decideJailBooking } from '@/lib/capacityDecisions';
+import { topStatuteForCharges, sentenceAndBailForCharges } from '@/lib/chargeStatutes';
 import type { Inmate } from '@dispatch-hq/shared';
 
 const statusBadge: Record<string, string> = {
   booking: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+  awaiting_trial: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
   housed: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
   released: 'bg-gray-800 text-gray-400 border-gray-700',
   transferred: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
@@ -23,7 +25,7 @@ function formatDuration(ms: number) {
 }
 
 export default function CountyJailPanel() {
-  const { inmates, releaseInmate, selectedCity } = useGameStore();
+  const { inmates, releaseInmate, selectedCity, player, updatePlayer, updateInmate } = useGameStore();
   const stations = useGameStore((s) => s.stations);
   const [view, setView] = useState<'current' | 'released'>('current');
   const [query, setQuery] = useState('');
@@ -39,6 +41,52 @@ export default function CountyJailPanel() {
       service: 'police',
     });
     setSelected((sel) => (sel?.id === inmate.id ? null : sel));
+  };
+
+  // Staged batch: pay bail (player credits) and the minimal court hearing.
+  // Hearing outcome is risk-weighted; guilty re-sentences from the game
+  // statute table, dismissed releases. No trial sim, no new panel.
+  const handlePayBail = (inmate: Inmate) => {
+    if (!player || player.credits < inmate.bailAmount) return;
+    updatePlayer({ credits: player.credits - inmate.bailAmount });
+    releaseInmate(inmate.id);
+    broadcastRadioMessage({
+      from: selectedCity?.name ? `${selectedCity.name} County Jail` : 'County Jail',
+      to: 'Dispatch',
+      text: `${inmate.firstName} ${inmate.lastName} — booking ${inmate.bookingNumber} — released on $${inmate.bailAmount.toLocaleString()} bail.`,
+      type: 'dispatch',
+      service: 'police',
+    });
+    setSelected(null);
+  };
+
+  const handleHearing = (inmate: Inmate) => {
+    const guiltyChance = inmate.riskLevel === 'violent' ? 0.95 : inmate.riskLevel === 'high' ? 0.8 : inmate.riskLevel === 'medium' ? 0.5 : 0.3;
+    if (Math.random() < guiltyChance) {
+      const resentence = sentenceAndBailForCharges(inmate.charges, inmate.riskLevel);
+      updateInmate(inmate.id, {
+        status: 'held', verdict: 'guilty',
+        ...(resentence ? { sentenceDays: resentence.sentenceDays, bailAmount: resentence.bailAmount } : {}),
+      });
+      broadcastRadioMessage({
+        from: selectedCity?.name ? `${selectedCity.name} County Court` : 'County Court',
+        to: 'Dispatch',
+        text: `Court verdict: ${inmate.firstName} ${inmate.lastName} — guilty. Sentence per game code ${topStatuteForCharges(inmate.charges)?.code ?? 'DHQ'}.`,
+        type: 'dispatch',
+        service: 'police',
+      });
+    } else {
+      updateInmate(inmate.id, { verdict: 'dismissed' });
+      releaseInmate(inmate.id);
+      broadcastRadioMessage({
+        from: selectedCity?.name ? `${selectedCity.name} County Court` : 'County Court',
+        to: 'Dispatch',
+        text: `Court verdict: ${inmate.firstName} ${inmate.lastName} — case dismissed, released.`,
+        type: 'dispatch',
+        service: 'police',
+      });
+    }
+    setSelected(null);
   };
 
   const filtered = useMemo(() => {
@@ -67,6 +115,8 @@ export default function CountyJailPanel() {
             {(() => { const d = decideJailBooking(jailOccupancy(inmates), jailCapacity(stations)); return d.action === 'transfer' ? '⚠️ Jail full — next booking transfers out-of-county (half progression credit).' : `Next booking housed · ${d.cellsFree} cells free`; })()}
           </div>
         </div>
+        {/* Staged batch: the jail is operated by the County Sheriff's Office. */}
+        <div className="text-[11px] text-gray-500 mt-1">Operated by the County Sheriff&apos;s Office</div>
         <div className="mt-2 flex items-center gap-2">
           {[
             ['current', `Current Inmates (${counts.current})`],
@@ -141,10 +191,39 @@ export default function CountyJailPanel() {
                 <span key={i} className="text-[11px] px-2 py-1 rounded bg-gray-950 text-gray-300 border border-white/10">{c}</span>
               ))}
             </div>
+            {/* Staged batch: statute + disposition from the game code table. */}
+            {(() => { const st = topStatuteForCharges(selected.charges); return st ? (
+              <div className="text-[11px] text-gray-400 mb-2">
+                Game code {st.code} · {st.class} · statute range {st.sentenceMinDays}–{st.sentenceMaxDays} days, bail ${st.bailMin.toLocaleString()}–${st.bailMax.toLocaleString()}
+                {selected.bookedByJurisdiction ? ` · booked by ${selected.bookedByJurisdiction} jurisdiction` : ''}
+              </div>
+            ) : null; })()}
+            <div className="text-[11px] text-gray-400 mb-3">
+              Disposition: {selected.status === 'transferred' ? 'Transferred (jail at capacity)' : selected.verdict === 'guilty' ? 'Court: guilty — sentence per game code' : selected.verdict === 'dismissed' ? 'Court: dismissed' : 'Court: hearing pending'}
+            </div>
+            {selected.status !== 'released' && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePayBail(selected)}
+                  disabled={!player || player.credits < selected.bailAmount}
+                  className="flex-1 px-3 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-medium disabled:opacity-40"
+                >
+                  Pay Bail (${selected.bailAmount.toLocaleString()})
+                </button>
+                {(!selected.verdict || selected.verdict === 'pending') && selected.status !== 'transferred' && (
+                  <button
+                    onClick={() => handleHearing(selected)}
+                    className="flex-1 px-3 py-2 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-medium"
+                  >
+                    Hold Court Hearing
+                  </button>
+                )}
+              </div>
+            )}
             {selected.status !== 'released' && (
               <button
                 onClick={() => handleRelease(selected)}
-                className="w-full px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 border border-white/10 text-xs font-medium"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 border border-white/10 text-xs font-medium"
               >
                 Release Inmate
               </button>
