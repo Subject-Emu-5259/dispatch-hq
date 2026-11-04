@@ -195,8 +195,8 @@ describe('Unit Constants', () => {
 });
 
 describe('Station Constants', () => {
-  it('has 3 station types', () => {
-    expect(Object.keys(STATION_CONFIGS)).toHaveLength(3);
+  it('has 5 station types (correction build: trooper + sheriff agencies)', () => {
+    expect(Object.keys(STATION_CONFIGS)).toHaveLength(5);
   });
 
   it('all stations have valid hex colors', () => {

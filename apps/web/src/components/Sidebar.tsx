@@ -24,16 +24,11 @@ import { FOUNDER_EMAIL } from '@/lib/founder';
 // On-demand modal is code-split (v0.22.3 perf pass) — only mounts while open.
 const StationDetailModal = lazy(() => import('./StationDetailModal').then((m) => ({ default: m.StationDetailModal })));
 import { STATION_CONFIGS, STATION_LEVELS, UNIT_CONFIGS, perkAdjustedRadius } from '@dispatch-hq/shared';
+import { stationUnitsFor, resolveUnitPurchase } from '@/lib/unitPurchase';
 import { getUnitMaxSpeedMph, getUnitCostMultiplier, getEliteStatMultiplier, getStationBuildCostMultiplier } from '@/lib/techTree';
 import { ALLIANCE_LEVELS, ALLIANCE_MIN_LEVEL, allianceLevelFor, allianceProgress, nextAllianceLevel } from '@dispatch-hq/shared';
 import { levelProgress, lifetimeXpOf } from '@/utils/levelProgress';
 import { useNotifications } from './NotificationCenter';
-
-const STATION_UNITS: Record<string, string[]> = {
-  fire_station: ['engine', 'ladder', 'rescue', 'battalion_chief'],
-  police_station: ['patrol_car', 'swat_van', 'k9_unit', 'police_suv'],
-  ems_station: ['ambulance', 'paramedic_unit', 'ems_supervisor', 'fire_ambulance'],
-};
 
 interface SidebarProps {
   isOpen: boolean;
@@ -812,31 +807,30 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
   const handleBuyUnit = (stationId: string, unitTypeKey: string) => {
     const config = UNIT_CONFIGS[unitTypeKey];
     if (!config || !player) return;
-    const cost = Math.round(config.cost * getUnitCostMultiplier());
-    if (player.credits < cost) return;
 
     const station = stations.find(s => s.id === stationId);
     if (!station) return;
-    if ((station.unitCount || 0) >= station.capacity) return;
+    // Correction build: one purchase decision for both buy surfaces. This
+    // also fixes a pre-existing gap: Sidebar-bought units never got a
+    // jurisdiction (they silently defaulted to city, even for troopers).
+    const result = resolveUnitPurchase({
+      station,
+      unitTypeKey,
+      ownerId: player.id,
+      credits: player.credits,
+      unitCostMultiplier: getUnitCostMultiplier(),
+    });
+    if (!result.ok) return;
+    const cost = result.cost;
 
     const newUnit = {
-      id: `unit_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-      ownerId: player.id,
-      stationId: stationId,
+      ...result.unit,
       type: unitTypeKey as any,
-      name: `${config.name} ${Math.floor(Math.random() * 99)}`,
-      status: 'available' as const,
       position: { ...station.position, lat: station.position.lat + (Math.random() - 0.5) * 0.001, lng: station.position.lng + (Math.random() - 0.5) * 0.001 },
-      destination: null,
-      heading: 0,
       speed: config.speed * getEliteStatMultiplier(),
       currentSpeed: 0,
       lastPosition: { ...station.position, lat: station.position.lat + (Math.random() - 0.5) * 0.001, lng: station.position.lng + (Math.random() - 0.5) * 0.001 },
       lastPositionAt: Date.now(),
-      eta: null,
-      missionId: null,
-      trainingLevel: 1,
-      createdAt: new Date().toISOString(),
     };
 
     addUnit(newUnit);
@@ -1078,7 +1072,7 @@ export function Sidebar({ isOpen, onToggle, activeSection, onSelectUnit }: Sideb
                                           <p className="text-[11px] text-amber-400">Station at capacity</p>
                                         </div>
                                       )}
-                                      {(STATION_UNITS[station.type] || []).map((unitTypeKey) => {
+                                      {stationUnitsFor(station.type).map((unitTypeKey) => {
                                         const unitConfig = Array.isArray(UNIT_CONFIGS) ? UNIT_CONFIGS.find((c) => c.type === unitTypeKey) : UNIT_CONFIGS[unitTypeKey];
                                         if (!unitConfig) return null;
                                         const canAffordUnit = (player?.credits || 0) >= unitConfig.cost;

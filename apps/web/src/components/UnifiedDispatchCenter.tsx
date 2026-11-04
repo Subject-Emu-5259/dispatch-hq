@@ -55,6 +55,13 @@ import { AllianceActivity } from './AllianceActivity';
 // Staged batch: tab registry lives in dispatch-center/tabs.ts.
 import type { DispatchTab } from './dispatch-center/tabs';
 import { TAB_META, visibleTabsFor } from './dispatch-center/tabs';
+import {
+  assistantBrief,
+  assistantReply,
+  isBoardVisibleMission,
+  pruneStaleCalls,
+  sortIncomingCalls,
+} from '@/lib/cadTabs';
 type ServiceFilter = 'all' | 'fire' | 'police' | 'ems';
 
 interface IncomingCall {
@@ -70,6 +77,8 @@ interface IncomingCall {
   notes: string;
   triageScore: number;
   timestamp: string;
+  /** Epoch ms the call rang — drives queue recency sort (timestamp is display-only). */
+  receivedAt: number;
   status: 'ringing' | 'active' | 'dispatched' | 'closed';
 }
 
@@ -256,6 +265,7 @@ function generateRandomCall(city?: GeoPoint | null, service?: string | null): In
     notes: `${template.reportedType} reported by ${name}.`,
     triageScore: template.severity === 'critical' ? 100 : template.severity === 'high' ? 75 : template.severity === 'medium' ? 50 : 25,
     timestamp: formatTime(),
+    receivedAt: Date.now(),
     status: 'ringing',
   };
 }
@@ -325,11 +335,22 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
   const [composeText, setComposeText] = useState('');
   // Dispatch-board virtualization (v0.18.0): render the top-N calls by priority,
   // expandable so a flood of calls never renders hundreds of cards at once.
+  // Main and Mutual Aid sections paginate independently — one shared limit
+  // used to expand both sections at once.
   const BOARD_PAGE = 24;
-  const [boardLimit, setBoardLimit] = useState(BOARD_PAGE);
+  const [boardLimitMain, setBoardLimitMain] = useState(BOARD_PAGE);
+  const [boardLimitAid, setBoardLimitAid] = useState(BOARD_PAGE);
   const [radioChannel, setRadioChannel] = useState<'all' | 'unit'>('all');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  // Radio feed controls (CAD audit): service filter + pause. Paused traffic
+  // is hidden, not queued — the log is a live channel, not an inbox.
+  const [radioServiceFilter, setRadioServiceFilter] = useState<'all' | 'fire' | 'police' | 'ems'>('all');
+  const [radioPaused, setRadioPaused] = useState(false);
+  const radioPausedRef = useRef(false);
   const [assistantInput, setAssistantInput] = useState('');
+  // Assistant-suggested action, rendered as a real button under the chat
+  // (CAD audit: recommendations used to be text-only dead ends).
+  const [assistantAction, setAssistantAction] = useState<'autodispatch' | null>(null);
   const [assistantHistory, setAssistantHistory] = useState<AssistantMessage[]>([
     { role: 'assistant', content: 'Dispatch Assistant online. Ask about triage, unit status, or patrol recommendations.' },
   ]);
@@ -393,6 +414,22 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
     return () => { clearTimeout(t1); clearInterval(interval); };
   }, [isOpen, selectedCity, selectedService, addComm]);
 
+  // Prune stale queue entries (CAD audit): once a call's mission leaves the
+  // store — completed, archived, or expired — its queue entry goes with it.
+  // Previously dispatched entries lingered until 50 newer calls pushed them
+  // out, so the queue read as stale history instead of live work.
+  useEffect(() => {
+    const ids = new Set(missions.map((m) => m.id));
+    setIncomingCalls((prev) => {
+      const next = pruneStaleCalls(prev, ids);
+      return next.length === prev.length ? prev : next;
+    });
+  }, [missions]);
+
+  // Radio pause flag for the bus listener (a ref because the listener is
+  // registered once per open and must not close over stale state).
+  useEffect(() => { radioPausedRef.current = radioPaused; }, [radioPaused]);
+
   // Keep the UDC Radio tab in sync with the global radio bus (MissionCard, SelectedUnitPanel, App).
   // This avoids duplicating the engine-generated traffic already produced by RadioComms.
   useEffect(() => {
@@ -400,6 +437,8 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
     const listener = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (!detail) return;
+      // Paused feed: new traffic is hidden, not queued (see radioPaused state).
+      if (radioPausedRef.current) return;
 
       if (detail.dispatchKey && seenRadioKeysRef.current.has(detail.dispatchKey)) return;
       if (detail.dispatchKey) seenRadioKeysRef.current.add(detail.dispatchKey);
@@ -451,7 +490,15 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
     return units.filter(u => getUnitServiceType(u.type) === serviceFilter);
   }, [units, serviceFilter]);
 
-  const activeMissions = useMemo(() => missions.filter(m => m.status === 'active' || m.status === 'dispatching' || m.status === 'en_route' || m.status === 'on_scene'), [missions]);
+  // Board-visible missions (CAD audit): in_progress and completing missions
+  // stay on the board — the old filter dropped them the moment they left
+  // on_scene, so work vanished mid-completion while its card still knew how
+  // to render those states.
+  const activeMissions = useMemo(() => missions.filter(m => isBoardVisibleMission(m.status)), [missions]);
+
+  // Incoming queue in dispatcher scan order (CAD audit): ringing first,
+  // then severity, then newest — arrival order alone buried critical calls.
+  const sortedCalls = useMemo(() => sortIncomingCalls(incomingCalls), [incomingCalls]);
   const unassignedMissions = useMemo(
     // CPU Mutual Aid: city-handled calls are excluded — the player never
     // dispatches to them and they resolve automatically (see App.tsx tick).
@@ -627,6 +674,26 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
     setActiveTab('calls');
   }, [addMission, addComm]);
 
+  // Police record-check radio line, shared by both dispatch paths so a
+  // one-tap dispatch sounds exactly like the two-tap one.
+  const policeRecordCheck = useCallback((call: IncomingCall) => {
+    if (call.service !== 'police' && call.category !== 'traffic') return;
+    const { criminalRecords } = useGameStore.getState();
+    const record = criminalRecords[Math.floor(Math.random() * (criminalRecords.length || 1))];
+    if (!record) return;
+    if (call.category === 'traffic') {
+      addRadio({
+        from: 'Dispatch', to: 'Unit', text: `10-28 check on the traffic stop. Driver comes back with ${record.warrantStatus === 'active' ? 'an active warrant' : 'no active wants'}.`,
+        channel: 'dispatch-to-unit', serviceType: 'police',
+      });
+    } else {
+      addRadio({
+        from: 'Dispatch', to: 'Unit', text: `Be advised, responding to ${call.location}. A record check shows ${record.firstName} ${record.lastName} linked — ${record.riskLevel} risk, ${record.warrantStatus === 'active' ? 'active warrant' : 'no active warrant'}.`,
+        channel: 'dispatch-to-unit', serviceType: 'police',
+      });
+    }
+  }, [addRadio]);
+
   const handleDispatchCall = useCallback(async (call: IncomingCall) => {
     const callMission = missions.find(m => m.id === `m_${call.id}`);
     if (callMission) return dispatchMission(callMission);
@@ -634,24 +701,21 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
     setIncomingCalls(prev => prev.map(c => c.id === call.id ? { ...c, status: 'dispatched' } : c));
     setActiveCallId(null);
     addMission(mission);
-    // For police calls, surface a record check/traffic-stop radio line.
-    if (call.service === 'police' || call.category === 'traffic') {
-      const { criminalRecords, selectedCity } = useGameStore.getState();
-      const record = criminalRecords[Math.floor(Math.random() * (criminalRecords.length || 1))];
-      if (record && call.category === 'traffic') {
-        addRadio({
-          from: 'Dispatch', to: 'Unit', text: `10-28 check on the traffic stop. Driver comes back with ${record.warrantStatus === 'active' ? 'an active warrant' : 'no active wants'}.`,
-          channel: 'dispatch-to-unit', serviceType: 'police',
-        });
-      } else if (record) {
-        addRadio({
-          from: 'Dispatch', to: 'Unit', text: `Be advised, responding to ${call.location}. A record check shows ${record.firstName} ${record.lastName} linked — ${record.riskLevel} risk, ${record.warrantStatus === 'active' ? 'active warrant' : 'no active warrant'}.`,
-          channel: 'dispatch-to-unit', serviceType: 'police',
-        });
-      }
-    }
+    policeRecordCheck(call);
     return dispatchMission(mission);
-  }, [missions, addMission, dispatchMission, addRadio]);
+  }, [missions, addMission, dispatchMission, policeRecordCheck]);
+
+  // One-tap path (CAD audit): ringing → mission → dispatched in a single
+  // press for urgent calls. The two-tap ACCEPT then DISPATCH flow stays for
+  // calls the dispatcher wants to stage on the board first.
+  const handleAcceptAndDispatch = useCallback(async (call: IncomingCall) => {
+    const mission = makeMissionFromCall(call);
+    setIncomingCalls(prev => prev.map(c => c.id === call.id ? { ...c, status: 'dispatched' } : c));
+    setActiveCallId(null);
+    addMission(mission);
+    policeRecordCheck(call);
+    return dispatchMission(mission);
+  }, [addMission, dispatchMission, policeRecordCheck]);
 
   const handleDeclineCall = useCallback((call: IncomingCall) => {
     setIncomingCalls(prev => prev.filter(c => c.id !== call.id));
@@ -786,30 +850,48 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
     });
   }, [composeText, radioChannel, selectedUnitId, selectedService, units, missions, addRadio, addRadioSequence]);
 
-  const handleAssistantQuery = useCallback(() => {
-    const text = assistantInput.trim();
-    if (!text || assistantLoading) return;
+  // Live snapshot for the assistant (CAD audit): every reply derives from
+  // this and nothing else — no fabricated incidents, no generic advice
+  // dressed as a recommendation.
+  const assistantSnapshot = useMemo(() => ({
+    activeCount: activeMissions.length,
+    unassigned: unassignedMissions.map((m) => ({
+      name: m.name,
+      priority: missionPriority(m) as 'low' | 'medium' | 'high' | 'critical',
+      difficulty: m.difficulty,
+      timeRemaining: m.timeRemaining,
+    })),
+    readyUnits: dispatchableUnits.length,
+    busyUnits: busyUnits.length,
+    stationCount: stations.length,
+    patrolReadyUnits: availableUnits.filter((u) => u.stationId).length,
+  }), [activeMissions, unassignedMissions, dispatchableUnits, busyUnits, stations, availableUnits]);
+
+  const handleAssistantQueryText = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || assistantLoading) return;
     setAssistantInput('');
-    setAssistantHistory(prev => [...prev, { role: 'user', content: text }]);
+    setAssistantAction(null);
+    setAssistantHistory((prev) => [...prev, { role: 'user', content: trimmed }]);
     setAssistantLoading(true);
     setTimeout(() => {
-      const q = text.toLowerCase();
-     let response = '';
-      if (q.includes('status') || q.includes('situation')) {
-        response = `Status report:\n• ${activeMissions.length} active missions, ${unassignedMissions.length} need units\n• ${dispatchableUnits.length} ready units, ${busyUnits.length} busy\n• ${stations.length} stations operational`;
-      } else if (q.includes('triage') || q.includes('priority')) {
-        response = unassignedMissions.length === 0 ? 'All missions are assigned.' : `Top priority unassigned:\n${unassignedMissions.slice(0, 3).map((m, i) => `${i + 1}. ${m.name} — difficulty ${m.difficulty}`).join('\n')}`;
-      } else if (q.includes('dispatch') || q.includes('send')) {
-        response = unassignedMissions.length === 0 ? 'No unassigned missions to dispatch.' : `I recommend dispatching units to ${unassignedMissions.length} mission(s). Use Auto-Dispatch in the Call Queue tab.`;
-      } else if (q.includes('patrol')) {
-        response = availableUnits.filter(u => u.stationId).length === 0 ? 'No units available to patrol.' : `${availableUnits.filter(u => u.stationId).length} unit(s) ready to patrol. Open the Unit Roster tab.`;
-      } else {
-        response = 'I can help with status, triage, dispatch recommendations, and patrol planning. What do you need?';
-      }
-      setAssistantHistory(prev => [...prev, { role: 'assistant', content: response }]);
+      const reply = assistantReply(trimmed, assistantSnapshot);
+      setAssistantHistory((prev) => [...prev, { role: 'assistant', content: reply.text }]);
+      setAssistantAction(reply.action);
       setAssistantLoading(false);
     }, 500);
-  }, [assistantInput, assistantLoading, activeMissions, unassignedMissions, dispatchableUnits, busyUnits.length, stations.length]);
+  }, [assistantLoading, assistantSnapshot]);
+
+  const handleAssistantQuery = useCallback(() => {
+    handleAssistantQueryText(assistantInput);
+  }, [assistantInput, handleAssistantQueryText]);
+
+  // Proactive brief (CAD audit): the assistant used to only answer questions.
+  // A dispatcher opening the tab should see what needs them, unasked.
+  const handleAssistantBrief = useCallback(() => {
+    setAssistantAction(null);
+    setAssistantHistory((prev) => [...prev, { role: 'assistant', content: assistantBrief(assistantSnapshot) }]);
+  }, [assistantSnapshot]);
 
   /** Board card for one mission — reused for the main queue and Mutual Aid requests. */
   const renderBoardCard = (m: Mission, isMutualAid = false) => {
@@ -1147,7 +1229,16 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                       <p className="text-xs">No incoming calls.</p>
                     </div>
                   )}
-                  {incomingCalls.map((call) => (
+                  {sortedCalls.map((call) => {
+                    // Nearest same-service ready unit, so triage answers the
+                    // only question that matters: can anyone actually go?
+                    const nearest = call.status === 'ringing' || call.status === 'active'
+                      ? bestUnitFor(call.service, call.locationGeo)
+                      : null;
+                    const nearestKm = nearest?.position
+                      ? haversineKm(nearest.position, call.locationGeo)
+                      : null;
+                    return (
                     <div key={call.id} className={`border rounded-lg p-3 transition-colors ${activeCallId === call.id ? 'bg-white/5 border-dispatch-red/40' : 'bg-gray-900/40 border-gray-800/40 hover:border-gray-700/60'}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -1159,13 +1250,31 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                           <p className="text-[11px] text-gray-400 mt-1">{call.callerName} • {call.callerNumber}</p>
                           <p className="text-[11px] text-gray-300 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" /> {call.location}</p>
                           <p className="text-[11px] text-gray-500 mt-1">{call.notes}</p>
+                          <p className="text-[11px] mt-1">
+                            <span className="text-gray-500">Needs: </span>
+                            <span className="text-gray-300 capitalize">{call.service} response</span>
+                            {nearest && nearestKm !== null && (
+                              <span className="text-gray-400"> · Nearest ready: {nearest.name} ({nearestKm.toFixed(1)} km)</span>
+                            )}
+                            {!nearest && (call.status === 'ringing' || call.status === 'active') && (
+                              <span className="text-amber-400"> · No {call.service} units ready</span>
+                            )}
+                          </p>
                         </div>
                         <div className="flex flex-col gap-1.5">
                           {call.status === 'ringing' && (
-                            <button onClick={() => handleAcceptCall(call)} className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-[11px] font-bold border border-emerald-500/30 hover:bg-emerald-500/30">ACCEPT</button>
+                            <>
+                              <button onClick={() => handleAcceptCall(call)} className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-[11px] font-bold border border-emerald-500/30 hover:bg-emerald-500/30">ACCEPT</button>
+                              <button
+                                onClick={() => handleAcceptAndDispatch(call)}
+                                disabled={dispatchableUnits.length === 0}
+                                title={dispatchableUnits.length === 0 ? 'No ready units' : 'Accept and dispatch the nearest unit in one tap'}
+                                className="px-2 py-1 rounded bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40"
+                              >ACCEPT + DISPATCH</button>
+                            </>
                           )}
                           {call.status === 'active' && (
-                            <button onClick={() => handleDispatchCall(call)} disabled={dispatchableUnits.length === 0} className="px-2 py-1 rounded bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40">DISPATCH</button>
+                            <button onClick={() => handleDispatchCall(call)} disabled={dispatchableUnits.length === 0} title={dispatchableUnits.length === 0 ? 'No ready units' : undefined} className="px-2 py-1 rounded bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40">DISPATCH</button>
                           )}
                           {call.status === 'dispatched' && (
                             <span className="px-2 py-1 rounded bg-gray-800 text-gray-400 text-[11px]">DISPATCHED</span>
@@ -1174,7 +1283,8 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -1183,6 +1293,31 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-white flex items-center gap-2"><List className="w-3.5 h-3.5" /> Dispatch Board</h3>
                     <button onClick={handleAutoDispatch} disabled={unassignedMissions.length === 0} className="px-3 py-1.5 rounded bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 disabled:opacity-40 flex items-center gap-1"><Zap className="w-3 h-3" /> AUTO DISPATCH</button>
+                  </div>
+                  {/* At-a-glance strip (CAD audit): what a dispatcher needs
+                      before reading any card — ready/busy strength, what
+                      waits, what is critical, what expires soon. */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="rounded-lg bg-gray-900/60 border border-gray-800/60 px-2.5 py-2">
+                      <p className="text-[11px] uppercase tracking-wider text-gray-500">Ready units</p>
+                      <p className="text-sm font-bold text-emerald-400">{dispatchableUnits.length}</p>
+                    </div>
+                    <div className="rounded-lg bg-gray-900/60 border border-gray-800/60 px-2.5 py-2">
+                      <p className="text-[11px] uppercase tracking-wider text-gray-500">Busy units</p>
+                      <p className="text-sm font-bold text-gray-200">{busyUnits.length}</p>
+                    </div>
+                    <div className="rounded-lg bg-gray-900/60 border border-gray-800/60 px-2.5 py-2">
+                      <p className="text-[11px] uppercase tracking-wider text-gray-500">Need units</p>
+                      <p className="text-sm font-bold text-amber-400">{unassignedMissions.length}</p>
+                    </div>
+                    <div className="rounded-lg bg-gray-900/60 border border-gray-800/60 px-2.5 py-2">
+                      <p className="text-[11px] uppercase tracking-wider text-gray-500">Critical / expiring</p>
+                      <p className="text-sm font-bold text-red-400">
+                        {unassignedMissions.filter((m) => missionPriority(m) === 'critical').length}
+                        {' / '}
+                        {activeMissions.filter((m) => m.timeRemaining > 0 && m.timeRemaining < 300).length}
+                      </p>
+                    </div>
                   </div>
                   {unassignedMissions.length > 0 && (
                     <div className="p-2 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[11px] text-amber-200 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> {unassignedMissions.length} mission(s) need units.</div>
@@ -1197,13 +1332,13 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                   {/* Your department's calls — virtualized: top 24 by priority, expandable (v0.18.0) */}
                   {mainMissions.length > 0 && (
                     <div className="space-y-3">
-                      {[...mainMissions].sort(sortByPriority).slice(0, boardLimit).map(m => renderBoardCard(m))}
-                      {mainMissions.length > boardLimit && (
+                      {[...mainMissions].sort(sortByPriority).slice(0, boardLimitMain).map(m => renderBoardCard(m))}
+                      {mainMissions.length > boardLimitMain && (
                         <button
-                          onClick={() => setBoardLimit((l) => l + BOARD_PAGE)}
+                          onClick={() => setBoardLimitMain((l) => l + BOARD_PAGE)}
                           className="w-full py-1.5 rounded-lg text-[11px] font-bold text-gray-400 bg-gray-800/40 border border-gray-700/40 hover:bg-gray-800 hover:text-gray-200 transition-colors"
                         >
-                          Show {Math.min(BOARD_PAGE, mainMissions.length - boardLimit)} more of {mainMissions.length}
+                          Show {Math.min(BOARD_PAGE, mainMissions.length - boardLimitMain)} more of {mainMissions.length}
                         </button>
                       )}
                     </div>
@@ -1220,13 +1355,13 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                         </div>
                       </div>
                       <div className="p-3 space-y-3">
-                        {[...mutualAidMissions].sort(sortByPriority).slice(0, boardLimit).map(m => renderBoardCard(m, true))}
-                        {mutualAidMissions.length > boardLimit && (
+                        {[...mutualAidMissions].sort(sortByPriority).slice(0, boardLimitAid).map(m => renderBoardCard(m, true))}
+                        {mutualAidMissions.length > boardLimitAid && (
                           <button
-                            onClick={() => setBoardLimit((l) => l + BOARD_PAGE)}
+                            onClick={() => setBoardLimitAid((l) => l + BOARD_PAGE)}
                             className="w-full py-1.5 rounded-lg text-[11px] font-bold text-blue-300/80 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
                           >
-                            Show {Math.min(BOARD_PAGE, mutualAidMissions.length - boardLimit)} more
+                            Show {Math.min(BOARD_PAGE, mutualAidMissions.length - boardLimitAid)} more
                           </button>
                         )}
                       </div>
@@ -1255,15 +1390,49 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
                           className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-[11px] text-gray-300"
                         >
                           <option value="">Select unit</option>
-                          {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                          {dispatchableUnits.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>
                       )}
                     </div>
                   </div>
 
+                  {/* Feed controls (CAD audit): the log used to be one
+                      unfiltered wall of traffic with no way to quiet it.
+                      Service filter + pause; dispatch-wide messages (no
+                      service tag) always show, in every filter. */}
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                    {(['all', 'fire', 'police', 'ems'] as const).map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setRadioServiceFilter(f)}
+                        className={`px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ${
+                          radioServiceFilter === f
+                            ? 'bg-dispatch-red/20 text-dispatch-red border-dispatch-red/30'
+                            : 'bg-gray-800/40 text-gray-400 border-gray-700/40 hover:text-white'
+                        }`}
+                      >
+                        {f === 'all' ? 'All traffic' : f.toUpperCase()}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setRadioPaused((p) => !p)}
+                      title={radioPaused ? 'Resume the live feed' : 'Pause the feed — new traffic is hidden, not queued'}
+                      className={`ml-auto px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ${
+                        radioPaused
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                          : 'bg-gray-800/40 text-gray-400 border-gray-700/40 hover:text-white'
+                      }`}
+                    >
+                      {radioPaused ? '⏸ PAUSED — Resume' : '⏸ Pause feed'}
+                    </button>
+                  </div>
+                  {radioPaused && (
+                    <p className="text-[11px] text-amber-300/80 shrink-0">Feed paused — new traffic is hidden, not queued. Resume to see live traffic again.</p>
+                  )}
+
                   <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1">
-                    {radioMessages.length === 0 && <p className="text-xs text-gray-600 text-center mt-12">No radio traffic.</p>}
-                    {radioMessages.map((msg) => (
+                    {radioMessages.filter((m) => radioServiceFilter === 'all' || !m.serviceType || m.serviceType === radioServiceFilter).length === 0 && <p className="text-xs text-gray-600 text-center mt-12">{radioMessages.length === 0 ? 'No radio traffic.' : 'No traffic on this service filter.'}</p>}
+                    {radioMessages.filter((m) => radioServiceFilter === 'all' || !m.serviceType || m.serviceType === radioServiceFilter).map((msg) => (
                       <div key={msg.id} className="flex items-start gap-2 text-[11px]">
                         <span className="text-[11px] text-gray-600 font-mono shrink-0 mt-0.5">{msg.timestamp}</span>
                         <div className={`px-2 py-1.5 rounded-lg border max-w-[80%] ${msg.from === 'Dispatch' ? 'bg-dispatch-red/10 border-dispatch-red/20 text-red-100 ml-auto' : 'bg-gray-800/60 border-gray-700/40 text-gray-200'}`}>
@@ -1371,6 +1540,35 @@ export function UnifiedDispatchCenter({ isOpen, onClose }: Props) {
               {activeTab === 'assistant' && (
                 <div className="flex flex-col h-full space-y-3">
                   <h3 className="text-xs font-bold text-white flex items-center gap-2"><Brain className="w-3.5 h-3.5" /> Dispatch Assistant</h3>
+                  {/* Quick questions + proactive brief (CAD audit): the
+                      assistant used to only answer typed keywords, and its
+                      dispatch advice was text with nowhere to go. */}
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                    {['Status', 'Triage', 'Dispatch', 'Patrol', 'Critical', 'Expiring'].map((chip) => (
+                      <button
+                        key={chip}
+                        onClick={() => handleAssistantQueryText(chip)}
+                        disabled={assistantLoading}
+                        className="px-2 py-1 rounded-md text-[11px] font-bold bg-gray-800/60 text-gray-300 border border-gray-700/40 hover:text-white hover:bg-gray-800 disabled:opacity-40"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                    <button
+                      onClick={handleAssistantBrief}
+                      className="px-2 py-1 rounded-md text-[11px] font-bold bg-dispatch-red/20 text-dispatch-red border border-dispatch-red/30 hover:bg-dispatch-red/30"
+                    >
+                      Brief me
+                    </button>
+                  </div>
+                  {assistantAction === 'autodispatch' && (
+                    <button
+                      onClick={() => { setAssistantAction(null); void handleAutoDispatch(); }}
+                      className="shrink-0 px-3 py-2 rounded-lg bg-dispatch-red/20 text-dispatch-red text-[11px] font-bold border border-dispatch-red/30 hover:bg-dispatch-red/30 flex items-center gap-1.5"
+                    >
+                      <Zap className="w-3 h-3" /> Auto-Dispatch now — send units to the unassigned missions above
+                    </button>
+                  )}
                   <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
                     {assistantHistory.map((msg, i) => (
                       <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>

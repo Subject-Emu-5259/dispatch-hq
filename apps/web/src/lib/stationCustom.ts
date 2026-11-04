@@ -28,5 +28,8 @@ export function patchFor(patchId: string | undefined): StationPatch {
 export function serviceForStationType(type: StationType): ServiceType {
   if (type === 'police_station') return 'police';
   if (type === 'ems_station') return 'ems';
+  // Correction build: trooper/sheriff stations are law-enforcement agencies.
+  if (type === 'trooper_station') return 'police';
+  if (type === 'sheriff_station') return 'police';
   return 'fire';
 }

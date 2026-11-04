@@ -35,12 +35,42 @@ export const STATION_CONFIGS: Record<string, StationConfig> = {
     baseCapacity: 4,
     maxLevel: 5,
   },
+  // Correction build: troopers and sheriffs are their own agencies, NOT city
+  // police — each gets its own station type with an exclusive buy list (see
+  // lib/unitPurchase STATION_UNITS). Costs/capacity follow the existing
+  // station patterns (police 4000/4, fire 5000/3, ems 4500/4, all maxLevel 5);
+  // no level gate exists for building stations, so none is added here.
+  trooper_station: {
+    type: 'trooper_station',
+    name: 'State Trooper Post',
+    description: 'State highway patrol post — houses trooper cars',
+    icon: '🛣️',
+    color: '#1E40AF',
+    baseCost: 4500,
+    baseCapacity: 3,
+    maxLevel: 5,
+  },
+  sheriff_station: {
+    type: 'sheriff_station',
+    name: "County Sheriff's Office",
+    description: "County sheriff's office — houses deputy cars",
+    icon: '⭐',
+    color: '#B45309',
+    baseCost: 4000,
+    baseCapacity: 4,
+    maxLevel: 5,
+  },
 };
 
-/** Department a station type belongs to (fire_station → fire, etc.). */
+/** Department a station type belongs to (fire_station → fire, etc.). Trooper
+ *  and sheriff stations are law-enforcement agencies, so they map to the
+ *  police service family — agency separation lives in the station type, its
+ *  exclusive buy list, and the unit jurisdiction, not in a new service. */
 export function stationServiceFor(stationType: string): 'fire' | 'police' | 'ems' {
   if (stationType === 'fire_station') return 'fire';
   if (stationType === 'ems_station') return 'ems';
+  if (stationType === 'trooper_station') return 'police';
+  if (stationType === 'sheriff_station') return 'police';
   return 'police';
 }
 

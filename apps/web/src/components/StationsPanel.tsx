@@ -13,6 +13,7 @@ import { autoAssignCrew, assignableEmployees } from '@/lib/employees';
 import { StationDetailModal } from './StationDetailModal';
 import { STATION_CONFIGS, STATION_LEVELS, UNIT_CONFIGS, perkAdjustedRadius } from '@dispatch-hq/shared';
 import { getUnitCostMultiplier, getEliteStatMultiplier, getStationBuildCostMultiplier } from '@/lib/techTree';
+import { stationUnitsFor, resolveUnitPurchase } from '@/lib/unitPurchase';
 import type { Station } from '@dispatch-hq/shared';
 
 interface StationsPanelProps {
@@ -20,12 +21,6 @@ interface StationsPanelProps {
   onClose: () => void;
   onOpenBuild?: () => void;
 }
-
-const STATION_UNITS: Record<string, string[]> = {
-  fire_station: ['engine', 'ladder', 'rescue', 'battalion_chief'],
-  police_station: ['patrol_car', 'swat_van', 'k9_unit', 'police_suv', 'trooper_car', 'deputy_car'],
-  ems_station: ['ambulance', 'paramedic_unit', 'ems_supervisor', 'fire_ambulance'],
-};
 
 export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelProps) {
   const {
@@ -42,33 +37,28 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
     const config = UNIT_CONFIGS[unitTypeKey];
     if (!config) return;
 
-    const cost = Math.round(config.cost * getUnitCostMultiplier());
-    if ((station.unitCount || 0) >= station.capacity) {
-      addNotification({ type: 'warning', title: 'Station Full', message: `${station.name} is at capacity. Upgrade to add more units.`, duration: 3000 });
+    // Correction build: one purchase decision for both buy surfaces.
+    const result = resolveUnitPurchase({
+      station,
+      unitTypeKey,
+      ownerId: player.id,
+      credits: player.credits,
+      unitCostMultiplier: getUnitCostMultiplier(),
+    });
+    if (!result.ok) {
+      if (result.reason === 'station-full') {
+        addNotification({ type: 'warning', title: 'Station Full', message: `${station.name} is at capacity. Upgrade to add more units.`, duration: 3000 });
+      } else if (result.reason === 'insufficient-credits') {
+        addNotification({ type: 'warning', title: 'Insufficient Credits', message: `${config.name} costs ${result.cost.toLocaleString()} credits.`, duration: 3000 });
+      }
       return;
     }
-    if (player.credits < cost) {
-      addNotification({ type: 'warning', title: 'Insufficient Credits', message: `${config.name} costs ${cost.toLocaleString()} credits.`, duration: 3000 });
-      return;
-    }
+    const cost = result.cost;
 
     const newUnit = {
-      id: `unit_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-      ownerId: player.id,
-      stationId: station.id,
+      ...result.unit,
       type: unitTypeKey as any,
-      // Staged batch: jurisdiction follows the unit type (legacy types = city).
-      jurisdiction: unitTypeKey === 'trooper_car' ? 'state' as const : unitTypeKey === 'deputy_car' ? 'county' as const : 'city' as const,
-      name: `${config.name} ${Math.floor(Math.random() * 99)}`,
-      status: 'available' as const,
-      position: { ...station.position },
-      destination: null,
-      heading: 0,
       speed: config.speed * getEliteStatMultiplier(),
-      eta: null,
-      missionId: null,
-      trainingLevel: 1,
-      createdAt: new Date().toISOString(),
     };
 
     const { crewIds, assigned } = autoAssignCrew(station, newUnit as any);
@@ -276,7 +266,7 @@ export function StationsPanel({ isOpen, onClose, onOpenBuild }: StationsPanelPro
                               <div className="space-y-1.5">
                                 <p className="text-[11px] uppercase tracking-wider text-gray-600 font-semibold">Acquire Unit</p>
                                 <div className="grid grid-cols-2 gap-2">
-                                  {(STATION_UNITS[station.type] || []).map((unitTypeKey) => {
+                                  {stationUnitsFor(station.type).map((unitTypeKey) => {
                                     const unitConfig = UNIT_CONFIGS[unitTypeKey];
                                     if (!unitConfig) return null;
                                     const cost = Math.round(unitConfig.cost * getUnitCostMultiplier());

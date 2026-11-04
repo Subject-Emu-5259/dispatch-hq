@@ -17,6 +17,18 @@ export function currentVersion(): string {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.54.0',
+    date: '2026-11-03',
+    title: 'Own-agency stations + CAD console overhaul: trooper & sheriff stations, Incoming, Radio, Assistant, Board',
+    items: [
+      'Own-agency stations: State Trooper cars and Sheriff Deputy cars are no longer sold at city police stations. Troopers get their own State Trooper Post (4,500 credits, capacity 3) and deputies get their own County Sheriff\u2019s Office (4,000 credits, capacity 4), each selling only its own agency\u2019s cars. Units you already bought at a police station keep working where they are, jurisdiction and all.',
+      'CAD Incoming: the call queue now scans in dispatcher order (ringing, then severity, then newest); every call shows what it needs plus the nearest ready unit with distance, or an honest “No units ready” note; one-tap ACCEPT + DISPATCH joins the two-tap flow; stale queue entries are pruned when their mission leaves.',
+      'CAD Radio: All/Fire/Police/EMS filter chips, a real Pause (traffic hidden while paused, not queued), and Direct-Unit now lists dispatchable units only.',
+      'CAD Assistant: replies now derive from a live snapshot — true priority triage, a real Auto-Dispatch now button when unassigned missions exist (and an honest “No unassigned” with no button when none do), quick chips, and a Brief me button reporting critical waiting, expiring-soon, and unit strength.',
+      'CAD Board: an at-a-glance strip (ready / busy / need units / critical-expiring), in-progress and completing missions stay visible instead of vanishing mid-completion, and Main and Mutual Aid paginate independently.',
+    ],
+  },
+  {
     version: '0.53.0',
     date: '2026-11-03',
     title: 'Dispatch & crime expansion: auto-follow, POI-anchored crime, CAD, jail & court, troopers, new cities, law',

@@ -2,7 +2,7 @@
 // Dispatch HQ — Station Types
 // ============================================
 
-export type StationType = 'fire_station' | 'police_station' | 'ems_station';
+export type StationType = 'fire_station' | 'police_station' | 'ems_station' | 'trooper_station' | 'sheriff_station';
 
 export type ServiceType = 'fire' | 'police' | 'ems';
 
