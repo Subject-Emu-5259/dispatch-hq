@@ -171,10 +171,13 @@ export function parsePhotoGallery(raw: unknown): PhotoSnapshot[] {
 // (persisted in the save blob). Each step names the call type to clear —
 // the App completion hook advances the chain only when the cleared
 // mission's category matches the CURRENT step, so random clears cannot
-// skip the lesson; a stuck player can skip a step from the intro card's
-// successor (the overlay re-opens from the pause menu's Replay Tutorial
-// path only for the tour itself — the chain itself is skipped by clearing
-// any mission of a later step's type, see advanceTutorialCampaign).
+// skip the lesson. A stuck player can skip a step from the First Shift
+// card on the main menu (skipTutorialCampaignStep): the step is recorded
+// in skippedStepIds, and skipping the final step ends the campaign with
+// skipped: true instead of a completion. (Corrected 2026-11-14: an earlier
+// version of this header claimed the chain "is skipped by clearing any
+// mission of a later step's type" — that was never true in code;
+// advanceTutorialCampaign requires an exact current-step match.)
 
 export interface TutorialMissionStep {
   id: string;
@@ -210,6 +213,13 @@ export interface TutorialCampaignState {
   stepIndex: number;
   startedAt: number | null;
   completedAt: number | null;
+  /** Step ids the player skipped (skipTutorialCampaignStep) — recorded so a
+   *  future shift-report replay can show "skipped" for these instead of a
+   *  grade. No replay surface reads this yet. Absent = none. */
+  skippedStepIds?: string[];
+  /** True when the campaign ended by skipping its final step rather than
+   *  clearing it — ended-by-skip, not completed. Absent = false. */
+  skipped?: boolean;
 }
 
 export const EMPTY_TUTORIAL_CAMPAIGN: TutorialCampaignState = {
@@ -233,6 +243,10 @@ export function parseTutorialCampaign(raw: unknown): TutorialCampaignState {
       : 0,
     startedAt: typeof r.startedAt === 'number' ? r.startedAt : null,
     completedAt: typeof r.completedAt === 'number' ? r.completedAt : null,
+    skippedStepIds: Array.isArray(r.skippedStepIds)
+      ? r.skippedStepIds.filter((id): id is string => typeof id === 'string')
+      : undefined,
+    skipped: r.skipped === true ? true : undefined,
   };
 }
 
@@ -267,6 +281,38 @@ export function advanceTutorialCampaign(
       stepIndex: nextIndex,
       active: !completed,
       completedAt: completed ? now : state.completedAt,
+    },
+    advanced: true,
+    completed,
+  };
+}
+
+/**
+ * Skip the current tutorial step (First Shift card on the main menu). Same
+ * transition as a clear — stepIndex +1, campaign closes past the last step —
+ * minus any grade: the skipped step's id is recorded in skippedStepIds, and
+ * skipping the final step ends the campaign with skipped: true (ended-by-
+ * skip, not completed). No-op on an inactive or finished campaign.
+ */
+export function skipTutorialCampaignStep(
+  state: TutorialCampaignState,
+  now: number = Date.now(),
+): CampaignAdvance {
+  if (!state.active || state.stepIndex >= TUTORIAL_MISSION_CHAIN.length) {
+    return { state, advanced: false, completed: false };
+  }
+  const current = TUTORIAL_MISSION_CHAIN[state.stepIndex];
+  const nextIndex = state.stepIndex + 1;
+  const completed = nextIndex >= TUTORIAL_MISSION_CHAIN.length;
+  const skippedStepIds = [...(state.skippedStepIds ?? []), current.id];
+  return {
+    state: {
+      ...state,
+      stepIndex: nextIndex,
+      active: !completed,
+      completedAt: completed ? now : state.completedAt,
+      skippedStepIds,
+      ...(completed ? { skipped: true as const } : {}),
     },
     advanced: true,
     completed,

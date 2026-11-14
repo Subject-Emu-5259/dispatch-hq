@@ -64,6 +64,7 @@ import {
   adaptWaveToService, waveWasAdapted,
 } from '@/lib/disasters';
 import { spawnChainStage } from '@/lib/missionChains';
+import { serveDay, sentenceServed } from '@/lib/justice';
 import { computeMissionRewards, missionService } from '@/lib/rewards';
 import { unlockedDistricts, satisfactionFor, satisfactionDeltaForResponse, applySatisfaction, districtRewardMultiplier, pickDistrictForSpawn } from '@/lib/cityDistricts';
 import { startDisasterWave, recordWaveSpawned, recordWaveCompletion, currentWaveStage, waveRewardMultForStage, type DisasterWaveState } from '@/lib/disasterWaves';
@@ -2214,6 +2215,38 @@ function GameApp() {
                         duration: 5000,
                       });
                     }
+                  }
+                }
+              }
+
+              // Sentence auto-release (mission-count rule): every cleared
+              // mission serves 1 sentence-day for every held inmate with a
+              // guilty verdict. Pending-verdict inmates never auto-release
+              // (their sentence isn't final), transferred inmates are
+              // out-of-county. Served sentences release via releaseInmate,
+              // so the inmate lands in the Released tab automatically.
+              {
+                const st = useGameStore.getState();
+                const held = st.inmates.filter((i) => i.status === 'held' && i.verdict === 'guilty');
+                for (const inmate of held) {
+                  const served = serveDay(inmate);
+                  st.updateInmate(inmate.id, { daysServed: served.daysServed });
+                  if (sentenceServed(served)) {
+                    st.releaseInmate(inmate.id);
+                    broadcastRadioMessage({
+                      from: selectedCity?.name ? `${selectedCity.name} County Jail` : 'County Jail',
+                      to: 'Dispatch',
+                      text: `${inmate.firstName} ${inmate.lastName} — booking ${inmate.bookingNumber} — sentence served (${inmate.sentenceDays} days), released.`,
+                      type: 'dispatch',
+                      service: 'police',
+                    });
+                    addNotification({
+                      type: 'info',
+                      title: 'Sentence Served',
+                      message: `${inmate.firstName} ${inmate.lastName} served ${inmate.sentenceDays} day${inmate.sentenceDays === 1 ? '' : 's'} and was released from county jail.`,
+                      icon: '🔓',
+                      duration: 5000,
+                    });
                   }
                 }
               }

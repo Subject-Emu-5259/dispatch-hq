@@ -24,7 +24,7 @@ import { ReleaseNotesModal } from './ReleaseNotesModal';
 import { RELEASE_NOTES, currentVersion } from '@/data/releaseNotes';
 import { getActiveSlot, listSaveSlots, type SaveSlotId } from '@/hooks/useSaveSystem';
 import { TUTORIAL_STEP_COUNT } from './OnboardingOverlay';
-import { TUTORIAL_MISSION_CHAIN } from '@/lib/batch3e';
+import { TUTORIAL_MISSION_CHAIN, skipTutorialCampaignStep, startTutorialCampaign } from '@/lib/batch3e';
 import { itchPromoLabel } from '@/lib/itchPromo';
 
 // One-time guest-upgrade prompt: keyed by guest id so a brand-new guest (or a
@@ -376,6 +376,56 @@ export function MainMenu({ onContinue, onPlay, onSettings, onNewCampaign, onLoad
             </motion.button>
           ))}
         </div>
+
+        {/* First Shift card — the guided tutorial campaign, with a way out.
+            Active: current step + hint + Skip step (records the skip, ends
+            the campaign with skipped: true if it was the final step).
+            Done or skipped: Replay First Shift (resets via
+            startTutorialCampaign). Never started: no card — the tour
+            offers it at the end of the first run. */}
+        {tutorialCampaign.active && campaignStep && (
+          <div className="w-full max-w-xs mt-6 rounded-xl border border-dispatch-cyan/30 bg-dispatch-cyan/10 p-3">
+            <p className="text-sm font-semibold text-white">
+              🎓 First Shift — step {tutorialCampaign.stepIndex + 1} of {TUTORIAL_MISSION_CHAIN.length}: {campaignStep.name}
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">{campaignStep.hint}</p>
+            {tutorialCampaign.skippedStepIds && tutorialCampaign.skippedStepIds.length > 0 && (
+              <p className="text-[11px] text-gray-500 mt-1">
+                Skipped so far: {tutorialCampaign.skippedStepIds.length} step{tutorialCampaign.skippedStepIds.length === 1 ? '' : 's'} — skipped steps earn no grade.
+              </p>
+            )}
+            <button
+              onClick={() => {
+                const res = skipTutorialCampaignStep(useGameStore.getState().tutorialCampaign);
+                if (res.advanced) useGameStore.getState().setTutorialCampaign(res.state);
+              }}
+              className="w-full mt-2 px-3 py-2 rounded-lg text-xs font-semibold bg-gray-800/70 text-gray-200 hover:bg-gray-800 border border-gray-700/50 transition-colors"
+            >
+              Skip step
+            </button>
+          </div>
+        )}
+        {!tutorialCampaign.active && tutorialCampaign.completedAt != null && (
+          <div className="w-full max-w-xs mt-6 rounded-xl border border-dispatch-cyan/30 bg-dispatch-cyan/10 p-3">
+            <p className="text-sm font-semibold text-white">
+              🎓 First Shift {tutorialCampaign.skipped ? 'ended' : 'complete'}
+              {tutorialCampaign.skippedStepIds && tutorialCampaign.skippedStepIds.length > 0
+                ? ` — ${tutorialCampaign.skippedStepIds.length} step${tutorialCampaign.skippedStepIds.length === 1 ? '' : 's'} skipped`
+                : ''}
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+              {tutorialCampaign.skipped
+                ? 'You skipped out of the guided chain. Run it again any time — the steps are the same.'
+                : 'You cleared the guided chain. Run it again any time — the steps are the same.'}
+            </p>
+            <button
+              onClick={() => useGameStore.getState().setTutorialCampaign(startTutorialCampaign())}
+              className="w-full mt-2 px-3 py-2 rounded-lg text-xs font-semibold bg-dispatch-cyan/20 text-dispatch-cyan hover:bg-dispatch-cyan/30 border border-dispatch-cyan/30 transition-colors"
+            >
+              Replay First Shift
+            </button>
+          </div>
+        )}
 
         {/* Watch Trailer — the gameplay walkthrough, right from the menu */}
         <motion.button

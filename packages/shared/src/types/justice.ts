@@ -42,6 +42,11 @@ export interface Inmate {
   photoSeed: string;
   charges: string[];
   sentenceDays: number;
+  /** Sentence auto-release (mission-count rule): sentence-days served — one
+   *  per cleared mission while held+guilty. Absent = 0 (pre-rule saves).
+   *  Reaches sentenceDays ⇒ auto-release via releaseInmate. Reset to 0 when
+   *  a hearing re-sentences. */
+  daysServed?: number;
   bookingNumber: string;
   bookingTime: number;
   cellBlock: string;

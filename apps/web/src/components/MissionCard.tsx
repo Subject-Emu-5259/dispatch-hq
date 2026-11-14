@@ -4,9 +4,10 @@
 // ============================================
 
 import { motion } from 'framer-motion';
-import { Clock, Zap, Send, CheckCircle, RotateCcw, AlertTriangle, Handshake } from 'lucide-react';
+import { Clock, Zap, Send, CheckCircle, RotateCcw, AlertTriangle, Handshake, SkipForward } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
+import { skipChainStage } from '@/lib/missionChains';
 import { fetchDrivingRoute, getUnitServiceType } from '@/utils/routing';
 import { applyTravelTech, getMaxDispatchUnits } from '@/lib/techTree';
 import { haversineKm } from '@/utils/roadPathfinding';
@@ -34,6 +35,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
   const { addNotification } = useNotifications();
   const maxDispatchUnits = getMaxDispatchUnits();
   const [isRouting, setIsRouting] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
   const [selectedUnitIds, setSelectedUnitIds] = useState<Set<string>>(new Set());
   const isSelected = mission.id === selectedMissionId;
   const isUrgent = mission.timeRemaining < 120;
@@ -126,6 +128,47 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
   const getDistance = (a?: {lat: number; lng: number} | null, b?: {lat: number; lng: number} | null) => {
     if (!a || !b) return 0;
     return haversineKm(a, b);
+  };
+
+  // Chain bypass (per-stage skip): remove this stage and spawn the next.
+  // The skipped stage earns no reward and the chain loses its +25% bonus
+  // for the remaining stages (skipChainStage marks the chain broken).
+  // Undispatched stages only — skipping a call with units en route would
+  // strand them on a mission that no longer exists.
+  const handleSkipStage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isSkipping) return;
+    setIsSkipping(true);
+    try {
+      const st = useGameStore.getState();
+      const result = await skipChainStage(
+        mission,
+        st.selectedCity,
+        st.player?.level ?? 1,
+        st.addMission,
+        st.removeMission,
+      );
+      if (!result.skipped) return;
+      if (result.next) {
+        addNotification({
+          type: 'dispatch',
+          title: 'Stage Skipped',
+          message: `${result.next.name} — the next stage is on the board. The chain's +25% bonus is forfeited for the remaining stages.`,
+          icon: '🔗',
+          duration: 5000,
+        });
+      } else {
+        addNotification({
+          type: 'info',
+          title: 'Chain Ended',
+          message: `You skipped the final stage of ${mission.name} — the chain is over.`,
+          icon: '🔗',
+          duration: 4000,
+        });
+      }
+    } finally {
+      setIsSkipping(false);
+    }
   };
 
   const handleDispatch = async () => {
@@ -323,7 +366,7 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
           </span>
           {mission.chainId && mission.chainStage && (
             <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-cyan-400">
-              🔗 CHAIN {mission.chainStage}/{mission.chainTotal}
+              🔗 CHAIN {mission.chainStage}/{mission.chainTotal}{mission.chainSkipped ? ' · no bonus' : ''}
             </span>
           )}
         </div>
@@ -543,6 +586,20 @@ export function MissionCard({ mission, index, isMutualAid = false }: MissionCard
                   ? `Dispatch ${selectedUnitIds.size} Unit${selectedUnitIds.size > 1 ? 's' : ''}`
                   : 'Select units to dispatch'
               }
+            </button>
+          )}
+
+          {/* Chain bypass: skip this stage (undispatched chain missions only).
+              No reward for the skipped stage; the chain loses its +25% bonus. */}
+          {!isDispatched && !isExpired && mission.chainId && mission.chainStage && (
+            <button
+              onClick={handleSkipStage}
+              disabled={isSkipping}
+              title="Skip this stage — no reward for it, and the chain loses its +25% bonus for the remaining stages."
+              className="w-full mt-2 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 bg-gray-800/70 text-gray-300 hover:bg-gray-800 border border-gray-700/50 active:scale-[0.98] disabled:opacity-50"
+            >
+              <SkipForward className="w-3.5 h-3.5" />
+              {isSkipping ? 'Skipping…' : 'Skip stage'}
             </button>
           )}
           </>)}

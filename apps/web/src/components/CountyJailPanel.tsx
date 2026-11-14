@@ -66,6 +66,9 @@ export default function CountyJailPanel() {
       const resentence = sentenceAndBailForCharges(inmate.charges, inmate.riskLevel);
       updateInmate(inmate.id, {
         status: 'held', verdict: 'guilty',
+        // New sentence, new count: a hearing held mid-sentence re-sentences
+        // and resets days served to 0.
+        daysServed: 0,
         ...(resentence ? { sentenceDays: resentence.sentenceDays, bailAmount: resentence.bailAmount } : {}),
       });
       broadcastRadioMessage({
@@ -182,7 +185,11 @@ export default function CountyJailPanel() {
             <div className="grid grid-cols-2 gap-2 text-xs mb-3">
               <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">DOB</div><div className="text-gray-200">{selected.dateOfBirth}</div></div>
               <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">Bail</div><div className="text-gray-200">${selected.bailAmount.toLocaleString()}</div></div>
-              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">Sentence</div><div className="text-gray-200">{selected.sentenceDays} days</div></div>
+              <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">Sentence</div><div className="text-gray-200">{selected.sentenceDays} days</div>
+                {selected.status === 'held' && selected.verdict === 'guilty' && (
+                  <div className="text-[11px] text-gray-400 mt-0.5">{selected.daysServed ?? 0} / {selected.sentenceDays} days served</div>
+                )}
+              </div>
               <div className="bg-gray-950/60 border border-white/5 rounded-lg p-2"><div className="text-[11px] text-gray-500">Cell Block</div><div className="text-gray-200">{selected.cellBlock}</div></div>
             </div>
             <div className="text-xs text-gray-500 mb-1">Charges</div>
@@ -283,6 +290,9 @@ function InmateCard({
             <div className="bg-gray-950/60 border border-white/5 rounded-lg p-1.5">
               <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1"><UserX className="w-2.5 h-2.5" /> Sentence</div>
               <div className="text-gray-200">{inmate.sentenceDays} days</div>
+              {inmate.status === 'held' && inmate.verdict === 'guilty' && (
+                <div className="text-[11px] text-gray-400 mt-0.5">{inmate.daysServed ?? 0} / {inmate.sentenceDays} days served</div>
+              )}
             </div>
           </div>
           <div className="mt-2">

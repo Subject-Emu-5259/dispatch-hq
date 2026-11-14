@@ -128,7 +128,7 @@ app.get('/health', (c) => {
   return c.json({
     status: 'ok',
     game: 'Dispatch HQ',
-    version: '0.55.0',
+    version: '0.56.0',
     maintenance: getMaintenanceState(),
     signupGate: getSignupGateState(),
     timestamp: new Date().toISOString(),

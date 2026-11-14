@@ -16,6 +16,7 @@ import {
   gradeForResponse, gradeForEntry, recordMissionHistory, shiftReplayStats, MISSION_HISTORY_CAP,
   addPhotoSnapshot, removePhotoSnapshot, parsePhotoGallery, PHOTO_GALLERY_CAP,
   TUTORIAL_MISSION_CHAIN, startTutorialCampaign, parseTutorialCampaign, advanceTutorialCampaign,
+  skipTutorialCampaignStep,
   enqueueOfflineAction, drainOfflineQueue, OFFLINE_QUEUE_CAP, OFFLINE_QUEUE_MAX_ATTEMPTS,
   type MissionHistoryEntry, type PhotoSnapshot, type QueuedAction,
 } from './batch3e';
@@ -131,6 +132,47 @@ describe('batch3e onboarding campaign', () => {
     expect(advanceTutorialCampaign(adv.state, 'ems').advanced).toBe(false);
     expect(parseTutorialCampaign({ active: true, stepIndex: 99 }).stepIndex).toBe(3);
     expect(parseTutorialCampaign(undefined).active).toBe(false);
+  });
+  it('skip advances one step and records the skipped step id', () => {
+    const state = startTutorialCampaign(1000);
+    const res = skipTutorialCampaignStep(state, 2000);
+    expect(res.advanced).toBe(true);
+    expect(res.completed).toBe(false);
+    expect(res.state.stepIndex).toBe(1);
+    expect(res.state.active).toBe(true);
+    expect(res.state.skippedStepIds).toEqual(['tut-traffic']);
+    expect(res.state.completedAt).toBeNull();
+    // A clear after a skip still advances from the skipped position.
+    const adv = advanceTutorialCampaign(res.state, 'fire');
+    expect(adv.advanced).toBe(true);
+    expect(adv.state.stepIndex).toBe(2);
+    expect(adv.state.skippedStepIds).toEqual(['tut-traffic']);
+  });
+  it('skipping the final step ends the campaign as skipped, not completed', () => {
+    let state = startTutorialCampaign(1000);
+    state = advanceTutorialCampaign(state, 'traffic').state;
+    state = advanceTutorialCampaign(state, 'fire').state;
+    const res = skipTutorialCampaignStep(state, 3000);
+    expect(res.advanced).toBe(true);
+    expect(res.completed).toBe(true);
+    expect(res.state.active).toBe(false);
+    expect(res.state.stepIndex).toBe(3);
+    expect(res.state.completedAt).toBe(3000);
+    expect(res.state.skipped).toBe(true);
+    expect(res.state.skippedStepIds).toEqual(['tut-ems']);
+  });
+  it('skip is a no-op on an inactive or finished campaign', () => {
+    expect(skipTutorialCampaignStep({ active: false, stepIndex: 0, startedAt: null, completedAt: null }).advanced).toBe(false);
+    const done = { active: false, stepIndex: 3, startedAt: 1000, completedAt: 2000 };
+    expect(skipTutorialCampaignStep(done).advanced).toBe(false);
+  });
+  it('parse round-trips skipped steps and the skipped flag; bad values sanitize', () => {
+    const parsed = parseTutorialCampaign({ active: true, stepIndex: 1, skippedStepIds: ['tut-traffic'], skipped: false });
+    expect(parsed.skippedStepIds).toEqual(['tut-traffic']);
+    expect(parsed.skipped).toBeUndefined();
+    expect(parseTutorialCampaign({ active: false, stepIndex: 3, completedAt: 5, skipped: true }).skipped).toBe(true);
+    expect(parseTutorialCampaign({ skippedStepIds: ['a', 42, null] }).skippedStepIds).toEqual(['a']);
+    expect(parseTutorialCampaign({ skippedStepIds: 'nope' }).skippedStepIds).toBeUndefined();
   });
 });
 

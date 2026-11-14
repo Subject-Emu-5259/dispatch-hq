@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { spawnChainStage, chainRewardBonus } from './missionChains';
+import { spawnChainStage, chainRewardBonus, chainBonusForStage, skipChainStage } from './missionChains';
 
 vi.mock('./spawn', () => ({
   buildMission: vi.fn(async (_svc, _city, opts) => ({
@@ -62,6 +62,73 @@ describe('missionChains', () => {
       addMission,
     );
     expect(m).toBeNull();
+    expect(addMission).not.toHaveBeenCalled();
+  });
+
+  it('a skipped chain pays no bonus at any stage', () => {
+    expect(chainRewardBonus({ chainStage: 2, chainSkipped: true } as any)).toBe(1);
+    expect(chainRewardBonus({ chainStage: 3, chainSkipped: true } as any)).toBe(1);
+    expect(chainBonusForStage(2, true)).toBe(1);
+    expect(chainBonusForStage(2, false)).toBe(1.25);
+    expect(chainBonusForStage(2)).toBe(1.25);
+  });
+
+  it('spawnChainStage propagates the skipped marker to the next stage', async () => {
+    const addMission = vi.fn();
+    const m = await spawnChainStage(
+      { id: 'a', chainId: 'fire_chain', chainStage: 1, chainTotal: 3, chainSkipped: true, name: 'X', location: { lat: 35.1, lng: -90.1 } } as any,
+      null,
+      1,
+      addMission,
+    );
+    expect(m).not.toBeNull();
+    expect(m!.chainSkipped).toBe(true);
+    expect(m!.chainStage).toBe(2);
+  });
+
+  it('skipChainStage removes the current stage and spawns a bonus-less next stage', async () => {
+    const addMission = vi.fn();
+    const removeMission = vi.fn();
+    const result = await skipChainStage(
+      { id: 'a', chainId: 'fire_chain', chainStage: 1, chainTotal: 3, name: 'X', location: { lat: 35.1, lng: -90.1 } } as any,
+      null,
+      1,
+      addMission,
+      removeMission,
+    );
+    expect(result.skipped).toBe(true);
+    expect(result.chainEnded).toBe(false);
+    expect(removeMission).toHaveBeenCalledWith('a');
+    expect(addMission).toHaveBeenCalled();
+    expect(result.next).not.toBeNull();
+    expect(result.next!.chainStage).toBe(2);
+    expect(result.next!.chainSkipped).toBe(true);
+    expect(chainRewardBonus(result.next!)).toBe(1);
+  });
+
+  it('skipping the final stage ends the chain with no next spawn', async () => {
+    const addMission = vi.fn();
+    const removeMission = vi.fn();
+    const result = await skipChainStage(
+      { id: 'a', chainId: 'fire_chain', chainStage: 3, chainTotal: 3, name: 'X' } as any,
+      null,
+      1,
+      addMission,
+      removeMission,
+    );
+    expect(result.skipped).toBe(true);
+    expect(result.chainEnded).toBe(true);
+    expect(result.next).toBeNull();
+    expect(removeMission).toHaveBeenCalledWith('a');
+    expect(addMission).not.toHaveBeenCalled();
+  });
+
+  it('skipChainStage is a no-op for a non-chain mission', async () => {
+    const addMission = vi.fn();
+    const removeMission = vi.fn();
+    const result = await skipChainStage({ id: 'a' } as any, null, 1, addMission, removeMission);
+    expect(result.skipped).toBe(false);
+    expect(removeMission).not.toHaveBeenCalled();
     expect(addMission).not.toHaveBeenCalled();
   });
 });

@@ -139,6 +139,7 @@ export function buildInmateFromRecord(record: CriminalRecord, city: string): Inm
     status: 'booking',
     riskLevel: record.riskLevel,
     verdict: 'pending',
+    daysServed: 0,
   };
 }
 
@@ -158,4 +159,22 @@ export function searchRecords(records: CriminalRecord[], query: string): Crimina
     return full.includes(q);
   });
   return matches;
+}
+
+// ── Sentence auto-release (mission-count rule) ────────────────────────────
+// No game-day clock exists, so sentences are served one day per cleared
+// mission — deterministic, save-safe, and un-idleable. These helpers are
+// pure; eligibility (held + guilty verdict only) is the caller's check in
+// the App completion hook, which also owns releaseInmate + the radio line.
+
+/** Serve one sentence-day: a cleared mission counts as one day served. */
+export function serveDay(inmate: Inmate): Inmate {
+  return { ...inmate, daysServed: (inmate.daysServed ?? 0) + 1 };
+}
+
+/** True when the inmate has served their full sentence. A 0-day sentence
+ *  is served as soon as a day is served (releases on the next cleared
+ *  mission after the guilty verdict). */
+export function sentenceServed(inmate: Inmate): boolean {
+  return (inmate.daysServed ?? 0) >= inmate.sentenceDays;
 }

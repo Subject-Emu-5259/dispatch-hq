@@ -88,6 +88,10 @@ export interface Mission {
   escalations?: number;
   chainStage?: number;
   chainTotal?: number;
+  /** Chain bypass: true once any earlier stage of this chain was skipped.
+   *  A skipped chain is a broken chain — its remaining stages pay no 1.25x
+   *  bonus (see chainBonusForStage). Propagated by spawnChainStage. */
+  chainSkipped?: boolean;
   /** Staged batch (Addition 6): gang this incident belongs to (see GANGS). */
   gangId?: string;
   /** Staged batch (Addition 6): how a cleared traffic mission resolved. */

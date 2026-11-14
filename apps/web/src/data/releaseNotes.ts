@@ -17,6 +17,16 @@ export function currentVersion(): string {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.56.0',
+    date: '2026-11-14',
+    title: 'Chain skip + sentence auto-release: skip a stuck chain stage, sentences now end on their own',
+    items: [
+      'Chain stages can now be skipped: a Skip stage action on a chain mission removes the current stage and spawns the next one. A skipped stage earns no reward, and the chain loses its 1.25× stage bonus for the stages that remain — skipping the final stage ends the chain. Works for every service’s chains (fire, police, EMS).',
+      'Guided First Shift can be skipped one step at a time from the First Shift card, and replayed from the main menu once it is done or skipped.',
+      'Sentences now end on their own: every mission you clear serves one sentence-day for each held inmate with a guilty verdict. When the days are served, the inmate is released automatically — a radio line and a notification say so, and the inmate lands in the Released tab. Jail cards show days served (X / Y). Inmates awaiting a verdict are never auto-released, and bail still releases first.',
+    ],
+  },
+  {
     version: '0.55.0',
     date: '2026-11-03',
     title: 'City-select fix: scrollable city list, Back button, working search',

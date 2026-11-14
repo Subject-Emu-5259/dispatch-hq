@@ -34,6 +34,7 @@ export interface MissionRewardInput {
     | 'disasterId'
     | 'recovery'
     | 'chainStage'
+    | 'chainSkipped'
   >;
   /** The player's level (rank bonus source). */
   playerLevel: number;
@@ -107,7 +108,7 @@ export function computeMissionRewards(input: MissionRewardInput): MissionRewards
 
   const remainingRatio = Math.max(0, m.timeRemaining / (m.totalTime || 600));
   const speedBonus = 1 + remainingRatio * 0.5;
-  const chainBonus = chainBonusForStage(m.chainStage);
+  const chainBonus = chainBonusForStage(m.chainStage, m.chainSkipped);
   const rankBonus = rankForLevel(playerLevel, service ?? undefined).rewardBonus;
   // The declared per-level credit earning curve (×1.0 at L1 → ×2.0 at L20).
   // Credits only — XP progression already has its own curve via the level table.
